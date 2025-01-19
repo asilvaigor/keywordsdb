@@ -1,0 +1,14 @@
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+    - run: pip install uv
+      shell: bash
+    - run: cd worker && uv sync --frozen
+      shell: bash
+    - run: cd worker && uv run ruff check . && uv run ruff format --check --diff .
+      shell: bash
+    - run: cd worker && uv run mypy .
+      shell: bash

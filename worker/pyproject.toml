@@ -3,7 +3,7 @@ name = "keywordsdb"
 version = "0.1.0"
 description = "keywordsdb"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "google-ads>=25.1.0",
     "google-ads-stubs>=19.0.0",
@@ -13,5 +13,22 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipykernel>=6.29.5",
+    "mypy>=1.14.1",
     "python-dotenv>=1.0.1",
+    "ruff>=0.9.2",
 ]
+
+[tool.ruff]
+format.skip-magic-trailing-comma = true
+line-length = 120
+lint.isort.split-on-trailing-comma = false
+lint.select = ["E", "F", "W", "I", "N"]
+
+[tool.mypy]
+allow_redefinition = true
+pretty = true
+strict = true
+
+# [[tool.mypy.overrides]]
+# ignore_missing_imports = true
+# module = []

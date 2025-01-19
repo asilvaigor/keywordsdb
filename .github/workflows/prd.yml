@@ -1,0 +1,42 @@
+name: prd
+on:
+  push:
+    tags:
+      - "*"
+jobs:
+  lint-py:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-py
+  build-worker:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: "read"
+      id-token: "write"
+    needs: [lint-py]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build
+        with:
+          env: prd
+          name: worker
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+  deploy-worker-trigger:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: "read"
+      id-token: "write"
+    needs: [build-worker]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy
+        with:
+          env: prd
+          name: worker-trigger
+          image_name: worker
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          secrets: "\
+            ENV='prd'"

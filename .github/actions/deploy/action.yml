@@ -1,0 +1,33 @@
+inputs:
+  env:
+    required: true
+    type: string
+  name:
+    required: true
+    type: string
+  image_name:
+    required: true
+    type: string
+  workload_identity_provider:
+    required: true
+    type: string
+  project_id:
+    required: true
+    type: string
+  secrets:
+    required: false
+    type: string
+    default: ""
+runs:
+  using: "composite"
+  steps:
+    - uses: "google-github-actions/auth@v2"
+      with:
+        project_id: ${{ inputs.project_id }}
+        workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+    - run: >
+        gcloud run deploy ${{ inputs.name }}-${{ inputs.env }}
+        --region=us-central1
+        --image=us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.image_name }}:${{ inputs.env }}
+        --set-env-vars=${{ inputs.secrets }}
+      shell: bash

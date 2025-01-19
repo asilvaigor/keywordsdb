@@ -2,7 +2,11 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "6.16.0"
+      version = "6.18.0"
+    }
+    github = {
+      source  = "integrations/github"
+      version = "6.5"
     }
   }
   backend "gcs" {
@@ -14,6 +18,8 @@ provider "google" {
   project = var.project_id
   region  = var.location
 }
+
+provider "github" {}
 
 resource "google_project" "default" {
   provider = google-beta
@@ -29,6 +35,7 @@ resource "google_storage_bucket" "terraform" {
   soft_delete_policy {
     retention_duration_seconds = 0
   }
+  depends_on = [google_project.default]
 }
 
 variable "location" {
@@ -38,5 +45,5 @@ variable "location" {
 
 variable "project_id" {
   type    = string
-  default = "keywordsdb-1"
+  default = "keywordsdb-3"
 }

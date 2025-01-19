@@ -1,0 +1,34 @@
+inputs:
+  env:
+    required: true
+    type: string
+  name:
+    required: true
+    type: string
+  project_id:
+    required: true
+    type: string
+  workload_identity_provider:
+    required: true
+    type: string
+runs:
+  using: "composite"
+  steps:
+    - uses: "google-github-actions/auth@v2"
+      with:
+        project_id: ${{ inputs.project_id }}
+        workload_identity_provider: ${{ inputs.workload_identity_provider }} 
+    - run: gcloud config set builds/use_kaniko True
+      shell: bash
+    - run: gcloud config set builds/kaniko_cache_ttl 1
+      shell: bash
+    - run: sed -i "s/\$ENV/${{ inputs.env }}/g" ${{ inputs.name }}/Dockerfile
+      shell: bash
+    - run: >
+        gcloud builds submit
+        --region us-central1
+        --gcs-source-staging-dir gs://keywordsdb-cloudbuild/source
+        --gcs-log-dir gs://keywordsdb-cloudbuild/logs
+        --tag us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.name }}:${{ inputs.env }}
+        ${{ inputs.name }}
+      shell: bash

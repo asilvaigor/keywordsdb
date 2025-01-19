@@ -5,9 +5,9 @@ resource "google_service_account" "local_account" {
 
 resource "google_project_iam_member" "local_account" {
   for_each = toset([])
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${google_service_account.local_account.email}"
+  project  = var.project_id
+  role     = each.key
+  member   = "serviceAccount:${google_service_account.local_account.email}"
 }
 
 resource "google_service_account_key" "local_account" {
