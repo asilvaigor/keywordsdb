@@ -8,6 +8,7 @@ from google.ads.googleads.v17 import GenerateKeywordIdeaResult, GenerateKeywordI
 
 class AdsClient:
     def __init__(self) -> None:
+        os.environ["GOOGLE_ADS_USE_PROTO_PLUS"] = "true"
         self._client = GoogleAdsClient.load_from_env()
         self._keyword_plan_idea_service = self._client.get_service("KeywordPlanIdeaService")
 

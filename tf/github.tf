@@ -21,16 +21,23 @@ resource "google_iam_workload_identity_pool_provider" "github" {
   }
 }
 
-resource "google_project_iam_member" "github_actions" {
-  for_each = toset([
-    "roles/cloudbuild.builds.builder",
-    "roles/storage.objectViewer",
-    "roles/iam.serviceAccountUser",
-  ])
+resource "google_project_iam_custom_role" "compute_update" {
+  role_id     = "compute_update"
+  title       = "Compute Instance Update"
+  permissions = ["compute.instances.get", "compute.instances.setMetadata"]
+}
 
-  project    = var.project_id
-  role       = each.key
-  member     = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/asilvaigor/keywordsdb"
+resource "google_project_iam_member" "github_actions" {
+  for_each = {
+    cloudbuild     = "roles/cloudbuild.builds.builder"
+    compute_update = google_project_iam_custom_role.compute_update.id
+    iam            = "roles/iam.serviceAccountUser"
+    storage        = "roles/storage.objectViewer"
+  }
+
+  project = var.project_id
+  role    = each.value
+  member  = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/asilvaigor/keywordsdb"
 }
 
 resource "github_actions_variable" "workload_identity_provider" {

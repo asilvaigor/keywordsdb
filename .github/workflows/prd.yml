@@ -23,7 +23,7 @@ jobs:
           name: worker
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
-  deploy-worker-trigger:
+  deploy-worker:
     runs-on: ubuntu-24.04
     permissions:
       contents: "read"
@@ -31,12 +31,11 @@ jobs:
     needs: [build-worker]
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy
+      - uses: ./.github/actions/deploy-vm
         with:
           env: prd
-          name: worker-trigger
+          name: worker
           image_name: worker
+          zone: us-central1-a
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
-          secrets: "\
-            ENV='prd'"

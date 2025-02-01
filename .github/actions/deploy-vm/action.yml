@@ -1,0 +1,31 @@
+inputs:
+  env:
+    required: true
+    type: string
+  name:
+    required: true
+    type: string
+  image_name:
+    required: true
+    type: string
+  workload_identity_provider:
+    required: true
+    type: string
+  project_id:
+    required: true
+    type: string
+  zone:
+    required: true
+    type: string
+runs:
+  using: "composite"
+  steps:
+    - uses: "google-github-actions/auth@v2"
+      with:
+        project_id: ${{ inputs.project_id }}
+        workload_identity_provider: ${{ inputs.WORKLOAD_IDENTITY_PROVIDER }}
+    - run: >
+        gcloud compute instances update-container ${{ inputs.name }}-${{ inputs.env }}
+        --zone=${{ inputs.zone }}
+        --container-image=us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.image_name }}:${{ inputs.env }}
+      shell: bash

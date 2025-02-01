@@ -31,6 +31,14 @@ resource "google_artifact_registry_repository" "main" {
       older_than = "3600s"
     }
   }
+  cleanup_policies {
+    id     = "keep-prd"
+    action = "KEEP"
+    condition {
+      tag_state    = "TAGGED"
+      tag_prefixes = ["prd"]
+    }
+  }
   depends_on = [google_project_service.artifact_registry]
 }
 
