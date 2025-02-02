@@ -2,6 +2,10 @@ resource "google_project_service" "compute" {
   service = "compute.googleapis.com"
 }
 
+resource "google_project_service" "error_reporting" {
+  service = "clouderrorreporting.googleapis.com"
+}
+
 resource "google_service_account" "worker" {
   account_id   = "worker-2"
   display_name = "Worker"
@@ -91,7 +95,8 @@ resource "google_compute_instance" "worker_stg" {
 
   lifecycle {
     ignore_changes = [
-      metadata["ssh-keys"]
+      metadata["gce-container-declaration"],
+      metadata["ssh-keys"],
     ]
   }
 }

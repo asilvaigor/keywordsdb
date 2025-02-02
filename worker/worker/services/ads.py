@@ -3,7 +3,7 @@ from datetime import date
 
 import polars as pl
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v17 import GenerateKeywordIdeaResult, GenerateKeywordIdeasRequest
+from google.ads.googleads.v18 import GenerateKeywordIdeaResult, GenerateKeywordIdeasRequest
 
 
 class AdsClient:

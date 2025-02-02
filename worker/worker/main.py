@@ -1,10 +1,7 @@
-from worker.services.ads import AdsClient
-from worker.services.secret import read_secrets
+from worker.context import Context
 
 if __name__ == "__main__":
-    print("Starting")
-    read_secrets()
-    ads_client = AdsClient()
-    df_keywords, _ = ads_client.get_keyword_info(["test"])
-    print(df_keywords)
-    print("Success")
+    ctx = Context()
+    df_keywords, _ = ctx.ads_client.get_keyword_info(["test"])
+    ctx.logger.info(str(df_keywords))
+    ctx.logger.info("Success")

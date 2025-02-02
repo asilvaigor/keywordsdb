@@ -22,9 +22,14 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 }
 
 resource "google_project_iam_custom_role" "compute_update" {
-  role_id     = "compute_update"
-  title       = "Compute Instance Update"
-  permissions = ["compute.instances.get", "compute.instances.setMetadata"]
+  role_id = "compute_update"
+  title   = "Compute Instance Update"
+  permissions = [
+    "compute.instances.get",
+    "compute.instances.setMetadata",
+    "compute.instances.start",
+    "compute.instances.stop",
+  ]
 }
 
 resource "google_project_iam_member" "github_actions" {
