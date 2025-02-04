@@ -20,6 +20,7 @@ resource "google_project_iam_member" "worker" {
     "roles/artifactregistry.reader",
     "roles/logging.logWriter",
     "roles/secretmanager.secretAccessor",
+    "roles/bigquery.user",
   ])
   project = var.project_id
   role    = each.key
