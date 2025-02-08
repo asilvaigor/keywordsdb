@@ -21,7 +21,8 @@ class SecretClient:
                         k = base64.b64decode(self._get_secret_value("WORKER_SERVICE_ACCOUNT_KEY"))
                         json.dump(json.loads(k), f)
                         os.environ["GOOGLE_ADS_JSON_KEY_FILE_PATH"] = f.name
-                os.environ[envvar] = self._get_secret_value(envvar)
+                else:
+                    os.environ[envvar] = self._get_secret_value(envvar)
 
     def _get_secret_value(self, envvar: str) -> str:
         if envvar in os.environ or self._client is None:
