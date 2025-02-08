@@ -3,11 +3,11 @@ resource "google_project_service" "bigquery" {
 }
 
 resource "google_bigquery_dataset" "keywords" {
-  dataset_id    = "keywords"
-  friendly_name = "Keywords"
-  location      = "US"
-  depends_on    = [google_project_service.bigquery]
-
+  dataset_id            = "keywords"
+  friendly_name         = "Keywords"
+  location              = "US"
+  max_time_travel_hours = 48
+  depends_on            = [google_project_service.bigquery]
 }
 
 resource "google_bigquery_table" "keywords" {

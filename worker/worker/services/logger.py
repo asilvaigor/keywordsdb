@@ -48,7 +48,10 @@ def _override_stderr(logger: structlog.stdlib.BoundLogger) -> None:
 
             try:
                 lines = traceback_string.split("\n")
-                last_line = lines[-1] if lines[-1] else lines[-2]
+                for i in range(len(lines) - 2, 0, -1):
+                    if lines[i][0] in (" ", "\t"):
+                        break
+                last_line = lines[i + 1]
                 exc_type = last_line.split(":")[0]
                 return exc_type if exc_type else DEFAULT_EXCEPTION_TYPE
             except Exception:
@@ -80,13 +83,14 @@ def get_logger(mode: Literal["json", "console"] | None = None) -> structlog.stdl
 
             # Cleaning stack trace: very hacky, but gcloud groups all exceptions in the
             # same group without this
-            for i, line in enumerate(exc_list):
-                if "/worker" in line and "dispatch" not in line:
-                    break
-            if i < len(exc_list):
-                exc = "Traceback (most recent call last):\n" + "\n".join(exc_list[i:])
-            else:
-                exc = "\n".join(exc_list)
+            # for i, line in enumerate(exc_list):
+            #     if "/worker" in line and "dispatch" not in line:
+            #         break
+            # if i < len(exc_list):
+            #     exc = "Traceback (most recent call last):\n" + "\n".join(exc_list[i:])
+            # else:
+            #     exc = "\n".join(exc_list)
+            exc = "\n".join(exc_list)
 
             event_dict["stack_trace"] = exc
         return event_dict
