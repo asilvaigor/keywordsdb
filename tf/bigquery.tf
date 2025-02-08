@@ -45,6 +45,11 @@ resource "google_bigquery_table" "keywords" {
       name = "updated_at"
       type = "DATE"
       mode = "REQUIRED"
+    },
+    {
+      name = "ingested_at"
+      type = "DATE"
+      mode = "NULLABLE"
     }
   ])
 }
