@@ -11,13 +11,13 @@ if __name__ == "__main__":
     keywords = ctx.bigquery_client.get_oldest_keywords(n=1000)
 
     batches = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
-    dfl = []
+    df = pl.DataFrame()
+    ctx.logger.info("Querying google ads")
     for i, batch in enumerate(batches):
         if i % 10 == 0:
             ctx.logger.info(f"{i} / {len(batches)}")
-        dfl.append(ctx.ads_client.get_keyword_info(batch)[0])
+        df = pl.concat([df, ctx.ads_client.get_keyword_info(batch)[0]]).unique(subset=["keyword"])
 
-    df: pl.DataFrame = pl.concat(dfl)
     ctx.logger.info(f"Done, got {len(df)} results")
     df = df.with_columns(
         ingested_at=pl.when(pl.col("keyword").is_in(keywords)).then(date.today()).otherwise(None),

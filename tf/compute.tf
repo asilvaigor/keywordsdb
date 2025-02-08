@@ -21,6 +21,7 @@ resource "google_project_iam_member" "worker" {
     "roles/logging.logWriter",
     "roles/secretmanager.secretAccessor",
     "roles/bigquery.user",
+    "roles/bigquery.dataOwner",
   ])
   project = var.project_id
   role    = each.key
