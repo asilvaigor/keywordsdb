@@ -1,3 +1,5 @@
+from datetime import date
+
 import polars as pl
 from google.cloud.bigquery import Client, LoadJobConfig, WriteDisposition
 
@@ -32,15 +34,21 @@ class BigQueryClient:
         rows = self.client.query(query).result()
         return [dict(row.items())["keyword"] for row in rows]
 
-    def insert_keywords(self, df: pl.DataFrame) -> None:
+    def insert_keywords(self, df: pl.DataFrame, query_keywords: list[str]) -> None:
         """
         Insert records into the keywords table.
 
         Args:
             df: Polars DataFrame containing the records to insert
+            query_keywords: List of keywords used to query the data
         """
         if df.is_empty():
             return
+
+        df = df.with_columns(
+            ingested_at=pl.when(pl.col("keyword").is_in(query_keywords)).then(date.today()).otherwise(None),
+            updated_at=pl.lit(date.today()),
+        ).select("keyword", "avg_monthly_searches", "competition_index", "cpc_high", "updated_at", "ingested_at")
 
         temp_table = f"{self._table}_temp"
         df = df.to_pandas()
@@ -74,3 +82,52 @@ class BigQueryClient:
         merge_job = self.client.query(merge_query)
         merge_job.result()
         self.client.delete_table(temp_table_ref, not_found_ok=True)
+
+    def get_keywords_to_ingest(self, n: int) -> list[str]:
+        """
+        Query the keywords_to_ingest table to get N records.
+
+        Args:
+            n: Number of records to retrieve
+
+        Returns:
+            list of keywords
+        """
+        query = f"""
+            SELECT keyword
+            FROM `{self._project_id}.{self._dataset}.keywords_to_ingest`
+            LIMIT {n}
+        """
+
+        rows = self.client.query(query).result()
+        return [dict(row.items())["keyword"] for row in rows]
+
+    def delete_keywords_to_ingest(self, keywords: list[str]) -> None:
+        """
+        Delete records from the keywords_to_ingest table.
+
+        Args:
+            keywords: List of keywords to delete
+        """
+        query = f"""
+            DELETE FROM `{self._project_id}.{self._dataset}.keywords_to_ingest`
+            WHERE keyword IN ({", ".join([f'"{keyword}"' for keyword in keywords])})
+        """
+
+        self.client.query(query).result()
+
+    def insert_keywords_to_ingest(self, keywords: list[str]) -> None:
+        """
+        Insert records into the keywords_to_ingest table.
+
+        Args:
+            keywords: List of keywords to insert
+        """
+        df = pl.DataFrame({"keyword": keywords})
+
+        df = df.to_pandas()
+        table = "keywords_to_ingest"
+        table_ref = self.client.dataset(self._dataset).table(table)
+        job_config = LoadJobConfig(write_disposition=WriteDisposition.WRITE_APPEND)
+        load_job = self.client.load_table_from_dataframe(df, table_ref, job_config=job_config)
+        load_job.result()

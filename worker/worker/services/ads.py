@@ -2,7 +2,7 @@ import os
 from typing import Iterator
 
 import polars as pl
-from asyncer import asyncify
+from asyncer import SoonValue, asyncify, create_task_group
 from asynciolimiter import Limiter
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v18 import GenerateKeywordIdeaResponse, GenerateKeywordIdeaResult, GenerateKeywordIdeasRequest
@@ -17,6 +17,18 @@ class AdsClient:
         self._keyword_plan_idea_service = self._client.get_service("KeywordPlanIdeaService")
 
     async def get_keyword_info(self, keywords: list[str]) -> pl.DataFrame:
+        batches = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
+        df = pl.DataFrame()
+
+        results: list[SoonValue[pl.DataFrame]] = []
+        async with create_task_group() as task_group:
+            for batch in batches:
+                r = task_group.soonify(self._get_keyword_batch_info)(batch)
+                results.append(r)
+        df = pl.concat([r.value for r in results]).unique(subset=["keyword"])
+        return df
+
+    async def _get_keyword_batch_info(self, keywords: list[str]) -> pl.DataFrame:
         request: GenerateKeywordIdeasRequest = self._client.get_type("GenerateKeywordIdeasRequest")
         request.customer_id = os.environ["GOOGLE_ADS_LOGIN_CUSTOMER_ID"]
         request.language = "languageConstants/1000"  # English

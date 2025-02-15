@@ -1,4 +1,5 @@
 __pycache__/
+data/
 *.py[oc]
 dist/
 wheels/
