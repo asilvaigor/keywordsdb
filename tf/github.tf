@@ -25,6 +25,7 @@ resource "google_project_iam_custom_role" "compute_update" {
   role_id = "compute_update"
   title   = "Compute Instance Update"
   permissions = [
+    "compute.projects.get",
     "compute.instances.get",
     "compute.instances.setMetadata",
     "compute.instances.start",
