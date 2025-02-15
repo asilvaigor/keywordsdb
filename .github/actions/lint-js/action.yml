@@ -1,0 +1,10 @@
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "22"
+    - run: cd webapp && npm install -g bun@latest && bun install --frozen-lockfile
+      shell: bash
+    - run: cd webapp && bun run lint
+      shell: bash

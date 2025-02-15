@@ -9,6 +9,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-py
+  lint-js:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-js
   build-worker:
     runs-on: ubuntu-24.04
     permissions:

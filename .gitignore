@@ -15,3 +15,7 @@ wheels/
 *.tfstate
 .terraform
 *.tfvars
+
+next-env.d.ts
+node_modules
+.next
