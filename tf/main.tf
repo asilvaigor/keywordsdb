@@ -8,6 +8,10 @@ terraform {
       source  = "integrations/github"
       version = "6.5"
     }
+    cloudflare = {
+      source  = "cloudflare/cloudflare"
+      version = "5.1.0"
+    }
   }
   backend "gcs" {
     bucket = "keywordsdb-terraform"
@@ -20,6 +24,10 @@ provider "google" {
 }
 
 provider "github" {}
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
 
 resource "google_project" "default" {
   provider = google-beta

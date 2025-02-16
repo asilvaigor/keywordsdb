@@ -2,18 +2,6 @@ resource "google_project_service" "secretmanager" {
   service = "secretmanager.googleapis.com"
 }
 
-variable "google_ads_login_customer_id" {
-  description = "Google Ads Login Customer ID"
-  type        = string
-  sensitive   = true
-}
-
-variable "google_ads_developer_token" {
-  description = "Google Ads Developer Token"
-  type        = string
-  sensitive   = true
-}
-
 locals {
   worker_secrets = {
     "GOOGLE_ADS_LOGIN_CUSTOMER_ID" = var.google_ads_login_customer_id

@@ -32,19 +32,11 @@ resource "google_artifact_registry_repository" "main" {
     }
   }
   cleanup_policies {
-    id     = "keep-prd"
+    id     = "keep"
     action = "KEEP"
     condition {
       tag_state    = "TAGGED"
-      tag_prefixes = ["prd"]
-    }
-  }
-  cleanup_policies {
-    id     = "keep-stg"
-    action = "KEEP"
-    condition {
-      tag_state    = "TAGGED"
-      tag_prefixes = ["stg"]
+      tag_prefixes = ["keep"]
     }
   }
   depends_on = [google_project_service.artifact_registry]

@@ -47,6 +47,20 @@ jobs:
           name: worker
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+  build-webapp:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: "read"
+      id-token: "write"
+    needs: [lint-js]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build
+        with:
+          env: stg
+          name: webapp
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
   deploy-worker:
     runs-on: ubuntu-24.04
     permissions:
@@ -58,8 +72,24 @@ jobs:
       - uses: ./.github/actions/deploy-vm
         with:
           env: stg
+          tag: keep
           name: worker
           image_name: worker
           zone: us-central1-a
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+  deploy-webapp:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: "read"
+      id-token: "write"
+    needs: [build-webapp]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-cloudrun
+        with:
+          env: stg
+          name: webapp
+          image_name: webapp
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
