@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 
 from worker.context import Context
+from worker.db.keywords_to_ingest import KeywordsToIngest
 
 
 def get_keywords_from_wordnet(wordtype: str) -> list[str]:
@@ -19,7 +20,7 @@ async def main() -> None:
     keywords = get_keywords_from_wordnet("noun")
 
     ctx.logger.info(f"Got {len(keywords)} keywords, writing in bigquery")
-    ctx.bigquery_client.insert_keywords_to_ingest(keywords)
+    KeywordsToIngest.insert(ctx.bigquery_client, keywords)
     ctx.logger.info("Success")
 
 

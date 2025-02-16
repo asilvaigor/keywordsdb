@@ -55,9 +55,54 @@ resource "google_bigquery_table" "keywords" {
 }
 
 
+resource "google_bigquery_table" "keywords_tmp" {
+  dataset_id = google_bigquery_dataset.keywords.dataset_id
+  table_id   = "keywords_tmp"
+
+  table_constraints {
+    primary_key {
+      columns = ["keyword"]
+    }
+  }
+
+  schema = jsonencode([
+    {
+      name = "keyword"
+      type = "STRING"
+      mode = "REQUIRED"
+    },
+    {
+      name = "avg_monthly_searches"
+      type = "INTEGER"
+      mode = "REQUIRED"
+    },
+    {
+      name = "competition_index"
+      type = "INTEGER"
+      mode = "REQUIRED"
+    },
+    {
+      name = "cpc_high"
+      type = "FLOAT"
+      mode = "REQUIRED"
+    },
+    {
+      name = "updated_at"
+      type = "DATE"
+      mode = "REQUIRED"
+    },
+    {
+      name = "ingested_at"
+      type = "DATE"
+      mode = "NULLABLE"
+    }
+  ])
+}
+
+
 resource "google_bigquery_table" "keywords_to_ingest" {
-  dataset_id          = google_bigquery_dataset.keywords.dataset_id
-  table_id            = "keywords_to_ingest"
+  dataset_id = google_bigquery_dataset.keywords.dataset_id
+  table_id   = "keywords_to_ingest"
 
   table_constraints {
     primary_key {
