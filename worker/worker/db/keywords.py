@@ -34,7 +34,17 @@ class Keywords:
         """
         merge_query = f"""
             MERGE `{client.get_full_name(Keywords.tablename)}` keywords
-            USING `{client.get_full_name(KeywordsTmp.tablename)}` tmp
+            USING (
+                SELECT
+                    keyword,
+                    avg_monthly_searches,
+                    competition_index,
+                    cpc_high,
+                    updated_at,
+                    ingested_at
+                FROM `{client.get_full_name(KeywordsTmp.tablename)}`
+                QUALIFY ROW_NUMBER() OVER (PARTITION BY keyword ORDER BY updated_at DESC) = 1
+            ) tmp
             ON keywords.keyword = tmp.keyword
             WHEN MATCHED THEN
                 UPDATE SET

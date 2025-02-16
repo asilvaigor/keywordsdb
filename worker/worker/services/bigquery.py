@@ -1,5 +1,5 @@
 import polars as pl
-from google.cloud.bigquery import Client, LoadJobConfig, WriteDisposition
+from google.cloud.bigquery import Client, LoadJobConfig, SchemaField, WriteDisposition
 
 
 class BigQueryClient:
@@ -22,12 +22,37 @@ class BigQueryClient:
         if df.is_empty():
             return
 
+        schema = self._create_schema(df)
         df = df.to_pandas()
         for col in df.columns:
             if df[col].dtype == "datetime64[ns]":
                 df[col] = df[col].dt.date
 
         table_ref = self.client.dataset(self._dataset).table(tablename)
-        job_config = LoadJobConfig(write_disposition=WriteDisposition.WRITE_APPEND)
+        job_config = LoadJobConfig(write_disposition=WriteDisposition.WRITE_APPEND, schema=schema)
         load_job = self.client.load_table_from_dataframe(df, table_ref, job_config=job_config)
         load_job.result()
+
+    def _create_schema(self, df: pl.DataFrame) -> list[SchemaField]:
+        """
+        Create BigQuery schema based on DataFrame columns.
+        """
+        schema = []
+        for col in df.schema.items():
+            field_name = col[0]
+            dtype = col[1]
+
+            if str(dtype) == "Date":
+                field_type = "DATE"
+            elif str(dtype) == "Int64":
+                field_type = "INTEGER"
+            elif str(dtype) == "Float64":
+                field_type = "FLOAT"
+            else:
+                field_type = "STRING"
+
+            if field_name == "ingested_at":
+                schema.append(SchemaField(field_name, field_type))
+            else:
+                schema.append(SchemaField(field_name, field_type, "REQUIRED"))
+        return schema
