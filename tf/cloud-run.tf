@@ -58,14 +58,14 @@ resource "google_cloud_run_service_iam_binding" "cloudrun_webapp_iam" {
 }
 
 resource "google_cloud_run_domain_mapping" "webapp" {
-  for_each = google_cloud_run_v2_service.webapp
-  name     = "keywordsdb.com"
+  for_each = toset(["keywordsdb.com", "www.keywordsdb.com"])
+  name     = each.key
   location = var.location
   metadata {
     namespace = var.project_id
   }
   spec {
-    route_name = each.value.name
+    route_name = google_cloud_run_v2_service.webapp["stg"].name
   }
 }
 
@@ -78,9 +78,9 @@ resource "cloudflare_dns_record" "webapp_a" {
   ])
   zone_id = var.cloudflare_zone_id
   name    = "@"
-  content   = each.key
+  content = each.key
   type    = "A"
-  proxied = true
+  proxied = false # TODO: turn to true
   ttl     = 1
 }
 
@@ -93,9 +93,9 @@ resource "cloudflare_dns_record" "webapp_aaaa" {
   ])
   zone_id = var.cloudflare_zone_id
   name    = "@"
-  content   = each.key
+  content = each.key
   type    = "AAAA"
-  proxied = true
+  proxied = false
   ttl     = 1
 }
 
@@ -103,8 +103,8 @@ resource "cloudflare_dns_record" "webapp" {
   for_each = google_cloud_run_v2_service.webapp
   zone_id  = var.cloudflare_zone_id
   name     = "www"
-  content    = "ghs.googlehosted.com"
+  content  = "ghs.googlehosted.com"
   type     = "CNAME"
-  proxied  = true
+  proxied  = false
   ttl      = 1
 }
