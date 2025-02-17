@@ -3,6 +3,7 @@
 import type { Keyword } from "@/lib/types";
 import { BigQuery } from "@google-cloud/bigquery";
 import type { SortingState } from "@tanstack/react-table";
+import { unstable_cache } from "next/cache";
 
 interface KeywordFilters {
   keyword?: string;
@@ -29,8 +30,33 @@ export async function getKeywords(
   page = 1,
   pageSize = 10,
 ): Promise<PaginatedKeywords> {
-  let query =
-    "SELECT *, COUNT(*) OVER() as total_count FROM `keywordsdb-3.keywords.keywords` WHERE 1=1";
+  return unstable_cache(
+    getKeywordsNotCached,
+    [
+      `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${page}-${pageSize}`,
+    ],
+    { revalidate: 24 * 3600 },
+  )(filters, sort, page, pageSize);
+}
+
+async function getKeywordsNotCached(
+  filters?: KeywordFilters,
+  sort?: SortingState,
+  page = 1,
+  pageSize = 10,
+): Promise<PaginatedKeywords> {
+  console.log("getting keywords");
+  let query = `
+    SELECT
+      keyword,
+      avg_monthly_searches,
+      competition_index,
+      cpc_high,
+      updated_at,
+      COUNT(*) OVER() as total_count
+    FROM \`keywordsdb-3.keywords.keywords\`
+    WHERE 1=1
+  `;
   const params = [];
 
   if (filters?.keyword) {

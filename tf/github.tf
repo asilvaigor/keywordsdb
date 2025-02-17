@@ -38,7 +38,8 @@ resource "google_project_iam_member" "github_actions" {
     cloudbuild     = "roles/cloudbuild.builds.builder"
     compute_update = google_project_iam_custom_role.compute_update.id
     iam            = "roles/iam.serviceAccountUser"
-    storage        = "roles/storage.objectViewer"
+    storage        = "roles/storage.objectViewer",
+    cloudrun       = "roles/run.sourceDeveloper"
   }
 
   project = var.project_id

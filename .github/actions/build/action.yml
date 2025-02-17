@@ -14,14 +14,14 @@ inputs:
   tag:
     required: false
     type: string
-    default: ${{ inputs.env }}
+    default: ""
 runs:
   using: "composite"
   steps:
     - uses: "google-github-actions/auth@v2"
       with:
         project_id: ${{ inputs.project_id }}
-        workload_identity_provider: ${{ inputs.workload_identity_provider }} 
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
     - run: gcloud config set builds/use_kaniko True
       shell: bash
     - run: gcloud config set builds/kaniko_cache_ttl 1
@@ -33,6 +33,6 @@ runs:
         --region us-central1
         --gcs-source-staging-dir gs://keywordsdb-cloudbuild/source
         --gcs-log-dir gs://keywordsdb-cloudbuild/logs
-        --tag us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.name }}:${{ inputs.tag }}
+        --tag us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.name }}:${{ inputs.tag != '' && inputs.tag || inputs.env }}
         ${{ inputs.name }}
       shell: bash

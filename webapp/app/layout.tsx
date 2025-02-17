@@ -13,20 +13,21 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const title = "KeywordsDB";
-const description = "A simple keyword research tool";
+const title = "Free Keyword Research | KeywordsDB";
+const description =
+  "Filter Google keywords by search volume, CPC and competition data. Find SaaS ideas and trends for free to improve your SEO and online marketing.";
 
 export const metadata: Metadata = {
   title: title,
   description: description,
   openGraph: {
-		title: title,
-		description: description,
-		type: "website",
-		url: "https://keywordsdb.com",
-		locale: "en_US",
-		siteName: "keywordsdb",
-	},
+    title: title,
+    description: description,
+    type: "website",
+    url: "https://keywordsdb.com",
+    locale: "en_US",
+    siteName: "keywordsdb",
+  },
 };
 
 export default function RootLayout({

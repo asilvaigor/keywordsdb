@@ -24,7 +24,7 @@ runs:
     - uses: "google-github-actions/auth@v2"
       with:
         project_id: ${{ inputs.project_id }}
-        workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+        workload_identity_provider: ${{ inputs.WORKLOAD_IDENTITY_PROVIDER }}
     - run: >
         gcloud run deploy ${{ inputs.name }}-${{ inputs.env }}
         --region=us-central1
