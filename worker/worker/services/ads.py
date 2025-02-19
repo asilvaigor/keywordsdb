@@ -19,19 +19,19 @@ class AdsClient:
         self._client = GoogleAdsClient.load_from_env()
         self._keyword_plan_idea_service = self._client.get_service("KeywordPlanIdeaService")
 
-    async def get_keyword_info(self, keywords: list[str]) -> pl.DataFrame:
+    async def get_keyword_info(self, keywords: list[str], min_search_volume: int | None = None) -> pl.DataFrame:
         batches = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
         df = pl.DataFrame()
 
         results: list[SoonValue[pl.DataFrame]] = []
         async with create_task_group() as task_group:
             for batch in batches:
-                r = task_group.soonify(self._get_keyword_batch_info)(batch)
+                r = task_group.soonify(self._get_keyword_batch_info)(batch, min_search_volume)
                 results.append(r)
         df = pl.concat([r.value for r in results]).unique(subset=["keyword"])
         return df
 
-    async def _get_keyword_batch_info(self, keywords: list[str]) -> pl.DataFrame:
+    async def _get_keyword_batch_info(self, keywords: list[str], min_search_volume: int | None) -> pl.DataFrame:
         try:
             request: GenerateKeywordIdeasRequest = self._client.get_type("GenerateKeywordIdeasRequest")
             request.customer_id = os.environ["GOOGLE_ADS_LOGIN_CUSTOMER_ID"]
@@ -58,12 +58,14 @@ class AdsClient:
                     break
 
                 df = AdsClient._parse_results(list(page.results))
+                if min_search_volume is not None:
+                    df = df.filter(pl.col("avg_monthly_searches") >= min_search_volume)
                 results.append(df)
 
             return pl.concat(results)
         except ResourceExhausted:
             await AdsClient._do_backoff()
-            return await self._get_keyword_batch_info(keywords)
+            return await self._get_keyword_batch_info(keywords, min_search_volume)
 
     @staticmethod
     async def _wait_backoff() -> None:

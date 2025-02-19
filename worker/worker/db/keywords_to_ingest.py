@@ -4,7 +4,7 @@ from worker.services.storage import StorageClient
 
 
 class KeywordsToIngest:
-    CHUNK_SIZE = 500
+    CHUNK_SIZE = 2000
 
     @staticmethod
     def pop(storage: StorageClient) -> tuple[str, list[str]]:
