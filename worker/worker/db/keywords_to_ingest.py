@@ -1,53 +1,45 @@
 import polars as pl
 
-from worker.services.bigquery import BigQueryClient
+from worker.services.storage import StorageClient
 
 
 class KeywordsToIngest:
-    tablename = "keywords_to_ingest"
+    CHUNK_SIZE = 500
 
     @staticmethod
-    def pop(client: BigQueryClient, n: int) -> list[str]:
+    def pop(storage: StorageClient) -> tuple[str, list[str]]:
         """
-        Query the keywords_to_ingest table to get N records.
-
-        Args:
-            n: Number of records to retrieve
+        Read keywords from one of the parquet files in GCS.
 
         Returns:
-            list of keywords
+            Tuple of (file path, list of keywords)
         """
-        query = f"""
-            SELECT keyword
-            FROM `{client.get_full_name(KeywordsToIngest.tablename)}`
-            LIMIT {n}
-        """
+        filepath = storage.get_first_file("keywords")
+        if not filepath:
+            return "", []
 
-        rows = client.client.query(query).result()
-        return [dict(row.items())["keyword"] for row in rows]
+        df = storage.read_parquet(filepath)
+        return filepath, df["keyword"].to_list()
 
     @staticmethod
-    def delete(client: BigQueryClient, keywords: list[str]) -> None:
+    def delete(storage: StorageClient, filepath: str) -> None:
         """
-        Delete records from the keywords_to_ingest table.
+        Delete the file at the given path.
 
         Args:
-            keywords: List of keywords to delete
+            filepath: Path of the file to delete
         """
-        query = f"""
-            DELETE FROM `{client.get_full_name(KeywordsToIngest.tablename)}`
-            WHERE keyword IN ({", ".join([f'"{keyword}"' for keyword in keywords])})
-        """
-
-        client.client.query(query).result()
+        storage.delete_file(filepath)
 
     @staticmethod
-    def insert(client: BigQueryClient, keywords: list[str]) -> None:
+    def insert(storage: StorageClient, keywords: list[str]) -> None:
         """
-        Insert records into the keywords_to_ingest table.
+        Insert keywords into multiple parquet files, 500 keywords per file.
 
         Args:
             keywords: List of keywords to insert
         """
-        df = pl.DataFrame({"keyword": keywords})
-        client.insert(KeywordsToIngest.tablename, df)
+        for i in range(0, len(keywords), KeywordsToIngest.CHUNK_SIZE):
+            chunk = keywords[i : i + KeywordsToIngest.CHUNK_SIZE]
+            df = pl.DataFrame({"keyword": chunk})
+            storage.write_parquet(df, "keywords")

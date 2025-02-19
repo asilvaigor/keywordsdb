@@ -98,23 +98,3 @@ resource "google_bigquery_table" "keywords_tmp" {
     }
   ])
 }
-
-
-resource "google_bigquery_table" "keywords_to_ingest" {
-  dataset_id = google_bigquery_dataset.keywords.dataset_id
-  table_id   = "keywords_to_ingest"
-
-  table_constraints {
-    primary_key {
-      columns = ["keyword"]
-    }
-  }
-
-  schema = jsonencode([
-    {
-      name = "keyword"
-      type = "STRING"
-      mode = "REQUIRED"
-    }
-  ])
-}

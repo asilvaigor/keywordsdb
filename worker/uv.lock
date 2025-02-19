@@ -315,6 +315,23 @@ wheels = [
 ]
 
 [[package]]
+name = "google-cloud-storage"
+version = "3.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core" },
+    { name = "google-auth" },
+    { name = "google-cloud-core" },
+    { name = "google-crc32c" },
+    { name = "google-resumable-media" },
+    { name = "requests" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/7f/d7/dfa74049c4faa3b4d68fa1a10a7eab5a76c57d0788b47c27f927bedc606d/google_cloud_storage-3.0.0.tar.gz", hash = "sha256:2accb3e828e584888beff1165e5f3ac61aa9088965eb0165794a82d8c7f95297", size = 7665253 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9a/ae/1a50f07161301e40a30b2e40744a7b85ffab7add16e044417925eccf9bbf/google_cloud_storage-3.0.0-py2.py3-none-any.whl", hash = "sha256:f85fd059650d2dbb0ac158a9a6b304b66143b35ed2419afec2905ca522eb2c6a", size = 173860 },
+]
+
+[[package]]
 name = "google-crc32c"
 version = "1.6.0"
 source = { registry = "https://pypi.org/simple" }
@@ -527,6 +544,7 @@ dependencies = [
     { name = "google-ads-stubs" },
     { name = "google-cloud-bigquery" },
     { name = "google-cloud-secret-manager" },
+    { name = "google-cloud-storage" },
     { name = "pandas" },
     { name = "polars", extra = ["pyarrow"] },
     { name = "structlog" },
@@ -548,6 +566,7 @@ requires-dist = [
     { name = "google-ads-stubs", specifier = ">=20.0.0" },
     { name = "google-cloud-bigquery", specifier = ">=3.29.0" },
     { name = "google-cloud-secret-manager", specifier = ">=2.22.1" },
+    { name = "google-cloud-storage", specifier = ">=3.0.0" },
     { name = "pandas", specifier = ">=2.2.3" },
     { name = "polars", extras = ["pyarrow"], specifier = ">=1.21.0" },
     { name = "structlog", specifier = ">=25.1.0" },

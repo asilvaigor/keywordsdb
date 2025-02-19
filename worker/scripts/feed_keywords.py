@@ -19,8 +19,8 @@ async def main() -> None:
     ctx.logger.info("Getting keywords list")
     keywords = get_keywords_from_wordnet("noun")
 
-    ctx.logger.info(f"Got {len(keywords)} keywords, writing in bigquery")
-    KeywordsToIngest.insert(ctx.bigquery_client, keywords)
+    ctx.logger.info(f"Got {len(keywords)} keywords, writing in s3")
+    KeywordsToIngest.insert(ctx.storage_client, keywords)
     ctx.logger.info("Success")
 
 

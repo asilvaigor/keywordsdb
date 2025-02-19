@@ -11,6 +11,7 @@ dependencies = [
     "google-ads-stubs>=20.0.0",
     "google-cloud-bigquery>=3.29.0",
     "google-cloud-secret-manager>=2.22.1",
+    "google-cloud-storage>=3.0.0",
     "pandas>=2.2.3",
     "polars[pyarrow]>=1.21.0",
     "structlog>=25.1.0",
@@ -37,4 +38,4 @@ strict = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
-module = ["ratelimit"]
+module = ["ratelimit", "google.cloud.storage"]
