@@ -4,20 +4,22 @@ from typing import Iterator
 
 import polars as pl
 from asyncer import SoonValue, asyncify, create_task_group
-from asynciolimiter import Limiter
+from asynciolimiter import StrictLimiter
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v18 import GenerateKeywordIdeaResponse, GenerateKeywordIdeaResult, GenerateKeywordIdeasRequest
 from google.api_core.exceptions import ResourceExhausted
+from structlog.stdlib import BoundLogger
 
 
 class AdsClient:
-    rate_limiter = Limiter(0.5, max_burst=1)
-    backoff: bool = False
+    _rate_limiter = StrictLimiter(1.0)
+    _backoff: bool = False
 
-    def __init__(self) -> None:
+    def __init__(self, logger: BoundLogger) -> None:
         os.environ["GOOGLE_ADS_USE_PROTO_PLUS"] = "true"
         self._client = GoogleAdsClient.load_from_env()
         self._keyword_plan_idea_service = self._client.get_service("KeywordPlanIdeaService")
+        self._logger = logger
 
     async def get_keyword_info(self, keywords: list[str], min_search_volume: int | None = None) -> pl.DataFrame:
         batches = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
@@ -39,8 +41,9 @@ class AdsClient:
             request.keyword_plan_network = self._client.enums.KeywordPlanNetworkEnum.GOOGLE_SEARCH_AND_PARTNERS
             request.keyword_seed.keywords.extend(keywords)
 
-            await AdsClient.rate_limiter.wait()
-            await AdsClient._wait_backoff()
+            await AdsClient._rate_limiter.wait()
+            await self._wait_backoff()
+            self._logger.debug("Getting first page")
             pager = await asyncify(self._keyword_plan_idea_service.generate_keyword_ideas)(request=request)
             pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages  # type: ignore[assignment]
             results: list[pl.DataFrame] = []
@@ -50,8 +53,9 @@ class AdsClient:
                     first_page = False
                     page = AdsClient._get_page(pages)
                 else:
-                    await AdsClient.rate_limiter.wait()
-                    await AdsClient._wait_backoff()
+                    await AdsClient._rate_limiter.wait()
+                    await self._wait_backoff()
+                    self._logger.debug("Getting next page")
                     page = await asyncify(AdsClient._get_page)(pages)
 
                 if page is None:
@@ -64,19 +68,20 @@ class AdsClient:
 
             return pl.concat(results)
         except ResourceExhausted:
-            await AdsClient._do_backoff()
+            await self._do_backoff()
             return await self._get_keyword_batch_info(keywords, min_search_volume)
 
-    @staticmethod
-    async def _wait_backoff() -> None:
-        while AdsClient.backoff:
+    async def _wait_backoff(self) -> None:
+        if AdsClient._backoff:
             await asyncio.sleep(10)
+            await AdsClient._rate_limiter.wait()
 
-    @staticmethod
-    async def _do_backoff() -> None:
-        AdsClient.backoff = True
+    async def _do_backoff(self) -> None:
+        AdsClient._backoff = True
+        self._logger.debug("Backoff")
         await asyncio.sleep(30)
-        AdsClient.backoff = False
+        self._logger.debug("Backoff finished")
+        AdsClient._backoff = False
 
     @staticmethod
     def _get_page(pages: Iterator[GenerateKeywordIdeaResponse]) -> GenerateKeywordIdeaResponse | None:

@@ -20,6 +20,6 @@ class Context:
         self._secret_client = secret_client if secret_client is not None else SecretClient()
         self._secret_client.load_secrets()
 
-        self.ads_client = ads_client if ads_client is not None else AdsClient()
+        self.ads_client = ads_client if ads_client is not None else AdsClient(self.logger)
         self.bigquery_client = bigquery_client if bigquery_client is not None else BigQueryClient()
         self.storage_client = storage_client if storage_client is not None else StorageClient()

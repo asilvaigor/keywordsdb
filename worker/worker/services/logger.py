@@ -60,7 +60,9 @@ def _override_stderr(logger: structlog.stdlib.BoundLogger) -> None:
     sys.stderr = StderrRedirector()
 
 
-def get_logger(mode: Literal["json", "console"] | None = None) -> structlog.stdlib.BoundLogger:
+def get_logger(
+    mode: Literal["json", "console"] | None = None, level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
+) -> structlog.stdlib.BoundLogger:
     def to_gcp_convention(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
         event_dict["severity"] = event_dict.pop("level")
         event_dict["time"] = event_dict.pop("timestamp")
@@ -107,7 +109,11 @@ def get_logger(mode: Literal["json", "console"] | None = None) -> structlog.stdl
     else:
         renderers = [structlog.dev.ConsoleRenderer()]
 
-    structlog.configure(processors=common_processors + renderers, cache_logger_on_first_use=True)
+    structlog.configure(
+        processors=common_processors + renderers,
+        cache_logger_on_first_use=True,
+        wrapper_class=structlog.make_filtering_bound_logger(level),
+    )
     logger = structlog.get_logger()
 
     if mode == "json":
