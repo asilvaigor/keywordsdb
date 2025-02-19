@@ -1,3 +1,4 @@
+import tempfile
 import uuid
 from pathlib import Path
 
@@ -15,8 +16,11 @@ class StorageClient:
         """Write DataFrame to a parquet file with random name in the given prefix."""
         filename = f"{prefix}/{uuid.uuid4()}.parquet"
         blob = self.bucket.blob(filename)
-        with blob.open("wb") as f:
-            df.write_parquet(f)
+
+        with tempfile.NamedTemporaryFile() as tmp:
+            df.write_parquet(tmp.name)
+            blob.upload_from_filename(tmp.name)
+
         return f"gs://{self._bucket_name}/{filename}"
 
     def list_files(self, prefix: str) -> list[str]:

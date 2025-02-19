@@ -14,6 +14,11 @@ resource "google_bigquery_table" "keywords" {
   dataset_id = google_bigquery_dataset.keywords.dataset_id
   table_id   = "keywords"
 
+  # Search index not available in terraform
+  # CREATE SEARCH INDEX idx_keyword ON `keywordsdb-3.keywords.keywords` (keyword)
+
+  clustering = ["avg_monthly_searches", "competition_index"]
+
   table_constraints {
     primary_key {
       columns = ["keyword"]

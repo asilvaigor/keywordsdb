@@ -1,5 +1,5 @@
 import polars as pl
-from google.cloud.bigquery import Client, LoadJobConfig, SchemaField, WriteDisposition
+from google.cloud.bigquery import Client, CreateDisposition, LoadJobConfig, SchemaField, WriteDisposition
 
 
 class BigQueryClient:
@@ -13,7 +13,7 @@ class BigQueryClient:
 
     def insert(self, tablename: str, df: pl.DataFrame) -> None:
         """
-        Insert records into a table.
+        Insert records into a table. Creates the table if it doesn't exist.
 
         Args:
             tablename: Name of the table
@@ -29,7 +29,12 @@ class BigQueryClient:
                 df[col] = df[col].dt.date
 
         table_ref = self.client.dataset(self._dataset).table(tablename)
-        job_config = LoadJobConfig(write_disposition=WriteDisposition.WRITE_APPEND, schema=schema)
+
+        job_config = LoadJobConfig(
+            create_disposition=CreateDisposition.CREATE_IF_NEEDED,
+            write_disposition=WriteDisposition.WRITE_APPEND,
+            schema=schema,
+        )
         load_job = self.client.load_table_from_dataframe(df, table_ref, job_config=job_config)
         load_job.result()
 
