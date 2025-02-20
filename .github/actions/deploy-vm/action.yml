@@ -29,15 +29,15 @@ runs:
         project_id: ${{ inputs.project_id }}
         workload_identity_provider: ${{ inputs.WORKLOAD_IDENTITY_PROVIDER }}
     - run: |
-        VM_STATUS=$(gcloud compute instances describe ${{ inputs.name }}-${{ inputs.env }} \
-        --zone=${{ inputs.zone }} \
-        --format="value(status)" || echo "NOT_FOUND")
+        # VM_STATUS=$(gcloud compute instances describe ${{ inputs.name }}-${{ inputs.env }} \
+        # --zone=${{ inputs.zone }} \
+        # --format="value(status)" || echo "NOT_FOUND")
 
-        if [ "$VM_STATUS" = "RUNNING" ]; then
-          gcloud compute ssh ${{ inputs.name }}-${{ inputs.env }} \
-          --zone=${{ inputs.zone }} \
-          --command="docker container prune -f && docker image prune -f" || echo "VM SSH failed, continuing with container update"
-        fi
+        # if [ "$VM_STATUS" = "RUNNING" ]; then
+        #   gcloud compute ssh ${{ inputs.name }}-${{ inputs.env }} \
+        #   --zone=${{ inputs.zone }} \
+        #   --command="docker container prune -f && docker image prune -f" || echo "VM SSH failed, continuing with container update"
+        # fi
 
         gcloud compute instances update-container ${{ inputs.name }}-${{ inputs.env }} \
         --zone=${{ inputs.zone }} \

@@ -20,11 +20,14 @@ async def main() -> None:
             KeywordsToIngest.insert(ctx.storage_client, keywords)
             filepath, keywords = KeywordsToIngest.pop(ctx.storage_client)
 
-        ctx.logger.info("Querying google ads")
-        df = await ctx.ads_client.get_keyword_info(keywords, min_search_volume=500)
+        for i in range(0, len(keywords), 500):
+            chunk = keywords[i : i + 500]
 
-        ctx.logger.info(f"Got {len(df)} results, writing to bigquery")
-        KeywordsTmp.insert(ctx.bigquery_client, df, keywords)
+            ctx.logger.info("Querying google ads")
+            df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=500)
+
+            ctx.logger.info(f"Got {len(df)} results, writing to bigquery")
+            KeywordsTmp.insert(ctx.bigquery_client, df, chunk)
 
         ctx.logger.info("Deleting keywords file")
         KeywordsToIngest.delete(ctx.storage_client, filepath)

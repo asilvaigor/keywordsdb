@@ -4,7 +4,7 @@ from typing import Iterator
 
 import polars as pl
 from asyncer import SoonValue, asyncify, create_task_group
-from asynciolimiter import StrictLimiter
+from asynciolimiter import Limiter
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.v18 import GenerateKeywordIdeaResponse, GenerateKeywordIdeaResult, GenerateKeywordIdeasRequest
 from google.api_core.exceptions import ResourceExhausted
@@ -12,7 +12,7 @@ from structlog.stdlib import BoundLogger
 
 
 class AdsClient:
-    _rate_limiter = StrictLimiter(1.0)
+    _rate_limiter = Limiter(0.75, max_burst=1)
     _backoff: bool = False
 
     def __init__(self, logger: BoundLogger) -> None:
@@ -67,19 +67,26 @@ class AdsClient:
                 results.append(df)
 
             return pl.concat(results)
-        except ResourceExhausted:
-            await self._do_backoff()
+        except ResourceExhausted as e:
+            try:
+                details = e.details[0]
+                delay_seconds = int("".join(filter(str.isdigit, str(details).split("Retry in")[1].split("seconds")[0])))
+            except Exception:
+                delay_seconds = 30
+
+            self._logger.warning(f"Google Ads API: Resource Exhausted, wait for {delay_seconds}")
+            await self._do_backoff(delay_seconds)
             return await self._get_keyword_batch_info(keywords, min_search_volume)
 
     async def _wait_backoff(self) -> None:
         if AdsClient._backoff:
-            await asyncio.sleep(10)
+            await asyncio.sleep(5)
             await AdsClient._rate_limiter.wait()
 
-    async def _do_backoff(self) -> None:
+    async def _do_backoff(self, delay_seconds: int) -> None:
         AdsClient._backoff = True
         self._logger.debug("Backoff")
-        await asyncio.sleep(30)
+        await asyncio.sleep(delay_seconds)
         self._logger.debug("Backoff finished")
         AdsClient._backoff = False
 

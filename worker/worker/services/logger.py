@@ -35,7 +35,9 @@ def _override_stderr(logger: structlog.stdlib.BoundLogger) -> None:
         def flush(self) -> None:
             if self.buf:
                 exc_type = self.__get_exception_type(self.buf)
-                logger.error(event=exc_type, exception=self.buf)
+                # Check if message is about Google Ads quota
+                if "Resource has been exhausted" not in self.buf or "googleads.googleapis.com" not in self.buf:
+                    logger.error(event=exc_type, exception=self.buf)
                 self.buf = ""
 
         def __get_exception_type(self, traceback_string: str) -> str:
