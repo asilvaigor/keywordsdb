@@ -44,6 +44,7 @@ jobs:
       - uses: ./.github/actions/build
         with:
           env: stg
+          tag: keep
           name: worker
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}

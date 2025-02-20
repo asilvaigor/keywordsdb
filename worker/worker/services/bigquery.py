@@ -1,3 +1,5 @@
+import tempfile
+
 import polars as pl
 from google.cloud.bigquery import Client, CreateDisposition, LoadJobConfig, SchemaField, WriteDisposition
 
@@ -23,20 +25,21 @@ class BigQueryClient:
             return
 
         schema = self._create_schema(df)
-        df = df.to_pandas()
-        for col in df.columns:
-            if df[col].dtype == "datetime64[ns]":
-                df[col] = df[col].dt.date
-
         table_ref = self.client.dataset(self._dataset).table(tablename)
 
-        job_config = LoadJobConfig(
-            create_disposition=CreateDisposition.CREATE_IF_NEEDED,
-            write_disposition=WriteDisposition.WRITE_APPEND,
-            schema=schema,
-        )
-        load_job = self.client.load_table_from_dataframe(df, table_ref, job_config=job_config)
-        load_job.result()
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as tmp:
+            df.write_parquet(tmp.name)
+
+            job_config = LoadJobConfig(
+                create_disposition=CreateDisposition.CREATE_IF_NEEDED,
+                write_disposition=WriteDisposition.WRITE_APPEND,
+                schema=schema,
+                source_format="PARQUET",
+            )
+
+            with open(tmp.name, "rb") as source_file:
+                load_job = self.client.load_table_from_file(source_file, table_ref, job_config=job_config)
+                load_job.result()
 
     def _create_schema(self, df: pl.DataFrame) -> list[SchemaField]:
         """

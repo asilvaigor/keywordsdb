@@ -17,6 +17,10 @@ inputs:
   zone:
     required: true
     type: string
+  tag:
+    required: false
+    type: string
+    default: ""
 runs:
   using: "composite"
   steps:
@@ -37,5 +41,5 @@ runs:
 
         gcloud compute instances update-container ${{ inputs.name }}-${{ inputs.env }} \
         --zone=${{ inputs.zone }} \
-        --container-image=us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.image_name }}:${{ inputs.env }}
+        --container-image=us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.image_name }}:${{ inputs.tag != '' && inputs.tag || inputs.env }}
       shell: bash

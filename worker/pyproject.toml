@@ -10,10 +10,10 @@ dependencies = [
     "google-ads>=25.1.0",
     "google-ads-stubs>=20.0.0",
     "google-cloud-bigquery>=3.29.0",
-    "google-cloud-secret-manager>=2.22.1",
+    "google-cloud-secret-manager>=2.23.0",
     "google-cloud-storage>=3.0.0",
-    "pandas>=2.2.3",
-    "polars[pyarrow]>=1.21.0",
+    "numpy>=2.2.3",
+    "polars[pyarrow]>=1.22.0",
     "structlog>=25.1.0",
 ]
 
@@ -22,7 +22,7 @@ dev = [
     "ipykernel>=6.29.5",
     "mypy>=1.15.0",
     "python-dotenv>=1.0.1",
-    "ruff>=0.9.5",
+    "ruff>=0.9.6",
 ]
 
 [tool.ruff]

@@ -36,7 +36,7 @@ module "worker_container" {
   cos_image_name = "cos-117-18613-164-4"
 
   container = {
-    image = "${var.location}-docker.pkg.dev/${var.project_id}/keywordsdb/worker:stg"
+    image = "${var.location}-docker.pkg.dev/${var.project_id}/keywordsdb/worker:keep"
     command = [
       "python", "worker/main.py"
     ]
