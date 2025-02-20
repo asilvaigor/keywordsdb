@@ -36,7 +36,7 @@ runs:
         if [ "$VM_STATUS" = "RUNNING" ]; then
           gcloud compute ssh ${{ inputs.name }}-${{ inputs.env }} \
           --zone=${{ inputs.zone }} \
-          --command="docker container prune -f && docker image prune -f"
+          --command="docker container prune -f && docker image prune -f" || echo "VM SSH failed, continuing with container update"
         fi
 
         gcloud compute instances update-container ${{ inputs.name }}-${{ inputs.env }} \
