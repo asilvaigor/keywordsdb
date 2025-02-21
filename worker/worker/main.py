@@ -24,7 +24,7 @@ async def main() -> None:
             chunk = keywords[i : i + 500]
 
             ctx.logger.info("Querying google ads")
-            df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=500)
+            df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=0)
 
             ctx.logger.info(f"Got {len(df)} results, writing to bigquery")
             KeywordsTmp.insert(ctx.bigquery_client, df, chunk)
