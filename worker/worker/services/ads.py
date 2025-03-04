@@ -40,6 +40,7 @@ class AdsClient:
             request.language = "languageConstants/1000"  # English
             request.keyword_plan_network = self._client.enums.KeywordPlanNetworkEnum.GOOGLE_SEARCH_AND_PARTNERS
             request.keyword_seed.keywords.extend(keywords)
+            request.include_adult_keywords = True
 
             await AdsClient._rate_limiter.wait()
             await self._wait_backoff()

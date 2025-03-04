@@ -16,7 +16,7 @@ async def main() -> None:
             ctx.logger.info("No keywords to ingest, merging tables")
             Keywords.update_from_tmp(ctx.bigquery_client)
             ctx.logger.info("Merge done, getting new keywords")
-            keywords = Keywords.get_oldest(ctx.bigquery_client, n=200000)
+            keywords = Keywords.get_oldest(ctx.bigquery_client, n=500000)
             KeywordsToIngest.insert(ctx.storage_client, keywords)
             filepath, keywords = KeywordsToIngest.pop(ctx.storage_client)
 
@@ -24,7 +24,7 @@ async def main() -> None:
             chunk = keywords[i : i + 500]
 
             ctx.logger.info("Querying google ads")
-            df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=0)
+            df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
 
             ctx.logger.info(f"Got {len(df)} results, writing to bigquery")
             KeywordsTmp.insert(ctx.bigquery_client, df, chunk)
