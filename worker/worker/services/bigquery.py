@@ -56,10 +56,12 @@ class BigQueryClient:
                 field_type = "INTEGER"
             elif str(dtype) == "Float64":
                 field_type = "FLOAT"
+            elif str(dtype) == "Binary":
+                field_type = "BYTES"
             else:
                 field_type = "STRING"
 
-            if field_name == "ingested_at":
+            if field_name in ("ingested_at", "volume_history"):
                 schema.append(SchemaField(field_name, field_type))
             else:
                 schema.append(SchemaField(field_name, field_type, "REQUIRED"))

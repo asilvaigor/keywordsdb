@@ -23,6 +23,14 @@ class KeywordsTmp:
         df = df.with_columns(
             ingested_at=pl.when(pl.col("keyword").is_in(query_keywords)).then(date.today()).otherwise(None),
             updated_at=pl.lit(date.today()),
-        ).select("keyword", "avg_monthly_searches", "competition_index", "cpc_high", "updated_at", "ingested_at")
+        ).select(
+            "keyword",
+            "avg_monthly_searches",
+            "competition_index",
+            "volume_history",
+            "cpc_high",
+            "updated_at",
+            "ingested_at",
+        )
 
         client.insert(KeywordsTmp.tablename, df)

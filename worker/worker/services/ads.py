@@ -1,5 +1,6 @@
 import asyncio
 import os
+import zlib
 from typing import Iterator
 
 import polars as pl
@@ -12,7 +13,7 @@ from structlog.stdlib import BoundLogger
 
 
 class AdsClient:
-    _rate_limiter = Limiter(0.75, max_burst=1)
+    _rate_limiter = Limiter(0.5, max_burst=1)
     _backoff: bool = False
 
     def __init__(self, logger: BoundLogger) -> None:
@@ -25,15 +26,15 @@ class AdsClient:
         batches = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
         df = pl.DataFrame()
 
-        results: list[SoonValue[pl.DataFrame]] = []
+        results: list[SoonValue[pl.DataFrame | None]] = []
         async with create_task_group() as task_group:
             for batch in batches:
                 r = task_group.soonify(self._get_keyword_batch_info)(batch, min_search_volume)
                 results.append(r)
-        df = pl.concat([r.value for r in results]).unique(subset=["keyword"])
+        df = pl.concat([r.value for r in results if r.value is not None]).unique(subset=["keyword"])
         return df
 
-    async def _get_keyword_batch_info(self, keywords: list[str], min_search_volume: int | None) -> pl.DataFrame:
+    async def _get_keyword_batch_info(self, keywords: list[str], min_search_volume: int | None) -> pl.DataFrame | None:
         try:
             request: GenerateKeywordIdeasRequest = self._client.get_type("GenerateKeywordIdeasRequest")
             request.customer_id = os.environ["GOOGLE_ADS_LOGIN_CUSTOMER_ID"]
@@ -62,12 +63,16 @@ class AdsClient:
                 if page is None:
                     break
 
-                df = AdsClient._parse_results(list(page.results))
+                res = list(page.results)
+                if not res:
+                    continue
+
+                df = AdsClient._parse_results(res)
                 if min_search_volume is not None:
                     df = df.filter(pl.col("avg_monthly_searches") >= min_search_volume)
                 results.append(df)
 
-            return pl.concat(results)
+            return pl.concat(results) if results else None
         except ResourceExhausted as e:
             try:
                 details = e.details[0]
@@ -113,20 +118,34 @@ class AdsClient:
             ]
         )
 
-        # df_monthly_search = pl.DataFrame(
-        #     sum(
-        #         [
-        #             [
-        #                 {
-        #                     "keyword": r.text,
-        #                     "date": date(m.year, m.month - 1, 1),
-        #                     "avg_monthly_searches": m.monthly_searches,
-        #                 }
-        #                 for m in r.keyword_idea_metrics.monthly_search_volumes
-        #             ]
-        #             for r in results
-        #         ],
-        #         [],
-        #     )
-        # )
-        return df_keywords
+        volume_data = []
+        for r in results:
+            volumes = [m.monthly_searches for m in r.keyword_idea_metrics.monthly_search_volumes]
+            if volumes:
+                start_year = r.keyword_idea_metrics.monthly_search_volumes[0].year
+                start_month = r.keyword_idea_metrics.monthly_search_volumes[0].month
+                volume_data.append([start_year, start_month, *volumes])
+            else:
+                volume_data.append([])
+
+        return df_keywords.with_columns(volume_history=AdsClient._compress_arrays(volume_data))
+
+    @staticmethod
+    def _compress_arrays(arrays: list[list[int]]) -> pl.Series:
+        """Compress arrays using zlib."""
+        # Convert to DataFrame for Polars operations
+        return (
+            pl.Series(arrays)
+            .to_frame("arr")
+            .select(
+                pl.when(pl.col("arr").list.len() == 0)
+                .then(None)
+                .otherwise(
+                    pl.col("arr")
+                    .cast(pl.List(pl.String))
+                    .list.join(",")
+                    .map_elements(lambda s: zlib.compress(s.encode("utf-8")), return_dtype=pl.Binary)
+                )
+            )
+            .to_series()
+        )

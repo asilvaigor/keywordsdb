@@ -19,7 +19,6 @@ class Keywords:
         query = f"""
             SELECT keyword
             FROM `{client.get_full_name(Keywords.tablename)}`
-            WHERE avg_monthly_searches > 0
             ORDER BY ingested_at ASC, avg_monthly_searches DESC
             LIMIT {n}
         """
@@ -40,6 +39,7 @@ class Keywords:
                     avg_monthly_searches,
                     competition_index,
                     cpc_high,
+                    volume_history,
                     updated_at,
                     ingested_at
                 FROM `{client.get_full_name(KeywordsTmp.tablename)}`
@@ -51,14 +51,19 @@ class Keywords:
                     avg_monthly_searches = tmp.avg_monthly_searches,
                     competition_index = tmp.competition_index,
                     cpc_high = tmp.cpc_high,
+                    volume_history = tmp.volume_history,
                     updated_at = tmp.updated_at,
                     ingested_at = CASE
                         WHEN tmp.ingested_at IS NULL THEN keywords.ingested_at
                         ELSE tmp.ingested_at
                     END
             WHEN NOT MATCHED THEN
-                INSERT (keyword, avg_monthly_searches, competition_index, cpc_high, updated_at, ingested_at)
-                VALUES (keyword, avg_monthly_searches, competition_index, cpc_high, updated_at, ingested_at)
+                INSERT (
+                    keyword, avg_monthly_searches, competition_index, cpc_high, volume_history, updated_at, ingested_at
+                )
+                VALUES (
+                    keyword, avg_monthly_searches, competition_index, cpc_high, volume_history, updated_at, ingested_at
+                )
         """
 
         merge_job = client.client.query(merge_query)
