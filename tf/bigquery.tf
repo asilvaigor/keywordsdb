@@ -97,6 +97,11 @@ resource "google_bigquery_table" "keywords_tmp" {
       mode = "REQUIRED"
     },
     {
+      name = "volume_history"
+      type = "BYTES"
+      mode = "NULLABLE"
+    },
+    {
       name = "updated_at"
       type = "DATE"
       mode = "REQUIRED"

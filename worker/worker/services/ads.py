@@ -1,7 +1,7 @@
 import asyncio
 import os
 import zlib
-from typing import Iterator
+from typing import Iterator, MutableSequence
 
 import polars as pl
 from asyncer import SoonValue, asyncify, create_task_group
@@ -13,7 +13,7 @@ from structlog.stdlib import BoundLogger
 
 
 class AdsClient:
-    _rate_limiter = Limiter(0.5, max_burst=1)
+    _rate_limiter = Limiter(1, max_burst=1)
     _backoff: bool = False
 
     def __init__(self, logger: BoundLogger) -> None:
@@ -43,36 +43,20 @@ class AdsClient:
             request.keyword_seed.keywords.extend(keywords)
             request.include_adult_keywords = True
 
-            await AdsClient._rate_limiter.wait()
-            await self._wait_backoff()
-            self._logger.debug("Getting first page")
-            pager = await asyncify(self._keyword_plan_idea_service.generate_keyword_ideas)(request=request)
-            pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages  # type: ignore[assignment]
             results: list[pl.DataFrame] = []
-            first_page: bool = True
-            while True:
-                if first_page:
-                    first_page = False
-                    page = AdsClient._get_page(pages)
-                else:
-                    await AdsClient._rate_limiter.wait()
-                    await self._wait_backoff()
-                    self._logger.debug("Getting next page")
-                    page = await asyncify(AdsClient._get_page)(pages)
+            pages, current_page = await self._fetch_first_page(request)
+            while current_page is not None:
+                res = current_page.results
+                if len(res) > 0:
+                    df = AdsClient._parse_results(res, min_search_volume)
+                    results.append(df)
 
-                if page is None:
+                if not current_page.next_page_token:
                     break
-
-                res = list(page.results)
-                if not res:
-                    continue
-
-                df = AdsClient._parse_results(res)
-                if min_search_volume is not None:
-                    df = df.filter(pl.col("avg_monthly_searches") >= min_search_volume)
-                results.append(df)
+                current_page = await self._fetch_next_page(pages)
 
             return pl.concat(results) if results else None
+
         except ResourceExhausted as e:
             try:
                 details = e.details[0]
@@ -83,6 +67,24 @@ class AdsClient:
             self._logger.warning(f"Google Ads API: Resource Exhausted, wait for {delay_seconds}")
             await self._do_backoff(delay_seconds)
             return await self._get_keyword_batch_info(keywords, min_search_volume)
+
+    async def _fetch_first_page(
+        self, request: GenerateKeywordIdeasRequest
+    ) -> tuple[Iterator[GenerateKeywordIdeaResponse], GenerateKeywordIdeaResponse | None]:
+        await AdsClient._rate_limiter.wait()
+        await self._wait_backoff()
+        self._logger.debug("Getting first page")
+        pager = await asyncify(self._keyword_plan_idea_service.generate_keyword_ideas)(request=request)
+        pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages  # type: ignore[assignment]
+        return pages, AdsClient._get_page(pages)  # First page doesnt need await
+
+    async def _fetch_next_page(
+        self, pages: Iterator[GenerateKeywordIdeaResponse]
+    ) -> GenerateKeywordIdeaResponse | None:
+        await AdsClient._rate_limiter.wait()
+        await self._wait_backoff()
+        self._logger.debug("Getting next page")
+        return await asyncify(AdsClient._get_page)(pages)
 
     async def _wait_backoff(self) -> None:
         if AdsClient._backoff:
@@ -104,48 +106,40 @@ class AdsClient:
             return None
 
     @staticmethod
-    def _parse_results(results: list[GenerateKeywordIdeaResult]) -> pl.DataFrame:
-        df_keywords = pl.DataFrame(
-            [
-                {
-                    "keyword": r.text,
-                    "avg_monthly_searches": r.keyword_idea_metrics.avg_monthly_searches,
-                    "competition_index": r.keyword_idea_metrics.competition_index,
-                    "cpc_low": r.keyword_idea_metrics.low_top_of_page_bid_micros / 1e6,
-                    "cpc_high": r.keyword_idea_metrics.high_top_of_page_bid_micros / 1e6,
-                }
-                for r in results
-            ]
-        )
+    def _parse_results(
+        results: MutableSequence[GenerateKeywordIdeaResult], min_search_volume: int | None
+    ) -> pl.DataFrame:
+        """Polars operations apparently slower than python loops, keep it simple"""
+        keywords = []
+        avg_searches = []
+        competition = []
+        cpc_high = []
+        volume_history: list[bytes | None] = []
 
-        volume_data = []
+        divisor = 1e6
         for r in results:
-            volumes = [m.monthly_searches for m in r.keyword_idea_metrics.monthly_search_volumes]
-            if volumes:
-                start_year = r.keyword_idea_metrics.monthly_search_volumes[0].year
-                start_month = r.keyword_idea_metrics.monthly_search_volumes[0].month
-                volume_data.append([start_year, start_month, *volumes])
+            metrics = r.keyword_idea_metrics
+            keywords.append(r.text)
+            avg_searches.append(metrics.avg_monthly_searches)
+            competition.append(metrics.competition_index)
+            cpc_high.append(metrics.high_top_of_page_bid_micros / divisor)
+
+            if metrics.monthly_search_volumes:
+                volumes = metrics.monthly_search_volumes
+                s = f"{volumes[0].year},{volumes[0].month},{','.join(str(m.monthly_searches) for m in volumes)}"
+                volume_history.append(zlib.compress(s.encode("utf-8")))
             else:
-                volume_data.append([])
+                volume_history.append(None)
 
-        return df_keywords.with_columns(volume_history=AdsClient._compress_arrays(volume_data))
-
-    @staticmethod
-    def _compress_arrays(arrays: list[list[int]]) -> pl.Series:
-        """Compress arrays using zlib."""
-        # Convert to DataFrame for Polars operations
-        return (
-            pl.Series(arrays)
-            .to_frame("arr")
-            .select(
-                pl.when(pl.col("arr").list.len() == 0)
-                .then(None)
-                .otherwise(
-                    pl.col("arr")
-                    .cast(pl.List(pl.String))
-                    .list.join(",")
-                    .map_elements(lambda s: zlib.compress(s.encode("utf-8")), return_dtype=pl.Binary)
-                )
-            )
-            .to_series()
+        df = pl.DataFrame(
+            {
+                "keyword": keywords,
+                "avg_monthly_searches": avg_searches,
+                "competition_index": competition,
+                "cpc_high": cpc_high,
+                "volume_history": volume_history,
+            }
         )
+        if min_search_volume is not None:
+            df = df.filter(pl.col("avg_monthly_searches") >= min_search_volume)
+        return df
