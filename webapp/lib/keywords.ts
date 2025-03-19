@@ -60,7 +60,7 @@ async function getKeywordsNotCached(
   const params = [];
 
   if (filters?.keyword) {
-    query += " AND keyword LIKE LOWER(?)";
+    query += " AND SEARCH(keyword, LOWER(?))";
     params.push(`%${filters.keyword}%`);
   }
   if (filters?.minMonthlySearches !== undefined) {
