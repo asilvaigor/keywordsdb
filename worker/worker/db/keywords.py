@@ -1,3 +1,5 @@
+from google.cloud.exceptions import NotFound
+
 from worker.db.keywords_tmp import KeywordsTmp
 from worker.services.bigquery import BigQueryClient
 
@@ -30,7 +32,14 @@ class Keywords:
     def update_from_tmp(client: BigQueryClient) -> None:
         """
         Copies data from keywords_tmp into the keywords table and cleans the keywords_tmp table.
+        If keywords_tmp table doesn't exist, this method does nothing.
         """
+        tmp_table_name = client.get_full_name(KeywordsTmp.tablename)
+        try:
+            client.client.get_table(tmp_table_name)
+        except NotFound:
+            return
+
         merge_query = f"""
             MERGE `{client.get_full_name(Keywords.tablename)}` keywords
             USING (
@@ -42,7 +51,7 @@ class Keywords:
                     volume_history,
                     updated_at,
                     ingested_at
-                FROM `{client.get_full_name(KeywordsTmp.tablename)}`
+                FROM `{tmp_table_name}`
                 QUALIFY ROW_NUMBER() OVER (PARTITION BY keyword ORDER BY updated_at DESC) = 1
             ) tmp
             ON keywords.keyword = tmp.keyword
@@ -68,4 +77,4 @@ class Keywords:
 
         merge_job = client.client.query(merge_query)
         merge_job.result()
-        client.client.delete_table(client.get_full_name(KeywordsTmp.tablename))
+        client.client.delete_table(tmp_table_name)
