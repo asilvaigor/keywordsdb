@@ -7,7 +7,11 @@ import polars as pl
 from asyncer import SoonValue, asyncify, create_task_group
 from asynciolimiter import Limiter
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v18 import GenerateKeywordIdeaResponse, GenerateKeywordIdeaResult, GenerateKeywordIdeasRequest
+from google.ads.googleads.v19.services.types import (
+    GenerateKeywordIdeaResponse,
+    GenerateKeywordIdeaResult,
+    GenerateKeywordIdeasRequest,
+)
 from google.api_core.exceptions import ResourceExhausted
 from structlog.stdlib import BoundLogger
 
@@ -75,7 +79,7 @@ class AdsClient:
         await self._wait_backoff()
         self._logger.debug("Getting first page")
         pager = await asyncify(self._keyword_plan_idea_service.generate_keyword_ideas)(request=request)
-        pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages  # type: ignore[assignment]
+        pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages
         return pages, AdsClient._get_page(pages)  # First page doesnt need await
 
     async def _fetch_next_page(

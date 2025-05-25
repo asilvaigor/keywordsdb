@@ -101,6 +101,7 @@ def get_logger(
 
     mode = mode if mode else os.getenv("LOG_MODE", "json")  # type: ignore[assignment]
     common_processors: list[structlog.typing.Processor] = [
+        structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
         structlog.processors.TimeStamper(fmt="iso", utc=True),
         structlog.processors.format_exc_info,
