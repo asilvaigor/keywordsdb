@@ -2,7 +2,7 @@ from datetime import date
 
 import polars as pl
 
-from worker.services.bigquery import BigQueryClient
+from src.services.bigquery import BigQueryClient
 
 
 class KeywordsTmp:

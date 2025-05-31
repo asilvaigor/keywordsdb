@@ -38,7 +38,7 @@ module "worker_container" {
   container = {
     image = "${var.location}-docker.pkg.dev/${var.project_id}/keywordsdb/worker:keep"
     command = [
-      "python", "worker/main.py"
+      "python", "workers/src/workers/keyword_planner/main.py"
     ]
 
     volumeMounts = [

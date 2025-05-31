@@ -16,9 +16,9 @@ ENV PATH=/app/.venv/bin:$PATH
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --compile-bytecode --no-cache --no-install-project
 
-COPY worker worker
+COPY src src
 
-RUN python -m compileall worker
+RUN python -m compileall src
 
 EXPOSE 8080
 USER nobody

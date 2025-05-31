@@ -1,12 +1,14 @@
 import os
 import sys
 import warnings
-from typing import Literal, TextIO
+from typing import Literal, TextIO, cast
 
 import structlog
 from structlog.typing import EventDict, WrappedLogger
 
 DEFAULT_EXCEPTION_TYPE = "Exception"
+
+_logger_instance: structlog.stdlib.BoundLogger | None = None
 
 
 def _override_pywarnings(logger: structlog.stdlib.BoundLogger) -> None:
@@ -62,9 +64,22 @@ def _override_stderr(logger: structlog.stdlib.BoundLogger) -> None:
     sys.stderr = StderrRedirector()
 
 
-def get_logger(
+def configure_logger(
     mode: Literal["json", "console"] | None = None, level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = "INFO"
-) -> structlog.stdlib.BoundLogger:
+) -> None:
+    """Configure the global logger. Should be called once at application startup.
+
+    Args:
+        mode: Logging mode. If None, uses LOG_MODE environment variable or defaults to "json".
+        level: Log level.
+    """
+    global _logger_instance
+
+    if _logger_instance is not None:
+        return
+
+    mode = mode if mode else cast(Literal["console", "json"], os.getenv("LOG_MODE", "json"))
+
     def to_gcp_convention(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
         event_dict["severity"] = event_dict.pop("level")
         event_dict["time"] = event_dict.pop("timestamp")
@@ -99,7 +114,6 @@ def get_logger(
             event_dict["stack_trace"] = exc
         return event_dict
 
-    mode = mode if mode else os.getenv("LOG_MODE", "json")  # type: ignore[assignment]
     common_processors: list[structlog.typing.Processor] = [
         structlog.contextvars.merge_contextvars,
         structlog.processors.add_log_level,
@@ -117,10 +131,23 @@ def get_logger(
         cache_logger_on_first_use=True,
         wrapper_class=structlog.make_filtering_bound_logger(level),
     )
-    logger = structlog.get_logger()
+
+    _logger_instance = structlog.get_logger()
 
     if mode == "json":
-        _override_pywarnings(logger)
-        _override_stderr(logger)
+        _override_pywarnings(_logger_instance)
+        _override_stderr(_logger_instance)
 
-    return logger  # type: ignore[no-any-return]
+
+def get_logger() -> structlog.stdlib.BoundLogger:
+    """Get the configured logger instance.
+
+    Returns:
+        The configured logger instance.
+    """
+    global _logger_instance
+
+    if _logger_instance is None:
+        configure_logger()
+
+    return _logger_instance  # type: ignore[return-value]

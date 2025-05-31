@@ -1,10 +1,10 @@
 from structlog.stdlib import BoundLogger
 
-from worker.services.ads import AdsClient
-from worker.services.bigquery import BigQueryClient
-from worker.services.logger import get_logger
-from worker.services.secret import SecretClient
-from worker.services.storage import StorageClient
+from src.services.ads import AdsClient
+from src.services.bigquery import BigQueryClient
+from src.services.logger import get_logger
+from src.services.secret import SecretClient
+from src.services.storage import StorageClient
 
 
 class Context:

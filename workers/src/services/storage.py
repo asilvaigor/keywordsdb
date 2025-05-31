@@ -45,3 +45,13 @@ class StorageClient:
         """Delete a file at the given path."""
         blob_name = Path(path).relative_to(f"gs://{self._bucket_name}/")
         self.bucket.delete_blob(str(blob_name))
+
+    def download_file(self, cloud_path: str, local_path: str) -> None:
+        """Download a file from cloud storage to local filesystem."""
+        blob_name = Path(cloud_path).relative_to(f"gs://{self._bucket_name}/")
+        blob = self.bucket.blob(str(blob_name))
+
+        # Create local directory if it doesn't exist
+        Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+
+        blob.download_to_filename(local_path)

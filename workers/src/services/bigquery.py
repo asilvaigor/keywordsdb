@@ -15,7 +15,7 @@ class BigQueryClient:
 
     def insert(self, tablename: str, df: pl.DataFrame) -> None:
         """
-        Insert records into a table. Creates the table if it doesn't exist.
+        Insert records into a table. Creates the table if it doesn't exist yet.
 
         Args:
             tablename: Name of the table

@@ -1,9 +1,9 @@
 import asyncio
 
-from worker.context import Context
-from worker.db.keywords import Keywords
-from worker.db.keywords_tmp import KeywordsTmp
-from worker.db.keywords_to_ingest import KeywordsToIngest
+from src.db.keywords import Keywords
+from src.db.keywords_tmp import KeywordsTmp
+from src.db.keywords_to_ingest import KeywordsToIngest
+from src.workers.keyword_planner.context import Context
 
 
 async def main() -> None:

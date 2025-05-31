@@ -1,6 +1,6 @@
 import polars as pl
 
-from worker.services.storage import StorageClient
+from src.services.storage import StorageClient
 
 
 class KeywordsToIngest:

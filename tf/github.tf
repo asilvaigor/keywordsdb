@@ -65,10 +65,10 @@ resource "github_actions_variable" "location" {
   value         = var.clickhouse_url
 }
 
-resource "github_actions_secret" "clickhouse_username" {
-  secret_name     = "CLICKHOUSE_USERNAME"
-  repository      = "keywordsdb"
-  plaintext_value = var.clickhouse_username
+resource "github_actions_variable" "clickhouse_username" {
+  variable_name = "CLICKHOUSE_USERNAME"
+  repository    = "keywordsdb"
+  value         = var.clickhouse_username
 }
 
 resource "github_actions_secret" "clickhouse_password" {
