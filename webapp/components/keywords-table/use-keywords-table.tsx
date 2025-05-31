@@ -39,7 +39,7 @@ export function useKeywordsTable() {
     error,
   } = useSWR(
     [debouncedKeyword, sorting, pageIndex, pageSize],
-    ([keyword, sort, page, pageSize]) =>
+    async ([keyword, sort, page, pageSize]) =>
       getKeywords({ keyword }, sort, page + 1, pageSize),
     {
       revalidateOnFocus: false,

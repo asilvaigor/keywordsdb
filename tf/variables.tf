@@ -21,3 +21,20 @@ variable "cloudflare_zone_id" {
   type        = string
   description = "Cloudflare Zone ID for keywordsdb.com"
 }
+
+variable "clickhouse_url" {
+  type        = string
+  description = "ClickHouse URL for the ClickHouse database"
+}
+
+variable "clickhouse_username" {
+  type        = string
+  description = "ClickHouse username"
+  sensitive   = true
+}
+
+variable "clickhouse_password" {
+  type        = string
+  description = "ClickHouse password"
+  sensitive   = true
+}

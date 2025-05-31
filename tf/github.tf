@@ -58,3 +58,21 @@ resource "github_actions_variable" "project_id" {
   repository    = "keywordsdb"
   value         = var.project_id
 }
+
+resource "github_actions_variable" "location" {
+  variable_name = "CLICKHOUSE_URL"
+  repository    = "keywordsdb"
+  value         = var.clickhouse_url
+}
+
+resource "github_actions_secret" "clickhouse_username" {
+  secret_name     = "CLICKHOUSE_USERNAME"
+  repository      = "keywordsdb"
+  plaintext_value = var.clickhouse_username
+}
+
+resource "github_actions_secret" "clickhouse_password" {
+  secret_name     = "CLICKHOUSE_PASSWORD"
+  repository      = "keywordsdb"
+  plaintext_value = var.clickhouse_password
+}

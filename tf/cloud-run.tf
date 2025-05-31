@@ -4,11 +4,7 @@ resource "google_service_account" "cloudrun_webapp" {
 }
 
 resource "google_project_iam_member" "cloudrun_webapp" {
-  for_each = toset([
-    "roles/iam.serviceAccountTokenCreator",
-    "roles/bigquery.jobUser",
-    "roles/bigquery.dataViewer"
-  ])
+  for_each = toset(["roles/iam.serviceAccountTokenCreator"])
   project = var.project_id
   role    = each.key
   member  = "serviceAccount:${google_service_account.cloudrun_webapp.email}"
@@ -27,11 +23,14 @@ resource "google_cloud_run_v2_service" "webapp" {
     max_instance_request_concurrency = 100
     service_account                  = google_service_account.cloudrun_webapp.email
     timeout                          = "90s"
+    scaling {
+      max_instance_count = 4
+    }
     containers {
       image = "${var.location}-docker.pkg.dev/${var.project_id}/keywordsdb/webapp:${each.key}"
       resources {
         limits = {
-          cpu    = "1000m"
+          cpu    = "1"
           memory = "1Gi"
         }
         startup_cpu_boost = true
