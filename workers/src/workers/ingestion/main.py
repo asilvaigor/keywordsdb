@@ -1,9 +1,8 @@
 import asyncio
 
 from src.db.keywords import Keywords
-from src.db.keywords_tmp import KeywordsTmp
 from src.db.keywords_to_ingest import KeywordsToIngest
-from src.workers.keyword_planner.context import Context
+from src.workers.ingestion.context import Context
 
 
 async def main() -> None:
@@ -13,12 +12,12 @@ async def main() -> None:
         ctx.logger.info("Getting keywords list")
         filepath, keywords = KeywordsToIngest.pop(ctx.storage_client)
         if len(keywords) == 0:
-            ctx.logger.info("No keywords to ingest, merging tables")
-            Keywords.update_from_tmp(ctx.bigquery_client)
+            ctx.logger.info("No keywords to ingest, commiting changes")
+            Keywords.commit(ctx.bigquery_client, ctx.storage_client, ctx.clickhouse_client)
             ctx.logger.info("Merge done, getting new keywords")
-            keywords = Keywords.get_oldest(ctx.bigquery_client, n=500000)
+            keywords = Keywords.get_oldest(ctx.bigquery_client, n=1000000)
             KeywordsToIngest.insert(ctx.storage_client, keywords)
-            filepath, keywords = KeywordsToIngest.pop(ctx.storage_client)
+            break
 
         for i in range(0, len(keywords), 500):
             chunk = keywords[i : i + 500]
@@ -26,12 +25,11 @@ async def main() -> None:
             ctx.logger.info("Querying google ads")
             df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
 
-            ctx.logger.info(f"Got {len(df)} results, writing to bigquery")
-            KeywordsTmp.insert(ctx.bigquery_client, df, chunk)
+            ctx.logger.info(f"Got {len(df)} results, saving in temp table")
+            Keywords.insert(ctx.bigquery_client, df, chunk)
 
         ctx.logger.info("Deleting keywords file")
-        KeywordsToIngest.delete(ctx.storage_client, filepath)
-
+        ctx.storage_client.delete_file(filepath)
         ctx.logger.info("Success")
 
 

@@ -14,22 +14,12 @@ class KeywordsToIngest:
         Returns:
             Tuple of (file path, list of keywords)
         """
-        filepath = storage.get_first_file("keywords")
+        filepath = storage.get_first_file("keywords-to-ingest")
         if not filepath:
             return "", []
 
         df = storage.read_parquet(filepath)
         return filepath, df["keyword"].to_list()
-
-    @staticmethod
-    def delete(storage: StorageClient, filepath: str) -> None:
-        """
-        Delete the file at the given path.
-
-        Args:
-            filepath: Path of the file to delete
-        """
-        storage.delete_file(filepath)
 
     @staticmethod
     def insert(storage: StorageClient, keywords: list[str]) -> None:

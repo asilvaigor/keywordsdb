@@ -194,6 +194,7 @@ async function getKeywordsNotCached(
   const totalRows = countRow?.total_count || 0;
   const totalPages = Math.ceil(totalRows / pageSize);
 
+  console.log("Query executed successfully");
   return {
     keywords: dataRows.map((row) => ({
       keyword: row.keyword,

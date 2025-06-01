@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       webapp: ${{ steps.filter.outputs.webapp }}
-      worker: ${{ steps.filter.outputs.worker }}
+      workers: ${{ steps.filter.outputs.workers }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
@@ -17,11 +17,11 @@ jobs:
           filters: |
             webapp:
               - 'webapp/**'
-            worker:
-              - 'worker/**'
+            workers:
+              - 'workers/**'
   lint-py:
     needs: [check-changes]
-    if: needs.check-changes.outputs.worker == 'true'
+    if: needs.check-changes.outputs.workers == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-js
-  build-worker:
+  build-workers:
     runs-on: ubuntu-24.04
     permissions:
       contents: "read"
@@ -45,7 +45,7 @@ jobs:
         with:
           env: stg
           tag: keep
-          name: worker
+          name: workers
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
   build-webapp:
@@ -62,20 +62,20 @@ jobs:
           name: webapp
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
-  deploy-worker:
+  deploy-workers:
     runs-on: ubuntu-24.04
     permissions:
       contents: "read"
       id-token: "write"
-    needs: [build-worker]
+    needs: [build-workers]
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/deploy-vm
         with:
           env: stg
           tag: keep
-          name: worker
-          image_name: worker
+          name: worker-ingestion
+          image_name: workers
           zone: us-central1-a
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}

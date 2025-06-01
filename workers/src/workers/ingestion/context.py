@@ -2,6 +2,7 @@ from structlog.stdlib import BoundLogger
 
 from src.services.ads import AdsClient
 from src.services.bigquery import BigQueryClient
+from src.services.clickhouse import ClickhouseClient
 from src.services.logger import get_logger
 from src.services.secret import SecretClient
 from src.services.storage import StorageClient
@@ -14,6 +15,7 @@ class Context:
         secret_client: SecretClient | None = None,
         ads_client: AdsClient | None = None,
         bigquery_client: BigQueryClient | None = None,
+        clickhouse_client: ClickhouseClient | None = None,
         storage_client: StorageClient | None = None,
     ):
         self.logger = logger if logger else get_logger()
@@ -22,4 +24,5 @@ class Context:
 
         self.ads_client = ads_client if ads_client is not None else AdsClient(self.logger)
         self.bigquery_client = bigquery_client if bigquery_client is not None else BigQueryClient()
+        self.clickhouse_client = clickhouse_client if clickhouse_client is not None else ClickhouseClient()
         self.storage_client = storage_client if storage_client is not None else StorageClient()

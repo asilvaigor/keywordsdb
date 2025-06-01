@@ -8,7 +8,14 @@ from google.cloud.secretmanager import SecretManagerServiceClient
 
 class SecretClient:
     def __init__(self) -> None:
-        self._envvars = {"GOOGLE_ADS_JSON_KEY_FILE_PATH", "GOOGLE_ADS_LOGIN_CUSTOMER_ID", "GOOGLE_ADS_DEVELOPER_TOKEN"}
+        self._envvars = {
+            "GOOGLE_ADS_JSON_KEY_FILE_PATH",
+            "GOOGLE_ADS_LOGIN_CUSTOMER_ID",
+            "GOOGLE_ADS_DEVELOPER_TOKEN",
+            "CLICKHOUSE_PASSWORD",
+            "GCS_ACCESS_KEY_ID",
+            "GCS_SECRET_ACCESS_KEY",
+        }
         self._client: SecretManagerServiceClient | None = None
         if self._envvars - set(os.environ.keys()):
             self._client = SecretManagerServiceClient()
