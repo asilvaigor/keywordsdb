@@ -55,7 +55,8 @@ class Keywords:
         query = f"""
             SELECT keyword
             FROM `{client.get_full_name(Keywords.tablename)}`
-            ORDER BY ingested_at ASC, avg_monthly_searches DESC
+            -- ORDER BY ingested_at ASC, avg_monthly_searches DESC
+            WHERE volume_history IS NULL
             LIMIT {n}
         """
 
