@@ -324,6 +324,22 @@ wheels = [
 ]
 
 [[package]]
+name = "google-cloud-firestore"
+version = "2.20.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "google-api-core", extra = ["grpc"] },
+    { name = "google-auth" },
+    { name = "google-cloud-core" },
+    { name = "proto-plus" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/81/94/6e2c2b0fc81a9900631a88db18ce82276397031b3fabf73134f1c8b79b8b/google_cloud_firestore-2.20.2.tar.gz", hash = "sha256:0ad2e33fa7da0ba8fb7ccc324f91d3f57866b770e24840bd62f6a272f747c5f9", size = 511708 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/ce/3bb46615668647e3880292ef2248f39ebcc38b7d083d593d28fa94fe8ca3/google_cloud_firestore-2.20.2-py3-none-any.whl", hash = "sha256:0ff7b4c66e3ad2fe00f7d5d8c15127bf4ff8b316c6e4eb635ac51d9a9bcd828b", size = 358912 },
+]
+
+[[package]]
 name = "google-cloud-secret-manager"
 version = "2.23.3"
 source = { registry = "https://pypi.org/simple" }
@@ -592,6 +608,7 @@ dependencies = [
     { name = "google-ads" },
     { name = "google-ads-stubs" },
     { name = "google-cloud-bigquery" },
+    { name = "google-cloud-firestore" },
     { name = "google-cloud-secret-manager" },
     { name = "google-cloud-storage" },
     { name = "numpy" },
@@ -615,6 +632,7 @@ requires-dist = [
     { name = "google-ads", specifier = ">=26.1.0" },
     { name = "google-ads-stubs", specifier = ">=21.0.0" },
     { name = "google-cloud-bigquery", specifier = ">=3.33.0" },
+    { name = "google-cloud-firestore", specifier = ">=2.20.2" },
     { name = "google-cloud-secret-manager", specifier = ">=2.23.3" },
     { name = "google-cloud-storage", specifier = ">=3.1.0" },
     { name = "numpy", specifier = ">=2.2.6" },

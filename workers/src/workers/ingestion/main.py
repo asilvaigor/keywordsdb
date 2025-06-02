@@ -1,8 +1,7 @@
 import asyncio
 
-from src.db.keywords import Keywords
-from src.db.keywords_to_ingest import KeywordsToIngest
 from src.workers.ingestion.context import Context
+from src.workers.ingestion.keywords import Keywords
 
 
 async def main() -> None:
@@ -10,13 +9,13 @@ async def main() -> None:
 
     while True:
         ctx.logger.info("Getting keywords list")
-        filepath, keywords = KeywordsToIngest.pop(ctx.storage_client)
+        filepath, keywords = ctx.firestore_client.pop_keywords_to_ingest()
         if len(keywords) == 0:
             ctx.logger.info("No keywords to ingest, commiting changes")
-            Keywords.commit(ctx.bigquery_client, ctx.storage_client, ctx.clickhouse_client)
+            Keywords.commit(ctx.bigquery_client, ctx.storage_client, ctx.clickhouse_client, ctx.firestore_client)
             ctx.logger.info("Merge done, getting new keywords")
-            keywords = Keywords.get_oldest(ctx.bigquery_client, n=1000000)
-            KeywordsToIngest.insert(ctx.storage_client, keywords)
+            keywords = Keywords.get_oldest_k_keywords(ctx.clickhouse_client, k=1000000)
+            ctx.firestore_client.insert_keywords_to_ingest(keywords)
             break
 
         for i in range(0, len(keywords), 500):
@@ -29,7 +28,7 @@ async def main() -> None:
             Keywords.insert(ctx.bigquery_client, df, chunk)
 
         ctx.logger.info("Deleting keywords file")
-        ctx.storage_client.delete_file(filepath)
+        ctx.firestore_client.delete_keywords_to_ingest(filepath)
         ctx.logger.info("Success")
 
 

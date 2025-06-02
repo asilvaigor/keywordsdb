@@ -6,6 +6,7 @@ from google.cloud.exceptions import NotFound
 
 from src.services.bigquery import BigQueryClient
 from src.services.clickhouse import ClickhouseClient
+from src.services.firestore import FirestoreClient
 from src.services.logger import get_logger
 from src.services.storage import StorageClient
 
@@ -42,7 +43,7 @@ class Keywords:
         client.insert(Keywords.tmp_tablename, df)
 
     @staticmethod
-    def get_oldest(client: BigQueryClient, n: int) -> list[str]:
+    def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> list[str]:
         """
         Query the keywords table to get the N oldest records based on ingested_at.
 
@@ -52,23 +53,37 @@ class Keywords:
         Returns:
             list of keywords
         """
-        query = f"""
+        query = """
             SELECT keyword
-            FROM `{client.get_full_name(Keywords.tablename)}`
+            FROM keywords
             -- ORDER BY ingested_at ASC, avg_monthly_searches DESC
-            WHERE volume_history IS NULL
-            LIMIT {n}
+            WHERE volume_history = ''
+            LIMIT %(k)s
         """
-
-        rows = client.client.query(query).result()
-        return [dict(row.items())["keyword"] for row in rows]
+        df = client.execute_query(query, params={"k": k})
+        if df is None:
+            query = """
+                SELECT keyword
+                FROM keywords
+                ORDER BY ingested_at ASC, avg_monthly_searches DESC
+                LIMIT %(k)s
+            """
+            df = client.execute_query(query, params={"k": k})
+            assert df is not None
+        return df.select("keyword").to_series().to_list()
 
     @staticmethod
-    def commit(client: BigQueryClient, storage_client: StorageClient, clickhouse_client: ClickhouseClient) -> None:
+    def commit(
+        client: BigQueryClient,
+        storage_client: StorageClient,
+        clickhouse_client: ClickhouseClient,
+        firestore_client: FirestoreClient,
+    ) -> None:
         """
-        Copies data from keywords_tmp into the keywords table and deletes the keywords_tmp table.
-        Then exports the data into cloud storage and into clickhouse.
-        If keywords_tmp table doesn't exist, this method does nothing.
+        Complex method, which will finish ingestion of the latest keywords and update all databases:
+        - BigQuery: copies data from keywords_tmp into the keywords table and deletes the keywords_tmp table.
+        - Clickhouse: exports the data from BigQuery to cloud storage, then imports it into ClickHouse.
+        - Firestore: exports the top keywords from clickhouse to Firestore.
         """
 
         logger = get_logger()
@@ -176,7 +191,7 @@ class Keywords:
                 "ADD INDEX competition_index_idx(competition_index) TYPE minmax GRANULARITY 1;",
                 "ALTER TABLE keywords_new ADD INDEX cpc_high_idx(cpc_high) TYPE minmax GRANULARITY 1;",
                 "ALTER TABLE keywords_new "
-                "ADD INDEX keyword_token_idx(keyword) TYPE tokenbf_v1(32768, 3, 0) GRANULARITY 1;",
+                "ADD INDEX keyword_token_idx(keyword) TYPE ngrambf_v1(4, 1024, 1, 0) GRANULARITY 1;",
                 "RENAME TABLE keywords TO keywords_old;",
                 "RENAME TABLE keywords_new TO keywords;",
                 "DROP TABLE keywords_old;",
@@ -186,9 +201,9 @@ class Keywords:
                 logger.info("Waiting for ClickHouse server to be up...")
                 time.sleep(5)
             for query in clickhouse_queries:
-                clickhouse_client.client.command(
+                clickhouse_client.execute_query(
                     query,
-                    parameters={
+                    params={
                         "gcs_path": f"https://storage.googleapis.com/{storage_client.bucket.name}/{export_prefix_today}/*.parquet",
                         "gcs_access_key_id": hmac_keys[0],
                         "gcs_secret_access_key": hmac_keys[1],
@@ -198,8 +213,15 @@ class Keywords:
             logger.info("Cleaning cloud storage")
             storage_client.delete_prefix(export_prefix)
 
+        def export_to_firestore() -> None:
+            logger.info("Exporting top keywords to Firestore")
+            df = Keywords._get_top_k_rows(clickhouse_client, 100)
+            count = Keywords._count(clickhouse_client)
+            firestore_client.put_keywords_cache(df, count)
+
         migrate_tmp_table()
         export_to_clickhouse()
+        export_to_firestore()
 
     @staticmethod
     def download(client: BigQueryClient, storage_client: StorageClient, prefix: str) -> None:
@@ -229,3 +251,29 @@ class Keywords:
         """
         export_job = client.client.query(extract_query)
         export_job.result()
+
+    @staticmethod
+    def _get_top_k_rows(client: ClickhouseClient, k: int) -> pl.DataFrame:
+        df = client.execute_query(
+            """
+                SELECT
+                    keyword,
+                    avg_monthly_searches,
+                    competition_index,
+                    cpc_high,
+                    volume_history,
+                    updated_at
+                FROM keywords
+                ORDER BY avg_monthly_searches DESC
+                LIMIT %(k)s
+            """,
+            params={"k": k},
+        )
+        assert df is not None
+        return df
+
+    @staticmethod
+    def _count(client: ClickhouseClient) -> int:
+        df = client.execute_query("SELECT count(*) FROM keywords")
+        assert df is not None
+        return df[0, 0]  # type: ignore[no-any-return]

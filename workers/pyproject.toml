@@ -16,6 +16,7 @@ dependencies = [
     "numpy>=2.2.6",
     "polars[pyarrow]>=1.30.0",
     "structlog>=25.3.0",
+    "google-cloud-firestore>=2.20.2",
 ]
 
 [dependency-groups]
@@ -39,4 +40,4 @@ strict = true
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
-module = ["google.cloud.storage"]
+module = ["google.cloud.storage", "google.cloud.firestore"]

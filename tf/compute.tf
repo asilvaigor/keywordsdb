@@ -23,6 +23,7 @@ resource "google_project_iam_member" "worker_ingestion" {
     "roles/bigquery.user",
     "roles/bigquery.dataOwner",
     "roles/storage.objectUser",
+    "roles/datastore.user",
   ])
   project = var.project_id
   role    = each.key
@@ -59,9 +60,9 @@ module "worker_ingestion_container" {
   restart_policy = "Always"
 }
 
-resource "google_compute_instance" "worker_ingestion_stg" {
+resource "google_compute_instance" "worker_ingestion" {
   project      = var.project_id
-  name         = "worker-ingestion-stg"
+  name         = "worker-ingestion"
   machine_type = "e2-micro"
   zone         = "us-central1-a"
 

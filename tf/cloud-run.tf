@@ -6,8 +6,7 @@ resource "google_service_account" "cloudrun_webapp" {
 resource "google_project_iam_member" "cloudrun_webapp" {
   for_each = toset([
     "roles/iam.serviceAccountTokenCreator",
-    "roles/bigquery.jobUser",
-    "roles/bigquery.dataViewer",
+    "roles/datastore.user",
   ])
   project = var.project_id
   role    = each.key
