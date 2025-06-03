@@ -4,6 +4,14 @@ from src.workers.ingestion.context import Context
 from src.workers.ingestion.keywords import Keywords
 
 
+def commit(ctx: Context) -> None:
+    ctx.logger.info("No keywords to ingest, commiting changes")
+    Keywords.commit(ctx.bigquery_client, ctx.storage_client, ctx.clickhouse_client, ctx.firestore_client)
+    ctx.logger.info("Merge done, getting new keywords")
+    keywords_gen = Keywords.get_oldest_k_keywords(ctx.clickhouse_client, k=1000000)
+    ctx.firestore_client.insert_keywords_to_ingest(keywords_gen)
+
+
 async def main() -> None:
     ctx = Context()
 
@@ -11,12 +19,8 @@ async def main() -> None:
         ctx.logger.info("Getting keywords list")
         filepath, keywords = ctx.firestore_client.pop_keywords_to_ingest()
         if len(keywords) == 0:
-            ctx.logger.info("No keywords to ingest, commiting changes")
-            Keywords.commit(ctx.bigquery_client, ctx.storage_client, ctx.clickhouse_client, ctx.firestore_client)
-            ctx.logger.info("Merge done, getting new keywords")
-            keywords = Keywords.get_oldest_k_keywords(ctx.clickhouse_client, k=1000000)
-            ctx.firestore_client.insert_keywords_to_ingest(keywords)
-            break
+            commit(ctx)
+            continue
 
         for i in range(0, len(keywords), 500):
             chunk = keywords[i : i + 500]

@@ -41,7 +41,7 @@ export function Pagination({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.previousPage()}
+          onMouseDown={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
           Previous
@@ -49,7 +49,7 @@ export function Pagination({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => table.nextPage()}
+          onMouseDown={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >
           Next

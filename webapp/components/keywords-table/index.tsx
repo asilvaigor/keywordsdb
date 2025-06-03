@@ -87,7 +87,7 @@ export function KeywordsTable() {
               <TableRow>
                 <TableCell
                   colSpan={columns.length}
-                  className="h-[400px] bg-muted/5"
+                  className="h-[370px] bg-muted/5"
                 >
                   <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
                     <p>No results.</p>

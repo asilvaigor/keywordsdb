@@ -55,7 +55,7 @@ class FirestoreClient:
 
         return "", []
 
-    def insert_keywords_to_ingest(self, keywords: list[str]) -> None:
+    def insert_keywords_to_ingest(self, keywords: Generator[str, None, None]) -> None:
         """
         Insert keywords into the keywords-to-ingest collection in Firestore, in chunks of a fixed size.
 
@@ -64,9 +64,12 @@ class FirestoreClient:
         """
         chunk_size = 2000
         collection = self.client.collection(FirestoreClient.keywords_to_ingest)
-        for i in range(0, len(keywords), chunk_size):
-            chunk = keywords[i : i + chunk_size]
-            collection.add({"keywords": chunk})
+        batch = []
+        for keyword in keywords:
+            batch.append(keyword)
+            if len(batch) >= chunk_size:
+                collection.add({"keywords": batch})
+                batch = []
 
     def delete_keywords_to_ingest(self, filepath: str) -> None:
         """

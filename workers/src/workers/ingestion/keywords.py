@@ -1,5 +1,6 @@
 import time
 from datetime import date
+from typing import Generator
 
 import polars as pl
 from google.cloud.exceptions import NotFound
@@ -43,34 +44,47 @@ class Keywords:
         client.insert(Keywords.tmp_tablename, df)
 
     @staticmethod
-    def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> list[str]:
+    def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str, None, None]:
         """
         Query the keywords table to get the N oldest records based on ingested_at.
 
         Args:
-            n: Number of records to retrieve
+            k: Number of records to retrieve
 
-        Returns:
-            list of keywords
+        Yields:
+            Keywords as strings
         """
-        query = """
-            SELECT keyword
-            FROM keywords
-            -- ORDER BY ingested_at ASC, avg_monthly_searches DESC
-            WHERE volume_history = ''
-            LIMIT %(k)s
-        """
-        df = client.execute_query(query, params={"k": k})
-        if df is None:
+        batch_size = 100_000
+        offset = 0
+
+        while offset < k:
+            current_batch_size = min(batch_size, k - offset)
+
             query = """
                 SELECT keyword
                 FROM keywords
-                ORDER BY ingested_at ASC, avg_monthly_searches DESC
-                LIMIT %(k)s
+                WHERE volume_history = ''
+                LIMIT %(batch_size)s OFFSET %(offset)s
             """
-            df = client.execute_query(query, params={"k": k})
-            assert df is not None
-        return df.select("keyword").to_series().to_list()
+            df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
+
+            if df is None:
+                query = """
+                    SELECT keyword
+                    FROM keywords
+                    ORDER BY ingested_at ASC, avg_monthly_searches DESC
+                    LIMIT %(batch_size)s OFFSET %(offset)s
+                """
+                df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
+                assert df is not None
+
+            keywords = df.select("keyword").to_series().to_list()
+            for keyword in keywords:
+                yield keyword
+
+            offset += current_batch_size
+            if len(keywords) < current_batch_size:
+                break
 
     @staticmethod
     def commit(

@@ -1,17 +1,11 @@
 "use server";
 
+import { createHash } from "node:crypto";
+import clickhouse from "@/lib/clickhouse";
+import firestore from "@/lib/firestore";
 import type { Keyword } from "@/lib/types";
-import { createClient } from "@clickhouse/client";
-import { BigQuery } from "@google-cloud/bigquery";
 import type { SortingState } from "@tanstack/react-table";
 import { unstable_cache } from "next/cache";
-
-const bigquery = new BigQuery();
-const clickhouse = createClient({
-  url: process.env.CLICKHOUSE_URL,
-  username: process.env.CLICKHOUSE_USERNAME,
-  password: process.env.CLICKHOUSE_PASSWORD,
-});
 
 interface KeywordFilters {
   keyword?: string;
@@ -30,24 +24,14 @@ interface PaginatedKeywords {
   currentPage: number;
 }
 
-interface Row extends Keyword {
-  total_count?: number;
+interface KeywordsCached {
+  results: Keyword[];
+  count: number;
+  expiresAt: Date;
 }
 
-async function pingClickhouse(): Promise<boolean> {
-  try {
-    const pingPromise = clickhouse.ping();
-    const timeoutPromise = new Promise<{ success: boolean }>((_, reject) =>
-      setTimeout(() => reject(new Error("Timeout")), 500),
-    );
-
-    const ping = await Promise.race([pingPromise, timeoutPromise]);
-    console.log("Ping ClickHouse:", ping);
-    return ping.success;
-  } catch {
-    console.log("Ping Clickhouse:", { success: false });
-    return false;
-  }
+interface Row extends Keyword {
+  total_count?: number;
 }
 
 export async function getKeywords(
@@ -56,78 +40,76 @@ export async function getKeywords(
   page = 1,
   pageSize = 10,
 ): Promise<PaginatedKeywords> {
-  return unstable_cache(
-    getKeywordsNotCached,
-    [
-      `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${page}-${pageSize}`,
-    ],
-    { revalidate: 24 * 3600 },
-  )(filters, sort, page, pageSize);
+  const dbPageSize = 100;
+  const dbPage = Math.floor(((page - 1) * pageSize) / dbPageSize) + 1;
+  const skipRows = ((page - 1) * pageSize) % dbPageSize;
+
+  const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${dbPage}-${dbPageSize}`;
+  const keywords = await unstable_cache(getKeywordsNotCached, [cacheKey], {
+    revalidate: 24 * 3600,
+  })(cacheKey, filters, sort, dbPage, dbPageSize);
+
+  return {
+    keywords: keywords.keywords.slice(skipRows, skipRows + pageSize),
+    totalRows: keywords.totalRows,
+    totalPages: keywords.totalPages * Math.ceil(pageSize / dbPageSize),
+    currentPage: page,
+  };
 }
 
 async function getKeywordsNotCached(
+  cacheKey: string,
   filters?: KeywordFilters,
   sort?: SortingState,
   page = 1,
   pageSize = 10,
 ): Promise<PaginatedKeywords> {
-  const isClickhouseUp = await pingClickhouse();
-  const selectedDb = isClickhouseUp ? "clickhouse" : "bigquery";
+  const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
+  const docRef = firestore.collection("keywords-cache").doc(hash);
+  const doc = (await docRef.get()).data() as KeywordsCached | undefined;
+  if (doc) {
+    console.log("Returning keywords from firestore");
+    return {
+      keywords: doc.results,
+      totalRows: doc.count,
+      totalPages: Math.ceil(doc.count / pageSize),
+      currentPage: page,
+    };
+  }
 
-  console.log(`Getting keywords from ${selectedDb}`);
+  console.log("Getting keywords from clickhouse");
   let whereClause = "WHERE 1=1";
   let params: Record<string, string | number> = {};
 
   if (filters?.keyword) {
-    whereClause +=
-      selectedDb === "clickhouse"
-        ? " AND kws.keyword LIKE {keyword_filter:String}"
-        : " AND SEARCH(kws.keyword, @keyword_filter)";
+    whereClause += " AND kws.keyword LIKE {keyword_filter:String}";
     params = {
       ...params,
       keyword_filter: `%${filters.keyword.toLowerCase()}%`,
     };
   }
   if (filters?.minMonthlySearches !== undefined) {
-    whereClause +=
-      selectedDb === "clickhouse"
-        ? " AND kws.avg_monthly_searches >= {min_searches:Int32}"
-        : " AND kws.avg_monthly_searches >= @min_searches";
+    whereClause += " AND kws.avg_monthly_searches >= {min_searches:Int32}";
     params = { ...params, min_searches: filters.minMonthlySearches };
   }
   if (filters?.maxMonthlySearches !== undefined) {
-    whereClause +=
-      selectedDb === "clickhouse"
-        ? " AND kws.avg_monthly_searches <= {max_searches:Int32}"
-        : " AND kws.avg_monthly_searches <= @max_searches";
+    whereClause += " AND kws.avg_monthly_searches <= {max_searches:Int32}";
     params = { ...params, max_searches: filters.maxMonthlySearches };
   }
   if (filters?.minCompetitionIndex !== undefined) {
-    whereClause +=
-      selectedDb === "clickhouse"
-        ? " AND kws.competition_index >= {min_competition:Float32}"
-        : " AND kws.competition_index >= @min_competition";
+    whereClause += " AND kws.competition_index >= {min_competition:Float32}";
     params = { ...params, min_competition: filters.minCompetitionIndex };
   }
   if (filters?.maxCompetitionIndex !== undefined) {
-    whereClause +=
-      selectedDb === "clickhouse"
-        ? " AND kws.competition_index <= {max_competition:Float32}"
-        : " AND kws.competition_index <= @max_competition";
+    whereClause += " AND kws.competition_index <= {max_competition:Float32}";
     params = { ...params, max_competition: filters.maxCompetitionIndex };
   }
   if (filters?.minCpcHigh !== undefined) {
-    whereClause +=
-      selectedDb === "clickhouse"
-        ? " AND kws.cpc_high >= {min_cpc:Float32}"
-        : " AND kws.cpc_high >= @min_cpc";
+    whereClause += " AND kws.cpc_high >= {min_cpc:Float32}";
     params = { ...params, min_cpc: filters.minCpcHigh };
   }
   if (filters?.maxCpcHigh !== undefined) {
-    whereClause +=
-      selectedDb === "clickhouse"
-        ? " AND kws.cpc_high <= {max_cpc:Float32}"
-        : " AND kws.cpc_high <= @max_cpc";
+    whereClause += " AND kws.cpc_high <= {max_cpc:Float32}";
     params = { ...params, max_cpc: filters.maxCpcHigh };
   }
 
@@ -148,21 +130,21 @@ async function getKeywordsNotCached(
         kws.competition_index,
         kws.cpc_high,
         kws.updated_at,
-        ${selectedDb === "clickhouse" ? "NULL as total_count" : "cast(NULL as integer) as total_count"}
-      FROM ${selectedDb === "clickhouse" ? "keywords" : "`keywordsdb-3.keywords.keywords`"} kws
+        NULL as total_count
+      FROM keywords kws
       ${whereClause}
       ${orderByClause}
-      ${selectedDb === "clickhouse" ? "LIMIT {page_size:UInt32} OFFSET {offset:UInt32}" : "LIMIT @page_size OFFSET @offset"}
+      LIMIT {page_size:UInt32} OFFSET {offset:UInt32}
     ),
     count_cte AS (
       SELECT
-        ${selectedDb === "clickhouse" ? "NULL" : "cast(NULL as string)"} as keyword,
-        ${selectedDb === "clickhouse" ? "NULL" : "cast(NULL as integer)"} as avg_monthly_searches,
-        ${selectedDb === "clickhouse" ? "NULL" : "cast(NULL as integer)"} as competition_index,
-        ${selectedDb === "clickhouse" ? "NULL" : "cast(NULL as float64)"} as cpc_high,
-        ${selectedDb === "clickhouse" ? "NULL" : "cast(NULL as date)"} as updated_at,
+        NULL as keyword,
+        NULL as avg_monthly_searches,
+        NULL as competition_index,
+        NULL as cpc_high,
+        NULL  as updated_at,
         COUNT(*) as total_count
-      FROM ${selectedDb === "clickhouse" ? "keywords" : "`keywordsdb-3.keywords.keywords`"} kws
+      FROM keywords kws
       ${whereClause}
     )
     SELECT * FROM data_cte
@@ -171,21 +153,12 @@ async function getKeywordsNotCached(
   `;
 
   params = { ...params, page_size: pageSize, offset };
-  let data: Row[];
-  if (selectedDb === "clickhouse") {
-    const rows = await clickhouse.query({
-      query,
-      query_params: params,
-      format: "JSONEachRow",
-    });
-    data = (await rows.json()) as Row[];
-  } else {
-    const [rows] = await bigquery.query({ query, params });
-    data = rows.map(row => ({
-      ...row,
-      updated_at: row.updated_at?.value || row.updated_at
-    })) as Row[];
-  }
+  const rows = await clickhouse.query({
+    query,
+    query_params: params,
+    format: "JSONEachRow",
+  });
+  const data = (await rows.json()) as Row[];
 
   // Separate data rows from count row
   const dataRows = data.filter((row) => row.total_count == null);
@@ -193,8 +166,7 @@ async function getKeywordsNotCached(
   const totalRows = countRow?.total_count || 0;
   const totalPages = Math.ceil(totalRows / pageSize);
 
-  console.log("Query executed successfully");
-  return {
+  const result = {
     keywords: dataRows.map((row) => ({
       keyword: row.keyword,
       avg_monthly_searches: row.avg_monthly_searches,
@@ -206,4 +178,15 @@ async function getKeywordsNotCached(
     totalPages,
     currentPage: page,
   };
+
+  // Cache the results in Firestore asynchronously
+  const cacheData: KeywordsCached = {
+    results: result.keywords,
+    count: totalRows,
+    expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
+  };
+  docRef.set(cacheData).catch(console.error);
+
+  console.log("Query executed successfully");
+  return result;
 }
