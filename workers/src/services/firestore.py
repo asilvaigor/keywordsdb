@@ -1,4 +1,5 @@
 import hashlib
+import os
 from datetime import time
 from typing import Generator
 
@@ -12,7 +13,7 @@ class FirestoreClient:
     keywords_to_ingest = "keywords-to-ingest"
 
     def __init__(self) -> None:
-        self.client = Client(database="keywordsdb-stg")
+        self.client = Client(database=f"keywordsdb-{os.getenv('ENV', 'dev')}")
 
     def put_keywords_cache(self, df: pl.DataFrame, count: int) -> None:
         """

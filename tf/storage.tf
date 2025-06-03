@@ -1,5 +1,6 @@
 resource "google_storage_bucket" "keywordsdb" {
-  name     = "keywordsdb-prd"
+  for_each = toset(["prd"])
+  name     = "keywordsdb-${each.key}"
   location = var.location
   soft_delete_policy {
     retention_duration_seconds = 0

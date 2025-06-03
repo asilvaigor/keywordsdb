@@ -7,7 +7,7 @@ from google.cloud.storage import Blob, Bucket, Client
 
 class StorageClient:
     def __init__(self) -> None:
-        self._bucket_name = "keywordsdb-prd"
+        self._bucket_name = f"keywordsdb-{os.getenv('ENV', 'dev')}"
         self.client = Client()
         self.bucket: Bucket = self.client.bucket(self._bucket_name)
 

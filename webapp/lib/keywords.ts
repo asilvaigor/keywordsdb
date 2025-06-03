@@ -171,7 +171,6 @@ async function getKeywordsNotCached(
   `;
 
   params = { ...params, page_size: pageSize, offset };
-
   let data: Row[];
   if (selectedDb === "clickhouse") {
     const rows = await clickhouse.query({

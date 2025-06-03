@@ -31,12 +31,20 @@ resource "google_project_iam_member" "worker_ingestion" {
 }
 
 module "worker_ingestion_container" {
-  source  = "terraform-google-modules/container-vm/google"
-  version = "~> 3.2"
+  for_each = toset(["prd"])
+  source   = "terraform-google-modules/container-vm/google"
+  version  = "~> 3.2"
 
   container = {
     image   = "${var.location}-docker.pkg.dev/${var.project_id}/keywordsdb/workers:keep"
     command = ["python", "src/workers/ingestion/main.py"]
+
+    env = [
+      {
+        name  = "ENV"
+        value = "${each.key}"
+      }
+    ]
 
     volumeMounts = [
       {
@@ -60,15 +68,16 @@ module "worker_ingestion_container" {
   restart_policy = "Always"
 }
 
-resource "google_compute_instance" "worker_ingestion" {
+resource "google_compute_instance" "worker_ingestion_prd" {
+  for_each = toset(["prd"])
   project      = var.project_id
-  name         = "worker-ingestion"
+  name         = "worker-ingestion-${each.key}"
   machine_type = "e2-micro"
   zone         = "us-central1-a"
 
   boot_disk {
     initialize_params {
-      image = module.worker_ingestion_container.source_image
+      image = module.worker_ingestion_container[each.key].source_image
     }
   }
 
@@ -78,13 +87,13 @@ resource "google_compute_instance" "worker_ingestion" {
   }
 
   metadata = {
-    gce-container-declaration = module.worker_ingestion_container.metadata_value
+    gce-container-declaration = module.worker_ingestion_container[each.key].metadata_value
     google-logging-enabled    = "true"
     google-monitoring-enabled = "true"
   }
 
   labels = {
-    container-vm = module.worker_ingestion_container.vm_container_label
+    container-vm = module.worker_ingestion_container[each.key].vm_container_label
   }
 
 

@@ -1,6 +1,6 @@
 resource "google_service_account" "clickhouse" {
-  account_id   = "clickhouse"
-  project      = var.project_id
+  account_id = "clickhouse"
+  project    = var.project_id
 }
 
 resource "google_storage_hmac_key" "clickhouse_hmac_key" {
@@ -9,7 +9,7 @@ resource "google_storage_hmac_key" "clickhouse_hmac_key" {
 }
 
 resource "google_storage_bucket_iam_member" "clickhouse" {
-  bucket = google_storage_bucket.keywordsdb.name
+  bucket = google_storage_bucket.keywordsdb["prd"].name
   role   = "roles/storage.objectUser"
   member = "serviceAccount:${google_service_account.clickhouse.email}"
 }

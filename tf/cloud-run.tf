@@ -18,7 +18,7 @@ resource "google_project_service" "cloudrun" {
 }
 
 resource "google_cloud_run_v2_service" "webapp" {
-  for_each = toset(["stg"])
+  for_each = toset(["prd"])
   name     = "webapp-${each.key}"
   location = var.location
   ingress  = "INGRESS_TRAFFIC_ALL"
@@ -67,7 +67,7 @@ resource "google_cloud_run_domain_mapping" "webapp" {
     namespace = var.project_id
   }
   spec {
-    route_name = google_cloud_run_v2_service.webapp["stg"].name
+    route_name = google_cloud_run_v2_service.webapp["prd"].name
   }
 }
 
@@ -82,7 +82,7 @@ resource "cloudflare_dns_record" "webapp_a" {
   name    = "@"
   content = each.key
   type    = "A"
-  proxied = false # TODO: turn to true
+  proxied = true
   ttl     = 1
 }
 
@@ -97,7 +97,7 @@ resource "cloudflare_dns_record" "webapp_aaaa" {
   name    = "@"
   content = each.key
   type    = "AAAA"
-  proxied = false
+  proxied = true
   ttl     = 1
 }
 
@@ -107,6 +107,6 @@ resource "cloudflare_dns_record" "webapp" {
   name     = "www"
   content  = "ghs.googlehosted.com"
   type     = "CNAME"
-  proxied  = false
+  proxied  = true
   ttl      = 1
 }
