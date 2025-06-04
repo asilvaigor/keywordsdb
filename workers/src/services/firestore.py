@@ -1,6 +1,5 @@
 import hashlib
 import os
-from datetime import time
 from typing import Generator
 
 import polars as pl
@@ -9,7 +8,7 @@ from google.cloud.firestore import Client, DocumentReference, DocumentSnapshot
 
 class FirestoreClient:
     keywords_cache = "keywords-cache"
-    keywords_counts_cache = "keywords-counts-cache"
+    keywords_counts_cache = "keyword-counts-cache"
     keywords_to_ingest = "keywords-to-ingest"
 
     def __init__(self) -> None:
@@ -28,14 +27,12 @@ class FirestoreClient:
         hash_value = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
         doc_ref: DocumentReference = self.client.collection(FirestoreClient.keywords_cache).document(hash_value)
         doc_value = {
-            "results": df.with_columns(
-                pl.col("updated_at").dt.combine(time(0, 0, 0)).dt.replace_time_zone("UTC")
-            ).to_dicts(),
+            "results": df.with_columns(pl.col("updated_at").dt.strftime("%Y-%m-%d")).to_dicts(),
             "expires_at": None,
         }
         doc_ref.set(doc_value)
 
-        cache_key = "keywords-counts-{}"
+        cache_key = "keyword-counts-{}"
         hash_value = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
         doc_ref: DocumentReference = self.client.collection(FirestoreClient.keywords_counts_cache).document(hash_value)
         doc_ref.set({"count": count, "expires_at": None})

@@ -1,4 +1,6 @@
-import { getKeywords } from "@/lib/keywords";
+import { Skeleton } from "@/components/ui/skeleton";
+import { getKeywordsCount } from "@/lib/keywords";
+import type { Keyword } from "@/lib/types";
 import {
   type ColumnFiltersState,
   type SortingState,
@@ -8,11 +10,66 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
-import { Skeleton } from "../ui/skeleton";
 import { columns } from "./columns";
 import useDebounce from "./use-debounce";
+
+function startStreaming({
+  debouncedKeyword,
+  sorting,
+  eventSourceRef,
+  setKeywords,
+  setIsLoading,
+  setError,
+}: {
+  debouncedKeyword: string;
+  sorting: SortingState;
+  eventSourceRef: React.RefObject<EventSource | null>;
+  setKeywords: React.Dispatch<React.SetStateAction<Keyword[]>>;
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
+  setError: React.Dispatch<React.SetStateAction<Error | null>>;
+}) {
+  if (eventSourceRef.current) {
+    eventSourceRef.current.close();
+  }
+
+  setKeywords([]);
+  setIsLoading(true);
+  setError(null);
+
+  const params = new URLSearchParams();
+  if (debouncedKeyword) {
+    params.append("keyword", debouncedKeyword);
+  }
+  if (sorting.length > 0) {
+    params.append("sort", JSON.stringify(sorting));
+  }
+  params.append("pageSize", "100");
+
+  const url = `/api/keywords/stream?${params.toString()}`;
+  const eventSource = new EventSource(url);
+  eventSourceRef.current = eventSource;
+
+  eventSource.onmessage = (event) => {
+    const data = event.data;
+
+    if (data === "[DONE]") {
+      setIsLoading(false);
+      eventSource.close();
+      return;
+    }
+    const keywords = JSON.parse(data) as Keyword[];
+    setKeywords((prev) => (prev ? [...prev, ...keywords] : keywords));
+  };
+
+  eventSource.onerror = (err) => {
+    console.error("EventSource error:", err);
+    setError(new Error("Failed to stream data"));
+    setIsLoading(false);
+    eventSource.close();
+  };
+}
 
 export function useKeywordsTable() {
   const [sorting, setSorting] = useState<SortingState>([
@@ -23,24 +80,44 @@ export function useKeywordsTable() {
     pageIndex: 0,
     pageSize: 10,
   });
-  const [totalRows, setTotalRows] = useState<number | undefined>(undefined);
+
+  const [keywords, setKeywords] = useState<Keyword[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const eventSourceRef = useRef<EventSource | null>(null);
 
   const resetPagination = useCallback(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
-    setTotalRows(undefined);
   }, []);
+
   const keyword = columnFilters.find((f) => f.id === "keyword")
     ?.value as string;
   const debouncedKeyword = useDebounce(keyword, resetPagination);
 
+  useEffect(() => {
+    startStreaming({
+      debouncedKeyword,
+      sorting,
+      eventSourceRef,
+      setKeywords,
+      setIsLoading,
+      setError,
+    });
+
+    return () => {
+      if (eventSourceRef.current) {
+        eventSourceRef.current.close(); // eslint-disable-line react-hooks/exhaustive-deps
+      }
+    };
+  }, [debouncedKeyword, sorting]);
+
   const {
-    data: page,
-    isLoading,
-    error,
+    data: totalRows,
+    isLoading: isTotalRowsLoading,
+    error: totalRowsError,
   } = useSWR(
-    [debouncedKeyword, sorting, pageIndex, pageSize],
-    async ([keyword, sort, page, pageSize]) =>
-      getKeywords({ keyword }, sort, page + 1, pageSize),
+    [debouncedKeyword],
+    async ([keyword]) => getKeywordsCount({ keyword }),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,
@@ -51,15 +128,14 @@ export function useKeywordsTable() {
     },
   );
 
-  useEffect(() => {
-    if (page?.totalRows) {
-      setTotalRows(page.totalRows);
-    }
-  }, [page?.totalRows]);
-
+  const paginatedKeywords = useMemo(() => {
+    const startIndex = pageIndex * pageSize;
+    const endIndex = startIndex + pageSize;
+    return keywords.slice(startIndex, endIndex);
+  }, [keywords, pageIndex, pageSize]);
   const tableData = useMemo(
-    () => (isLoading ? Array(10).fill({}) : (page?.keywords ?? [])),
-    [isLoading, page?.keywords],
+    () => (isLoading ? Array(10).fill({}) : paginatedKeywords),
+    [isLoading, paginatedKeywords],
   );
 
   const tableColumns = useMemo(
@@ -99,7 +175,7 @@ export function useKeywordsTable() {
     enableSorting: !isLoading,
     manualPagination: true,
     manualFiltering: true,
-    pageCount: page?.totalPages ?? -1,
+    pageCount: totalRows ? Math.ceil(totalRows / pageSize) : -1,
   });
 
   return {
@@ -107,6 +183,8 @@ export function useKeywordsTable() {
     isLoading,
     error,
     totalRows,
+    isTotalRowsLoading,
+    totalRowsError,
     pageIndex,
     pageSize,
   };

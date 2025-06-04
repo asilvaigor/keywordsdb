@@ -16,7 +16,15 @@ import { Search } from "./search";
 import { useKeywordsTable } from "./use-keywords-table";
 
 export function KeywordsTable() {
-  const { table, error, totalRows, pageIndex, pageSize } = useKeywordsTable();
+  const {
+    table,
+    error,
+    totalRows,
+    isTotalRowsLoading,
+    totalRowsError,
+    pageIndex,
+    pageSize,
+  } = useKeywordsTable();
 
   return (
     <div className="flex flex-col justify-center max-w-xs sm:max-w-fit mx-auto h-full">
@@ -101,6 +109,8 @@ export function KeywordsTable() {
       <Pagination
         table={table}
         totalRows={totalRows}
+        isTotalRowsLoading={isTotalRowsLoading}
+        totalRowsError={totalRowsError}
         pageIndex={pageIndex}
         pageSize={pageSize}
       />

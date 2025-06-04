@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import type { Keyword } from "@/lib/types";
 import type { Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
+import { formatLargeNumber } from "./utils";
 
 const SortableHeader = ({
   column,
@@ -45,6 +46,10 @@ export const columns: ColumnDef<Keyword>[] = [
   {
     accessorKey: "avg_monthly_searches",
     header: ({ column }) => <SortableHeader column={column} title="Volume" />,
+    cell: ({ row }) => {
+      const value = row.getValue("avg_monthly_searches") as number;
+      return formatLargeNumber(value, false);
+    },
     size: 150,
   },
   {
@@ -56,7 +61,8 @@ export const columns: ColumnDef<Keyword>[] = [
   },
   {
     accessorKey: "cpc_high",
-    header: ({ column }) => <SortableHeader column={column} title="CPC" />,
+    header: ({ column }) => <SortableHeader column={column} title="CPC ($)" />,
+    cell: ({ row }) => (row.getValue("cpc_high") as number).toFixed(2),
     size: 90,
   },
   {

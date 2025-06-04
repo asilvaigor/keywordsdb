@@ -17,67 +17,136 @@ interface KeywordFilters {
   maxCpcHigh?: number;
 }
 
-interface PaginatedKeywords {
-  keywords: Keyword[];
-  totalRows: number;
-  totalPages: number;
-  currentPage: number;
-}
-
 interface KeywordsCached {
   results: Keyword[];
+  expiresAt: Date;
+}
+
+interface KeywordCountsCached {
   count: number;
   expiresAt: Date;
 }
 
-interface Row extends Keyword {
-  total_count?: number;
-}
-
-export async function getKeywords(
+export async function* getKeywordsStream(
   filters?: KeywordFilters,
   sort?: SortingState,
   page = 1,
-  pageSize = 10,
-): Promise<PaginatedKeywords> {
-  const dbPageSize = 100;
-  const dbPage = Math.floor(((page - 1) * pageSize) / dbPageSize) + 1;
-  const skipRows = ((page - 1) * pageSize) % dbPageSize;
-
-  const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${dbPage}-${dbPageSize}`;
-  const keywords = await unstable_cache(getKeywordsNotCached, [cacheKey], {
-    revalidate: 24 * 3600,
-  })(cacheKey, filters, sort, dbPage, dbPageSize);
-
-  return {
-    keywords: keywords.keywords.slice(skipRows, skipRows + pageSize),
-    totalRows: keywords.totalRows,
-    totalPages: keywords.totalPages * Math.ceil(pageSize / dbPageSize),
-    currentPage: page,
-  };
-}
-
-async function getKeywordsNotCached(
-  cacheKey: string,
-  filters?: KeywordFilters,
-  sort?: SortingState,
-  page = 1,
-  pageSize = 10,
-): Promise<PaginatedKeywords> {
+  pageSize = 100,
+): AsyncGenerator<Keyword[], void, unknown> {
+  const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${page}-${pageSize}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keywords-cache").doc(hash);
   const doc = (await docRef.get()).data() as KeywordsCached | undefined;
+
   if (doc) {
-    console.log("Returning keywords from firestore");
-    return {
-      keywords: doc.results,
-      totalRows: doc.count,
-      totalPages: Math.ceil(doc.count / pageSize),
-      currentPage: page,
-    };
+    console.log("Returning keywords from firestore cache");
+    yield doc.results;
+    return;
   }
 
-  console.log("Getting keywords from clickhouse");
+  console.log("Streaming keywords from clickhouse");
+  const { whereClause, params } = buildWhereClause(filters);
+
+  let orderByClause = "";
+  if (sort) {
+    const sortClauses = sort.map(
+      (s) => `kws.${s.id} ${s.desc ? "DESC" : "ASC"}`,
+    );
+    orderByClause = `ORDER BY ${sortClauses.join(", ")}`;
+  }
+
+  const query = `
+    SELECT
+      kws.keyword,
+      kws.avg_monthly_searches,
+      kws.competition_index,
+      kws.cpc_high,
+      kws.updated_at
+    FROM keywords kws
+    ${whereClause}
+    ${orderByClause}
+    LIMIT {pageSize:UInt32} OFFSET {offset:UInt32}
+  `;
+
+  const offset = (page - 1) * pageSize;
+  const stream = (
+    await clickhouse.query({
+      query,
+      query_params: { ...params, pageSize, offset },
+      format: "JSONEachRow",
+    })
+  ).stream();
+
+  const allResults: Keyword[] = [];
+  for await (const rows of stream) {
+    const results = rows.map((row) => row.json() as Keyword);
+    allResults.push(...results);
+    yield results;
+  }
+
+  // Cache the results in Firestore asynchronously
+  if (allResults.length > 0) {
+    const cacheData: KeywordsCached = {
+      results: allResults,
+      expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
+    };
+    docRef.set(cacheData).catch(console.error);
+  }
+
+  console.log("Streaming query completed successfully");
+}
+
+export async function getKeywordsCount(
+  filters?: KeywordFilters,
+): Promise<number> {
+  const cacheKey = `keyword-counts-${JSON.stringify(filters)}`;
+  const count = await unstable_cache(getKeywordsCountNotCached, [cacheKey], {
+    revalidate: 24 * 3600,
+  })(cacheKey, filters);
+  return count;
+}
+
+async function getKeywordsCountNotCached(
+  cacheKey: string,
+  filters?: KeywordFilters,
+): Promise<number> {
+  const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
+  const docRef = firestore.collection("keyword-counts-cache").doc(hash);
+  const doc = (await docRef.get()).data() as KeywordCountsCached | undefined;
+  if (doc) {
+    console.log("Returning keyword count from firestore");
+    return doc.count;
+  }
+
+  console.log("Getting keyword count from clickhouse");
+  const { whereClause, params } = buildWhereClause(filters);
+  const query = `
+    SELECT COUNT(*) as count
+    FROM keywords kws
+    ${whereClause}
+  `;
+  const rows = await clickhouse.query({
+    query,
+    query_params: params,
+    format: "JSONEachRow",
+  });
+  const result = (await rows.json()) as { count: number }[];
+
+  // Cache the result in Firestore asynchronously
+  const cacheData: KeywordCountsCached = {
+    count: result[0].count,
+    expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
+  };
+  docRef.set(cacheData).catch(console.error);
+
+  console.log("Keyword count query executed successfully");
+  return result[0].count;
+}
+
+function buildWhereClause(filters?: KeywordFilters): {
+  whereClause: string;
+  params: Record<string, string | number>;
+} {
   let whereClause = "WHERE 1=1";
   let params: Record<string, string | number> = {};
 
@@ -112,81 +181,5 @@ async function getKeywordsNotCached(
     whereClause += " AND kws.cpc_high <= {max_cpc:Float32}";
     params = { ...params, max_cpc: filters.maxCpcHigh };
   }
-
-  let orderByClause = "";
-  if (sort) {
-    const sortClauses = sort.map(
-      (s) => `kws.${s.id} ${s.desc ? "DESC" : "ASC"}`,
-    );
-    orderByClause = `ORDER BY ${sortClauses.join(", ")}`;
-  }
-
-  const offset = (page - 1) * pageSize;
-  const query = `
-    WITH data_cte AS (
-      SELECT
-        kws.keyword,
-        kws.avg_monthly_searches,
-        kws.competition_index,
-        kws.cpc_high,
-        kws.updated_at,
-        NULL as total_count
-      FROM keywords kws
-      ${whereClause}
-      ${orderByClause}
-      LIMIT {page_size:UInt32} OFFSET {offset:UInt32}
-    ),
-    count_cte AS (
-      SELECT
-        NULL as keyword,
-        NULL as avg_monthly_searches,
-        NULL as competition_index,
-        NULL as cpc_high,
-        NULL  as updated_at,
-        COUNT(*) as total_count
-      FROM keywords kws
-      ${whereClause}
-    )
-    SELECT * FROM data_cte
-    UNION ALL
-    SELECT * FROM count_cte
-  `;
-
-  params = { ...params, page_size: pageSize, offset };
-  const rows = await clickhouse.query({
-    query,
-    query_params: params,
-    format: "JSONEachRow",
-  });
-  const data = (await rows.json()) as Row[];
-
-  // Separate data rows from count row
-  const dataRows = data.filter((row) => row.total_count == null);
-  const countRow = data.find((row) => row.total_count != null);
-  const totalRows = countRow?.total_count || 0;
-  const totalPages = Math.ceil(totalRows / pageSize);
-
-  const result = {
-    keywords: dataRows.map((row) => ({
-      keyword: row.keyword,
-      avg_monthly_searches: row.avg_monthly_searches,
-      competition_index: row.competition_index,
-      cpc_high: row.cpc_high,
-      updated_at: row.updated_at,
-    })) as Keyword[],
-    totalRows,
-    totalPages,
-    currentPage: page,
-  };
-
-  // Cache the results in Firestore asynchronously
-  const cacheData: KeywordsCached = {
-    results: result.keywords,
-    count: totalRows,
-    expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
-  };
-  docRef.set(cacheData).catch(console.error);
-
-  console.log("Query executed successfully");
-  return result;
+  return { whereClause, params };
 }
