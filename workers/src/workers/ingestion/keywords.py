@@ -67,17 +67,7 @@ class Keywords:
                 LIMIT %(batch_size)s OFFSET %(offset)s
             """
             df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
-
-            if df is None:
-                query = """
-                    SELECT keyword
-                    FROM keywords
-                    ORDER BY ingested_at ASC, avg_monthly_searches DESC
-                    LIMIT %(batch_size)s OFFSET %(offset)s
-                """
-                df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
-                assert df is not None
-
+            assert df is not None
             keywords = df.select("keyword").to_series().to_list()
             for keyword in keywords:
                 yield keyword

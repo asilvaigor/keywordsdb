@@ -22,8 +22,8 @@ async def main() -> None:
             commit(ctx)
             continue
 
-        for i in range(0, len(keywords), 500):
-            chunk = keywords[i : i + 500]
+        for i in range(0, len(keywords), 2000):
+            chunk = keywords[i : i + 2000]
 
             ctx.logger.info("Querying google ads")
             df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
