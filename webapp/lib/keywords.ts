@@ -19,12 +19,12 @@ interface KeywordFilters {
 
 interface KeywordsCached {
   results: Keyword[];
-  expiresAt: Date;
+  expires_at: Date;
 }
 
 interface KeywordCountsCached {
   count: number;
-  expiresAt: Date;
+  expires_at: Date;
 }
 
 export async function* getKeywordsStream(
@@ -85,13 +85,11 @@ export async function* getKeywordsStream(
   }
 
   // Cache the results in Firestore asynchronously
-  if (allResults.length > 0) {
-    const cacheData: KeywordsCached = {
-      results: allResults,
-      expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
-    };
-    docRef.set(cacheData).catch(console.error);
-  }
+  const cacheData: KeywordsCached = {
+    results: allResults,
+    expires_at: new Date(Date.now() + 24 * 3600 * 1000),
+  };
+  docRef.set(cacheData).catch(console.error);
 
   console.log("Streaming query completed successfully");
 }
@@ -131,11 +129,12 @@ async function getKeywordsCountNotCached(
     format: "JSONEachRow",
   });
   const result = (await rows.json()) as { count: number }[];
+  result[0].count = Number(result[0].count);
 
   // Cache the result in Firestore asynchronously
   const cacheData: KeywordCountsCached = {
     count: result[0].count,
-    expiresAt: new Date(Date.now() + 24 * 3600 * 1000),
+    expires_at: new Date(Date.now() + 24 * 3600 * 1000),
   };
   docRef.set(cacheData).catch(console.error);
 

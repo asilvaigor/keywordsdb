@@ -1,12 +1,12 @@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import type { Keyword } from "@/lib/types";
+import type { KeywordRow } from "@/lib/types";
 import type { Table } from "@tanstack/react-table";
 import { AlertCircle } from "lucide-react";
 import { formatLargeNumber } from "./utils";
 
 interface PaginationProps {
-  table: Table<Keyword>;
+  table: Table<KeywordRow>;
   totalRows?: number;
   isTotalRowsLoading?: boolean;
   totalRowsError?: Error;
@@ -31,7 +31,7 @@ export function Pagination({
           <AlertCircle className="h-4 w-4" />
           <span>Error counting rows</span>
         </div>
-      ) : totalRows ? (
+      ) : totalRows && totalRows > 0 ? (
         <div className="text-sm text-muted-foreground">
           {pageIndex * pageSize + 1} -{" "}
           {Math.min((pageIndex + 1) * pageSize, totalRows)} of{" "}

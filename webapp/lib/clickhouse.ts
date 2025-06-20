@@ -4,4 +4,5 @@ export default createClient({
   url: process.env.CLICKHOUSE_URL,
   username: process.env.CLICKHOUSE_USERNAME,
   password: process.env.CLICKHOUSE_PASSWORD,
+  request_timeout: 300000, // 5 minutes
 });

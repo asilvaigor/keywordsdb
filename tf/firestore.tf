@@ -18,3 +18,11 @@ resource "google_firestore_field" "keywords_cache_ttl" {
   field      = "expires_at"
   ttl_config {}
 }
+
+resource "google_firestore_field" "keyword_counts_cache_ttl" {
+  for_each   = google_firestore_database.database
+  database   = each.value.name
+  collection = "keyword-counts-cache"
+  field      = "expires_at"
+  ttl_config {}
+}

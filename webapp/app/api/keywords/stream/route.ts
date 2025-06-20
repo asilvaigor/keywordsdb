@@ -21,8 +21,15 @@ export async function GET(request: NextRequest) {
     minCpcHigh: getFloat(searchParams.get("minCpcHigh")),
     maxCpcHigh: getFloat(searchParams.get("maxCpcHigh")),
   };
-  const sortParam = searchParams.get("sort");
-  const sort: SortingState = sortParam ? JSON.parse(sortParam) : undefined;
+  const sortParams = searchParams.getAll("sortBy");
+  const sort: SortingState = sortParams.map((param) => {
+    const isDescending = param.startsWith("-");
+    const columnId = isDescending ? param.slice(1) : param;
+    return {
+      id: columnId,
+      desc: isDescending,
+    };
+  });
   const page = getInt(searchParams.get("page"));
   const pageSize = getInt(searchParams.get("pageSize"));
 
@@ -36,18 +43,32 @@ export async function GET(request: NextRequest) {
           page,
           pageSize,
         )) {
-          const data = `data: ${JSON.stringify(batch)}\n\n`;
-          controller.enqueue(encoder.encode(data));
+          try {
+            const data = `data: ${JSON.stringify(batch)}\n\n`;
+            controller.enqueue(encoder.encode(data));
+          } catch {
+            // Controller is closed, stop streaming
+            console.log("Controller closed, stopping stream");
+            break;
+          }
         }
 
         // Send end signal
-        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
-        controller.close();
+        try {
+          controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+          controller.close();
+        } catch {
+          // Controller already closed, ignore
+        }
       } catch (error) {
         console.error("Streaming error:", error);
-        const errorData = `data: ${JSON.stringify({ error: "Stream failed" })}\n\n`;
-        controller.enqueue(encoder.encode(errorData));
-        controller.close();
+        try {
+          const errorData = `data: ${JSON.stringify({ error: "Stream failed" })}\n\n`;
+          controller.enqueue(encoder.encode(errorData));
+          controller.close();
+        } catch {
+          // Controller already closed, ignore
+        }
       }
     },
   });

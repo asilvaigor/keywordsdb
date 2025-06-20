@@ -5,15 +5,20 @@ export default function useDebounce(
   onValueChange: (value: string) => void,
 ) {
   const [debouncedValue, setDebouncedValue] = useState(value);
+  const [isDebouncing, setIsDebouncing] = useState(false);
 
   useEffect(() => {
     if (value == null) {
       setDebouncedValue(value);
+      setIsDebouncing(false);
       return;
     }
+
+    setIsDebouncing(true);
     const handler = setTimeout(() => {
       setDebouncedValue(value);
       onValueChange(value);
+      setIsDebouncing(false);
     }, 1000);
 
     return () => {
@@ -21,5 +26,5 @@ export default function useDebounce(
     };
   }, [value, onValueChange]);
 
-  return debouncedValue;
+  return { debouncedValue, isDebouncing };
 }

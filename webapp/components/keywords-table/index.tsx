@@ -9,26 +9,29 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { flexRender } from "@tanstack/react-table";
-import { AlertOctagon } from "lucide-react";
+import { AlertOctagon, Search } from "lucide-react";
 import { columns } from "./columns";
 import { Pagination } from "./pagination";
-import { Search } from "./search";
+import { Search as SearchComponent } from "./search";
 import { useKeywordsTable } from "./use-keywords-table";
+
+const PAGE_SIZE = 10;
 
 export function KeywordsTable() {
   const {
     table,
+    isLoading,
     error,
     totalRows,
     isTotalRowsLoading,
     totalRowsError,
     pageIndex,
     pageSize,
-  } = useKeywordsTable();
+  } = useKeywordsTable(PAGE_SIZE);
 
   return (
     <div className="flex flex-col justify-center max-w-xs sm:max-w-fit mx-auto h-full">
-      <Search table={table} />
+      <SearchComponent table={table} />
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -69,7 +72,19 @@ export function KeywordsTable() {
                   </div>
                 </TableCell>
               </TableRow>
-            ) : table.getRowModel().rows?.length ? (
+            ) : totalRows === 0 && !isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-[369.5px] bg-muted/5"
+                >
+                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                    <Search className="h-6 w-6" />
+                    <p className="font-medium">No results found</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -91,17 +106,6 @@ export function KeywordsTable() {
                   ))}
                 </TableRow>
               ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-[370px] bg-muted/5"
-                >
-                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <p>No results.</p>
-                  </div>
-                </TableCell>
-              </TableRow>
             )}
           </TableBody>
         </Table>

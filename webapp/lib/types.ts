@@ -5,3 +5,9 @@ export type Keyword = {
   cpc_high: number;
   updated_at: string;
 };
+
+export type KeywordRow =
+  | Keyword
+  | {
+      showSkeleton: boolean;
+    };

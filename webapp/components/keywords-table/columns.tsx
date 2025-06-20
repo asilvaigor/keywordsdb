@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
-import type { Keyword } from "@/lib/types";
-import type { Column, ColumnDef } from "@tanstack/react-table";
+import { Skeleton } from "@/components/ui/skeleton";
+import type { Keyword, KeywordRow } from "@/lib/types";
+import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { formatLargeNumber } from "./utils";
 
@@ -32,7 +33,7 @@ const SortableHeader = ({
   );
 };
 
-export const columns: ColumnDef<Keyword>[] = [
+const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   {
     accessorKey: "keyword",
     header: ({ column }) => <SortableHeader column={column} title="Keyword" />,
@@ -42,6 +43,7 @@ export const columns: ColumnDef<Keyword>[] = [
       </div>
     ),
     size: 270,
+    enableResizing: false,
   },
   {
     accessorKey: "avg_monthly_searches",
@@ -51,25 +53,52 @@ export const columns: ColumnDef<Keyword>[] = [
       return formatLargeNumber(value, false);
     },
     size: 150,
+    enableResizing: false,
   },
   {
     accessorKey: "competition_index",
     header: ({ column }) => (
       <SortableHeader column={column} title="Competition" />
     ),
+    cell: ({ row }) => row.getValue("competition_index") as number,
     size: 140,
+    enableResizing: false,
   },
   {
     accessorKey: "cpc_high",
     header: ({ column }) => <SortableHeader column={column} title="CPC ($)" />,
     cell: ({ row }) => (row.getValue("cpc_high") as number).toFixed(2),
     size: 90,
+    enableResizing: false,
   },
   {
     accessorKey: "updated_at",
     header: ({ column }) => (
       <SortableHeader column={column} title="Last updated" />
     ),
+    cell: ({ row }) => row.getValue("updated_at") as string,
     size: 150,
+    enableResizing: false,
   },
 ];
+
+export const columns = columnsWithoutSkeleton.map((column) => ({
+  ...column,
+  cell: (info: CellContext<KeywordRow, unknown>) => {
+    if ("showSkeleton" in info.row.original) {
+      if (info.row.original.showSkeleton) {
+        return (
+          <Skeleton
+            className="my-0.5 h-[16px]"
+            style={{ width: column.size ? 0.5 * column.size : undefined }}
+          />
+        );
+      }
+      return <div className="my-0.5 h-[16px]" />;
+    }
+    if (typeof column.cell === "function") {
+      return column.cell(info as CellContext<Keyword, unknown>);
+    }
+    return null;
+  },
+})) as ColumnDef<KeywordRow>[];

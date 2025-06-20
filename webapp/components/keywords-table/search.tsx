@@ -1,9 +1,9 @@
 import { Input } from "@/components/ui/input";
-import type { Keyword } from "@/lib/types";
+import type { KeywordRow } from "@/lib/types";
 import type { Table } from "@tanstack/react-table";
 
 interface SearchProps {
-  table: Table<Keyword>;
+  table: Table<KeywordRow>;
 }
 
 export function Search({ table }: SearchProps) {

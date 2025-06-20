@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { getKeywordsCount } from "@/lib/keywords";
-import type { Keyword } from "@/lib/types";
+import type { Keyword, KeywordRow } from "@/lib/types";
 import {
   type ColumnFiltersState,
+  type PaginationState,
   type SortingState,
   getCoreRowModel,
   getFilteredRowModel,
@@ -10,110 +10,176 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import useSWR from "swr";
+import useSWRSubscription from "swr/subscription";
 import { columns } from "./columns";
 import useDebounce from "./use-debounce";
 
-function startStreaming({
-  debouncedKeyword,
-  sorting,
-  eventSourceRef,
-  setKeywords,
-  setIsLoading,
-  setError,
-}: {
-  debouncedKeyword: string;
-  sorting: SortingState;
-  eventSourceRef: React.RefObject<EventSource | null>;
-  setKeywords: React.Dispatch<React.SetStateAction<Keyword[]>>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setError: React.Dispatch<React.SetStateAction<Error | null>>;
-}) {
-  if (eventSourceRef.current) {
-    eventSourceRef.current.close();
-  }
+const API_PAGE_SIZE = 100;
 
-  setKeywords([]);
-  setIsLoading(true);
-  setError(null);
+class KeywordsStreamer extends EventTarget {
+  private eventSource: EventSource | null = null;
 
-  const params = new URLSearchParams();
-  if (debouncedKeyword) {
-    params.append("keyword", debouncedKeyword);
-  }
-  if (sorting.length > 0) {
-    params.append("sort", JSON.stringify(sorting));
-  }
-  params.append("pageSize", "100");
+  startStreaming(params: {
+    page: number;
+    filters: ColumnFiltersState;
+    keyword: string;
+    sorting: SortingState;
+  }) {
+    this.stopStreaming();
 
-  const url = `/api/keywords/stream?${params.toString()}`;
-  const eventSource = new EventSource(url);
-  eventSourceRef.current = eventSource;
-
-  eventSource.onmessage = (event) => {
-    const data = event.data;
-
-    if (data === "[DONE]") {
-      setIsLoading(false);
-      eventSource.close();
-      return;
+    const urlParams = new URLSearchParams();
+    urlParams.append("page", (params.page + 1).toString());
+    urlParams.append("pageSize", API_PAGE_SIZE.toString());
+    for (const filter of params.filters) {
+      if (filter.value != null) {
+        urlParams.append(filter.id, filter.value.toString());
+      }
     }
-    const keywords = JSON.parse(data) as Keyword[];
-    setKeywords((prev) => (prev ? [...prev, ...keywords] : keywords));
-  };
+    if (params.keyword) {
+      urlParams.append("keyword", params.keyword);
+    }
+    if (params.sorting.length > 0) {
+      for (const sort of params.sorting) {
+        urlParams.append("sortBy", `${sort.desc ? "-" : "+"}${sort.id}`);
+      }
+    }
 
-  eventSource.onerror = (err) => {
-    console.error("EventSource error:", err);
-    setError(new Error("Failed to stream data"));
-    setIsLoading(false);
-    eventSource.close();
-  };
+    const url = `/api/keywords/stream?${urlParams.toString()}`;
+    this.eventSource = new EventSource(url);
+
+    this.eventSource.onmessage = (event) => {
+      if (event.data === "[DONE]") {
+        this.dispatchEvent(new CustomEvent("complete"));
+        return;
+      }
+
+      try {
+        const keywords = JSON.parse(event.data) as Keyword[];
+        this.dispatchEvent(new CustomEvent("data", { detail: keywords }));
+      } catch (error) {
+        this.dispatchEvent(
+          new CustomEvent("error", {
+            detail: error instanceof Error ? error : new Error(String(error)),
+          }),
+        );
+      }
+    };
+
+    this.eventSource.onerror = () => {
+      this.dispatchEvent(
+        new CustomEvent("error", {
+          detail: new Error("Failed to stream data"),
+        }),
+      );
+    };
+  }
+
+  stopStreaming() {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+  }
+
+  isStreaming() {
+    return this.eventSource !== null;
+  }
 }
 
-export function useKeywordsTable() {
+const keywordsStreamer = new KeywordsStreamer();
+
+export function useKeywordsTable(defaultPageSize: number) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "avg_monthly_searches", desc: true },
   ]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [{ pageIndex, pageSize }, setPagination] = useState({
+  const [{ pageIndex, pageSize }, setPagination] = useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: defaultPageSize,
   });
-
-  const [keywords, setKeywords] = useState<Keyword[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const eventSourceRef = useRef<EventSource | null>(null);
+  const [hasReceivedData, setHasReceivedData] = useState(false);
 
   const resetPagination = useCallback(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
   }, []);
 
+  const apiPageIndex = useMemo(
+    () => Math.floor((pageIndex * pageSize) / API_PAGE_SIZE),
+    [pageIndex, pageSize],
+  );
   const keyword = columnFilters.find((f) => f.id === "keyword")
     ?.value as string;
-  const debouncedKeyword = useDebounce(keyword, resetPagination);
+  const { debouncedValue: debouncedKeyword, isDebouncing } = useDebounce(
+    keyword,
+    resetPagination,
+  );
 
-  useEffect(() => {
-    startStreaming({
-      debouncedKeyword,
+  const streamKey = useMemo(() => {
+    const key = JSON.stringify({
+      page: apiPageIndex,
+      filters: columnFilters.filter((f) => f.id !== "keyword"),
+      keyword: debouncedKeyword,
       sorting,
-      eventSourceRef,
-      setKeywords,
-      setIsLoading,
-      setError,
     });
+    setHasReceivedData(false);
+    return key;
+  }, [apiPageIndex, columnFilters, debouncedKeyword, sorting]);
 
-    return () => {
-      if (eventSourceRef.current) {
-        eventSourceRef.current.close(); // eslint-disable-line react-hooks/exhaustive-deps
-      }
-    };
-  }, [debouncedKeyword, sorting]);
+  const { data: keywords = [], error } = useSWRSubscription(
+    streamKey,
+    (key, { next }) => {
+      const params = JSON.parse(key);
+      let accumulatedKeywords: Keyword[] = [];
+
+      const handleData = (event: CustomEvent) => {
+        const newKeywords = event.detail as Keyword[];
+        accumulatedKeywords = [...accumulatedKeywords, ...newKeywords];
+        setHasReceivedData(true);
+        next(null, accumulatedKeywords);
+      };
+
+      const handleError = (event: CustomEvent) => {
+        const error = event.detail as Error;
+        setHasReceivedData(true);
+        next(error);
+      };
+
+      const handleComplete = () => {
+        setHasReceivedData(true);
+        keywordsStreamer.stopStreaming();
+      };
+
+      keywordsStreamer.addEventListener("data", handleData as EventListener);
+      keywordsStreamer.addEventListener("error", handleError as EventListener);
+      keywordsStreamer.addEventListener(
+        "complete",
+        handleComplete as EventListener,
+      );
+      keywordsStreamer.startStreaming(params);
+
+      return () => {
+        keywordsStreamer.removeEventListener(
+          "data",
+          handleData as EventListener,
+        );
+        keywordsStreamer.removeEventListener(
+          "error",
+          handleError as EventListener,
+        );
+        keywordsStreamer.removeEventListener(
+          "complete",
+          handleComplete as EventListener,
+        );
+        keywordsStreamer.stopStreaming();
+      };
+    },
+  );
 
   const {
     data: totalRows,
-    isLoading: isTotalRowsLoading,
+    isLoading: isTotalRowsLoadingQuery,
     error: totalRowsError,
   } = useSWR(
     [debouncedKeyword],
@@ -127,36 +193,36 @@ export function useKeywordsTable() {
       keepPreviousData: true,
     },
   );
+  const isTotalRowsLoading = isTotalRowsLoadingQuery || isDebouncing;
 
-  const paginatedKeywords = useMemo(() => {
-    const startIndex = pageIndex * pageSize;
+  const isLoading =
+    keywordsStreamer.isStreaming() || !hasReceivedData || isDebouncing;
+  const displayData: KeywordRow[] = useMemo(() => {
+    if (isDebouncing) {
+      return Array(pageSize)
+        .fill(null)
+        .map(() => ({ showSkeleton: true }));
+    }
+
+    const startIndex = (pageIndex % pageSize) * pageSize;
     const endIndex = startIndex + pageSize;
-    return keywords.slice(startIndex, endIndex);
-  }, [keywords, pageIndex, pageSize]);
-  const tableData = useMemo(
-    () => (isLoading ? Array(10).fill({}) : paginatedKeywords),
-    [isLoading, paginatedKeywords],
-  );
+    const realData = keywords.slice(startIndex, endIndex);
 
-  const tableColumns = useMemo(
-    () =>
-      isLoading
-        ? columns.map((column) => ({
-            ...column,
-            cell: () => (
-              <Skeleton
-                className="my-0.5 h-[16px]"
-                style={{ width: column.size ? 0.5 * column.size : undefined }}
-              />
-            ),
-          }))
-        : columns,
-    [isLoading],
-  );
+    const remainingSlots = pageSize - realData.length;
+    if (remainingSlots <= 0) {
+      return realData;
+    }
+
+    const placeholders: KeywordRow[] = Array(remainingSlots)
+      .fill(null)
+      .map(() => ({ showSkeleton: isLoading }));
+
+    return [...realData, ...placeholders];
+  }, [keywords, pageIndex, pageSize, isLoading, isDebouncing]);
 
   const table = useReactTable({
-    data: tableData,
-    columns: tableColumns,
+    data: displayData,
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     onSortingChange: (value) => {
@@ -172,9 +238,9 @@ export function useKeywordsTable() {
       columnFilters,
       pagination: { pageIndex, pageSize },
     },
-    enableSorting: !isLoading,
     manualPagination: true,
     manualFiltering: true,
+    manualSorting: true,
     pageCount: totalRows ? Math.ceil(totalRows / pageSize) : -1,
   });
 
