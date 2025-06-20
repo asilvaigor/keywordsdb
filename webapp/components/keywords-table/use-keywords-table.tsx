@@ -100,6 +100,7 @@ export function useKeywordsTable(defaultPageSize: number) {
     pageSize: defaultPageSize,
   });
   const [hasReceivedData, setHasReceivedData] = useState(false);
+  const [isLoadingSlow, setIsLoadingSlow] = useState(false);
 
   const resetPagination = useCallback(() => {
     setPagination((prev) => ({ ...prev, pageIndex: 0 }));
@@ -124,6 +125,7 @@ export function useKeywordsTable(defaultPageSize: number) {
       sorting,
     });
     setHasReceivedData(false);
+    setIsLoadingSlow(false);
     return key;
   }, [apiPageIndex, columnFilters, debouncedKeyword, sorting]);
 
@@ -175,6 +177,7 @@ export function useKeywordsTable(defaultPageSize: number) {
         keywordsStreamer.stopStreaming();
       };
     },
+    { onLoadingSlow: () => setIsLoadingSlow(true) },
   );
 
   const {
@@ -247,6 +250,7 @@ export function useKeywordsTable(defaultPageSize: number) {
   return {
     table,
     isLoading,
+    isLoadingSlow,
     error,
     totalRows,
     isTotalRowsLoading,
