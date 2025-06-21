@@ -3,7 +3,7 @@
 import { createHash } from "node:crypto";
 import clickhouse from "@/lib/clickhouse";
 import firestore from "@/lib/firestore";
-import type { Keyword } from "@/lib/types";
+import type { CacheMiss, Keyword } from "@/lib/types";
 import type { KeywordFilters } from "@/lib/types";
 import type { SortingState } from "@tanstack/react-table";
 import { unstable_cache } from "next/cache";
@@ -23,7 +23,7 @@ export async function* getKeywordsStream(
   sort?: SortingState,
   page = 1,
   pageSize = 100,
-): AsyncGenerator<Keyword[], void, unknown> {
+): AsyncGenerator<Keyword[] | CacheMiss, void, unknown> {
   const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${page}-${pageSize}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keywords-cache").doc(hash);
@@ -34,6 +34,8 @@ export async function* getKeywordsStream(
     yield doc.results;
     return;
   }
+
+  yield { isCacheMiss: true };
 
   console.log("Streaming keywords from clickhouse");
   const { whereClause, params } = buildWhereClause(filters);
@@ -88,7 +90,6 @@ export async function* getKeywordsStream(
 export async function getKeywordsCount(
   filters?: KeywordFilters,
 ): Promise<number> {
-  console.log(filters);
   const cacheKey = `keyword-counts-${JSON.stringify(filters)}`;
   const count = await unstable_cache(getKeywordsCountNotCached, [cacheKey], {
     revalidate: 24 * 3600,

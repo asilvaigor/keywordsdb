@@ -1,4 +1,9 @@
-import type { Keyword, KeywordFilters, KeywordRow } from "@/lib/types";
+import type {
+  CacheMiss,
+  Keyword,
+  KeywordFilters,
+  KeywordRow,
+} from "@/lib/types";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
 import useSWRSubscription from "swr/subscription";
@@ -51,8 +56,8 @@ class KeywordsStreamer extends EventTarget {
       }
 
       try {
-        const keywords = JSON.parse(event.data) as Keyword[];
-        this.dispatchEvent(new CustomEvent("data", { detail: keywords }));
+        const res = JSON.parse(event.data) as Keyword[] | CacheMiss;
+        this.dispatchEvent(new CustomEvent("data", { detail: res }));
       } catch (error) {
         this.dispatchEvent(
           new CustomEvent("error", {
@@ -101,6 +106,7 @@ export function useKeywordsQuery({
   isFiltersDebouncing: boolean;
 }) {
   const [hasReceivedData, setHasReceivedData] = useState(false);
+  const [isCacheMiss, setIsCacheMiss] = useState(false);
 
   const streamKey = useMemo(() => {
     const key = JSON.stringify({
@@ -118,8 +124,13 @@ export function useKeywordsQuery({
       let accumulatedKeywords: Keyword[] = [];
 
       const handleData = (event: CustomEvent) => {
-        const newKeywords = event.detail as Keyword[];
-        accumulatedKeywords = [...accumulatedKeywords, ...newKeywords];
+        const res = event.detail as Keyword[] | CacheMiss;
+        if ("isCacheMiss" in res) {
+          setIsCacheMiss(true);
+          next(null, []);
+          return;
+        }
+        accumulatedKeywords = [...accumulatedKeywords, ...res];
         setHasReceivedData(true);
         next(null, accumulatedKeywords);
       };
@@ -136,6 +147,7 @@ export function useKeywordsQuery({
       };
 
       setHasReceivedData(false);
+      setIsCacheMiss(false);
       keywordsStreamer.stopStreaming();
       keywordsStreamer.addEventListener("data", handleData as EventListener);
       keywordsStreamer.addEventListener("error", handleError as EventListener);
@@ -194,5 +206,6 @@ export function useKeywordsQuery({
     isLoading,
     error,
     keywords: displayData,
+    isCacheMiss,
   };
 }

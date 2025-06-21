@@ -6,6 +6,10 @@ export type Keyword = {
   updated_at: string;
 };
 
+export type CacheMiss = {
+  isCacheMiss: boolean;
+};
+
 export type KeywordRow =
   | Keyword
   | {
