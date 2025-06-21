@@ -11,3 +11,10 @@ export type KeywordRow =
   | {
       showSkeleton: boolean;
     };
+
+export type KeywordFilters = {
+  keyword?: string;
+  avg_monthly_searches?: { min?: number; max?: number };
+  competition_index?: { min?: number; max?: number };
+  cpc_high?: { min?: number; max?: number };
+};

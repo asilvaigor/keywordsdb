@@ -6,20 +6,16 @@ function getInt(value: string | null): number | undefined {
   return value ? Number.parseInt(value) : undefined;
 }
 
-function getFloat(value: string | null): number | undefined {
-  return value ? Number.parseFloat(value) : undefined;
-}
-
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const filters = {
     keyword: searchParams.get("keyword") || undefined,
-    minMonthlySearches: getInt(searchParams.get("minMonthlySearches")),
-    maxMonthlySearches: getInt(searchParams.get("maxMonthlySearches")),
-    minCompetitionIndex: getInt(searchParams.get("minCompetitionIndex")),
-    maxCompetitionIndex: getInt(searchParams.get("maxCompetitionIndex")),
-    minCpcHigh: getFloat(searchParams.get("minCpcHigh")),
-    maxCpcHigh: getFloat(searchParams.get("maxCpcHigh")),
+    avg_monthly_searches:
+      JSON.parse(searchParams.get("avg_monthly_searches") || "null") ??
+      undefined,
+    competition_index:
+      JSON.parse(searchParams.get("competition_index") || "null") ?? undefined,
+    cpc_high: JSON.parse(searchParams.get("cpc_high") || "null") ?? undefined,
   };
   const sortParams = searchParams.getAll("sortBy");
   const sort: SortingState = sortParams.map((param) => {

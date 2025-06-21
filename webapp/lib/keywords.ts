@@ -4,18 +4,9 @@ import { createHash } from "node:crypto";
 import clickhouse from "@/lib/clickhouse";
 import firestore from "@/lib/firestore";
 import type { Keyword } from "@/lib/types";
+import type { KeywordFilters } from "@/lib/types";
 import type { SortingState } from "@tanstack/react-table";
 import { unstable_cache } from "next/cache";
-
-interface KeywordFilters {
-  keyword?: string;
-  minMonthlySearches?: number;
-  maxMonthlySearches?: number;
-  minCompetitionIndex?: number;
-  maxCompetitionIndex?: number;
-  minCpcHigh?: number;
-  maxCpcHigh?: number;
-}
 
 interface KeywordsCached {
   results: Keyword[];
@@ -97,6 +88,7 @@ export async function* getKeywordsStream(
 export async function getKeywordsCount(
   filters?: KeywordFilters,
 ): Promise<number> {
+  console.log(filters);
   const cacheKey = `keyword-counts-${JSON.stringify(filters)}`;
   const count = await unstable_cache(getKeywordsCountNotCached, [cacheKey], {
     revalidate: 24 * 3600,
@@ -156,29 +148,29 @@ function buildWhereClause(filters?: KeywordFilters): {
       keyword_filter: `%${filters.keyword.toLowerCase()}%`,
     };
   }
-  if (filters?.minMonthlySearches !== undefined) {
+  if (filters?.avg_monthly_searches?.min !== undefined) {
     whereClause += " AND kws.avg_monthly_searches >= {min_searches:Int32}";
-    params = { ...params, min_searches: filters.minMonthlySearches };
+    params = { ...params, min_searches: filters?.avg_monthly_searches?.min };
   }
-  if (filters?.maxMonthlySearches !== undefined) {
+  if (filters?.avg_monthly_searches?.max !== undefined) {
     whereClause += " AND kws.avg_monthly_searches <= {max_searches:Int32}";
-    params = { ...params, max_searches: filters.maxMonthlySearches };
+    params = { ...params, max_searches: filters?.avg_monthly_searches?.max };
   }
-  if (filters?.minCompetitionIndex !== undefined) {
+  if (filters?.competition_index?.min !== undefined) {
     whereClause += " AND kws.competition_index >= {min_competition:Float32}";
-    params = { ...params, min_competition: filters.minCompetitionIndex };
+    params = { ...params, min_competition: filters?.competition_index?.min };
   }
-  if (filters?.maxCompetitionIndex !== undefined) {
+  if (filters?.competition_index?.max !== undefined) {
     whereClause += " AND kws.competition_index <= {max_competition:Float32}";
-    params = { ...params, max_competition: filters.maxCompetitionIndex };
+    params = { ...params, max_competition: filters?.competition_index?.max };
   }
-  if (filters?.minCpcHigh !== undefined) {
+  if (filters?.cpc_high?.min !== undefined) {
     whereClause += " AND kws.cpc_high >= {min_cpc:Float32}";
-    params = { ...params, min_cpc: filters.minCpcHigh };
+    params = { ...params, min_cpc: filters?.cpc_high?.min };
   }
-  if (filters?.maxCpcHigh !== undefined) {
+  if (filters?.cpc_high?.max !== undefined) {
     whereClause += " AND kws.cpc_high <= {max_cpc:Float32}";
-    params = { ...params, max_cpc: filters.maxCpcHigh };
+    params = { ...params, max_cpc: filters?.cpc_high?.max };
   }
   return { whereClause, params };
 }

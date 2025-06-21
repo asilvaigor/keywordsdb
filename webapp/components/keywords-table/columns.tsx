@@ -5,6 +5,12 @@ import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { formatLargeNumber } from "./utils";
 
+const Header = ({ title }: { title: string }) => {
+  return (
+    <div className="text-sm font-medium text-muted-foreground">{title}</div>
+  );
+};
+
 const SortableHeader = ({
   column,
   title,
@@ -36,7 +42,7 @@ const SortableHeader = ({
 const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   {
     accessorKey: "keyword",
-    header: ({ column }) => <SortableHeader column={column} title="Keyword" />,
+    header: () => <Header title="Keyword" />,
     cell: ({ row }) => (
       <div className="truncate" title={row.getValue("keyword")}>
         {row.getValue("keyword")}
@@ -61,23 +67,21 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       <SortableHeader column={column} title="Competition" />
     ),
     cell: ({ row }) => row.getValue("competition_index") as number,
-    size: 140,
+    size: 130,
     enableResizing: false,
   },
   {
     accessorKey: "cpc_high",
     header: ({ column }) => <SortableHeader column={column} title="CPC ($)" />,
     cell: ({ row }) => (row.getValue("cpc_high") as number).toFixed(2),
-    size: 90,
+    size: 100,
     enableResizing: false,
   },
   {
     accessorKey: "updated_at",
-    header: ({ column }) => (
-      <SortableHeader column={column} title="Last updated" />
-    ),
+    header: () => <Header title="Last updated" />,
     cell: ({ row }) => row.getValue("updated_at") as string,
-    size: 150,
+    size: 140,
     enableResizing: false,
   },
 ];

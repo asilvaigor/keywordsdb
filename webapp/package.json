@@ -13,6 +13,8 @@
   "dependencies": {
     "@clickhouse/client": "^1.11.1",
     "@google-cloud/firestore": "^7.11.1",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-select": "^2.2.5",
     "@radix-ui/react-slot": "^1.2.3",
     "@tailwindcss/postcss": "^4.1.8",
     "@tanstack/react-table": "^8.21.3",
@@ -37,6 +39,7 @@
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
     "eslint": "^9.28.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.34.1"
   }
 }

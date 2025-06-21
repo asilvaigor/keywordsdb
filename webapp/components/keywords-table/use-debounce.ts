@@ -1,13 +1,23 @@
 import { useEffect, useState } from "react";
 
-export default function useDebounce(
-  value: string,
-  onValueChange: (value: string) => void,
+export default function useDebounce<T>(
+  value: T,
+  onValueChange: (value: T) => void,
 ) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
   const [isDebouncing, setIsDebouncing] = useState(false);
 
   useEffect(() => {
+    if (Array.isArray(value) && Array.isArray(debouncedValue)) {
+      if (
+        value.length === debouncedValue.length &&
+        value.every((item, index) => item === debouncedValue[index])
+      ) {
+        return;
+      }
+    } else if (value === debouncedValue) {
+      return;
+    }
     if (value == null) {
       setDebouncedValue(value);
       setIsDebouncing(false);
@@ -24,7 +34,7 @@ export default function useDebounce(
     return () => {
       clearTimeout(handler);
     };
-  }, [value, onValueChange]);
+  }, [value, debouncedValue, onValueChange]);
 
   return { debouncedValue, isDebouncing };
 }
