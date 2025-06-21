@@ -20,12 +20,13 @@ export async function GET(request: NextRequest) {
   const sortParams = searchParams.getAll("sortBy");
   const sort: SortingState = sortParams.map((param) => {
     const isDescending = param.startsWith("-");
-    const columnId = isDescending ? param.slice(1) : param;
+    const columnId = param.slice(1);
     return {
       id: columnId,
       desc: isDescending,
     };
   });
+  console.log(sort);
   const page = getInt(searchParams.get("page"));
   const pageSize = getInt(searchParams.get("pageSize"));
 

@@ -38,8 +38,8 @@ export function Filters({ table }: Props) {
 
   const operatorOptions = [
     { value: "eq", label: "Equals" },
-    { value: "gte", label: "≥" },
-    { value: "lte", label: "≤" },
+    { value: "gte", label: "Greater Than or Equal" },
+    { value: "lte", label: "Less Than or Equal" },
     { value: "between", label: "Between" },
   ] as const;
 
