@@ -25,6 +25,10 @@ interface DynamicFilter {
   operator: FilterOperator;
   value1: string;
   value2: string;
+  errors: {
+    value1?: string;
+    value2?: string;
+  };
 }
 
 export function Filters({ table }: Props) {
@@ -43,6 +47,41 @@ export function Filters({ table }: Props) {
     { value: "between", label: "Between" },
   ] as const;
 
+  // Add validation function
+  const validateFilter = (
+    filter: DynamicFilter,
+  ): { value1?: string; value2?: string } => {
+    const errors: { value1?: string; value2?: string } = {};
+
+    const val1 = Number.parseFloat(filter.value1);
+    const val2 = Number.parseFloat(filter.value2);
+
+    // Check for negative values
+    if (filter.value1 && !Number.isNaN(val1) && val1 < 0) {
+      errors.value1 = "Value cannot be negative";
+    }
+
+    if (filter.value2 && !Number.isNaN(val2) && val2 < 0) {
+      errors.value2 = "Value cannot be negative";
+    }
+
+    // Check val1 <= val2 for between operator
+    if (
+      filter.operator === "between" &&
+      filter.value1 &&
+      filter.value2 &&
+      !Number.isNaN(val1) &&
+      !Number.isNaN(val2) &&
+      val1 > val2
+    ) {
+      errors.value1 = "First value must be less than or equal to second value";
+      errors.value2 =
+        "Second value must be greater than or equal to first value";
+    }
+
+    return errors;
+  };
+
   const addFilter = () => {
     const newFilter: DynamicFilter = {
       id: Date.now().toString(),
@@ -50,6 +89,7 @@ export function Filters({ table }: Props) {
       operator: "eq",
       value1: "",
       value2: "",
+      errors: {},
     };
     setDynamicFilters([...dynamicFilters, newFilter]);
   };
@@ -66,14 +106,20 @@ export function Filters({ table }: Props) {
   };
 
   const updateFilter = (id: string, updates: Partial<DynamicFilter>) => {
-    const updatedFilters = dynamicFilters.map((filter) =>
-      filter.id === id ? { ...filter, ...updates } : filter,
-    );
+    const updatedFilters = dynamicFilters.map((filter) => {
+      if (filter.id === id) {
+        const updatedFilter = { ...filter, ...updates };
+        // Validate the updated filter and update errors
+        const errors = validateFilter(updatedFilter);
+        return { ...updatedFilter, errors };
+      }
+      return filter;
+    });
     setDynamicFilters(updatedFilters);
 
-    // Apply the filter to the table
+    // Apply the filter to the table only if valid
     const filter = updatedFilters.find((f) => f.id === id);
-    if (filter) {
+    if (filter && Object.keys(filter.errors).length === 0) {
       applyFilterToTable(filter);
     }
   };
@@ -192,30 +238,34 @@ export function Filters({ table }: Props) {
               </Select>
 
               {/* Value input(s) */}
-              <Input
-                type="number"
-                placeholder="Value"
-                value={filter.value1}
-                onChange={(e) =>
-                  updateFilter(filter.id, { value1: e.target.value })
-                }
-                className="flex-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-              />
+              <div className="flex-2 space-y-1">
+                <Input
+                  type="number"
+                  placeholder="Value"
+                  value={filter.value1}
+                  onChange={(e) =>
+                    updateFilter(filter.id, { value1: e.target.value })
+                  }
+                  className={`[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${filter.errors.value1 ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                />
+              </div>
 
               {filter.operator === "between" && (
                 <>
                   <span className="text-sm text-muted-foreground flex-shrink-0">
                     and
                   </span>
-                  <Input
-                    type="number"
-                    placeholder="Value"
-                    value={filter.value2}
-                    onChange={(e) =>
-                      updateFilter(filter.id, { value2: e.target.value })
-                    }
-                    className="flex-2 [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]"
-                  />
+                  <div className="flex-2 space-y-1">
+                    <Input
+                      type="number"
+                      placeholder="Value"
+                      value={filter.value2}
+                      onChange={(e) =>
+                        updateFilter(filter.id, { value2: e.target.value })
+                      }
+                      className={`[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${filter.errors.value2 ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                    />
+                  </div>
                 </>
               )}
 

@@ -26,18 +26,26 @@ export function useKeywordsTable(defaultPageSize: number) {
     { id: "avg_monthly_searches", desc: true },
   ]);
 
-  const { isLoading: isTotalRowsLoading, totalRows } = useCountsQuery({
-    debouncedFilters,
-    isFiltersDebouncing,
-  });
-  const { progress, isLoading, error, keywords, isCacheMiss } = useKeywordsQuery({
-    sorting,
-    filters: debouncedFilters,
-    apiPageIndex,
-    pageIndex,
-    pageSize,
-    isFiltersDebouncing,
-  });
+  const { isLoading: isTotalRowsLoading, totalRows: totalRowsQuery } =
+    useCountsQuery({
+      debouncedFilters,
+      isFiltersDebouncing,
+    });
+  const { progress, isLoading, error, keywords, isCacheMiss } =
+    useKeywordsQuery({
+      sorting,
+      filters: debouncedFilters,
+      apiPageIndex,
+      pageIndex,
+      pageSize,
+      isFiltersDebouncing,
+    });
+  const totalRows =
+    totalRowsQuery == null
+      ? !isLoading && keywords.length < pageSize
+        ? keywords.length
+        : undefined
+      : totalRowsQuery;
 
   const table = useReactTable({
     data: keywords,

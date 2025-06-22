@@ -39,7 +39,7 @@ export function KeywordsTable() {
       <div className="rounded-md border relative">
         {progress != null && (
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted rounded-t-md overflow-hidden z-20">
-            <div 
+            <div
               className="h-full bg-primary transition-all duration-300 ease-out"
               style={{ width: `${progress * 100}%` }}
             />
