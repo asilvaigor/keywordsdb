@@ -3,6 +3,7 @@ import type {
   Keyword,
   KeywordFilters,
   KeywordRow,
+  KeywordsStreamResponse,
 } from "@/lib/types";
 import type { SortingState } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -107,6 +108,7 @@ export function useKeywordsQuery({
 }) {
   const [hasReceivedData, setHasReceivedData] = useState(false);
   const [isCacheMiss, setIsCacheMiss] = useState(false);
+  const [progress, setProgress] = useState<number | undefined>(undefined);
 
   const streamKey = useMemo(() => {
     const key = JSON.stringify({
@@ -124,10 +126,13 @@ export function useKeywordsQuery({
       let accumulatedKeywords: Keyword[] = [];
 
       const handleData = (event: CustomEvent) => {
-        const res = event.detail as Keyword[] | CacheMiss;
+        const res = event.detail as KeywordsStreamResponse;
         if ("isCacheMiss" in res) {
           setIsCacheMiss(true);
-          next(null, []);
+          return;
+        }
+        if ("isProgress" in res) {
+          setProgress(res.percent);
           return;
         }
         accumulatedKeywords = [...accumulatedKeywords, ...res];
@@ -138,15 +143,18 @@ export function useKeywordsQuery({
       const handleError = (event: CustomEvent) => {
         const error = event.detail as Error;
         setHasReceivedData(true);
+        setProgress(undefined);
         next(error);
       };
 
       const handleComplete = () => {
         setHasReceivedData(true);
+        setProgress(undefined);
         keywordsStreamer.stopStreaming();
       };
 
       setHasReceivedData(false);
+      setProgress(undefined);
       setIsCacheMiss(false);
       keywordsStreamer.stopStreaming();
       keywordsStreamer.addEventListener("data", handleData as EventListener);
@@ -203,6 +211,7 @@ export function useKeywordsQuery({
   }, [keywords, pageIndex, pageSize, isLoading, isFiltersDebouncing]);
 
   return {
+    progress,
     isLoading,
     error,
     keywords: displayData,

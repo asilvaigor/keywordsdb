@@ -3,7 +3,13 @@
 import { createHash } from "node:crypto";
 import clickhouse from "@/lib/clickhouse";
 import firestore from "@/lib/firestore";
-import type { CacheMiss, Keyword } from "@/lib/types";
+import type {
+  CacheMiss,
+  ClickhouseProgress,
+  Keyword,
+  KeywordsStreamResponse,
+  Progress,
+} from "@/lib/types";
 import type { KeywordFilters } from "@/lib/types";
 import type { SortingState } from "@tanstack/react-table";
 import { unstable_cache } from "next/cache";
@@ -23,7 +29,7 @@ export async function* getKeywordsStream(
   sort?: SortingState,
   page = 1,
   pageSize = 100,
-): AsyncGenerator<Keyword[] | CacheMiss, void, unknown> {
+): AsyncGenerator<KeywordsStreamResponse, void, unknown> {
   const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${page}-${pageSize}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keywords-cache").doc(hash);
@@ -35,7 +41,8 @@ export async function* getKeywordsStream(
     return;
   }
 
-  yield { isCacheMiss: true };
+  const cacheMiss: CacheMiss = { isCacheMiss: true };
+  yield cacheMiss;
 
   console.log("Streaming keywords from clickhouse");
   const { whereClause, params } = buildWhereClause(filters);
@@ -62,18 +69,37 @@ export async function* getKeywordsStream(
   `;
 
   const offset = (page - 1) * pageSize;
-  const stream = (
-    await clickhouse.query({
-      query,
-      query_params: { ...params, pageSize, offset },
-      format: "JSONEachRow",
-    })
-  ).stream();
+
+  const resultSet = await clickhouse.query({
+    query,
+    query_params: { ...params, pageSize, offset },
+    format: "JSONEachRowWithProgress",
+  });
 
   const allResults: Keyword[] = [];
-  for await (const rows of stream) {
-    const results = rows.map((row) => row.json() as Keyword);
-    allResults.push(...results);
+  let lastProgressTime = Date.now();
+
+  for await (const chunk of resultSet.stream()) {
+    const results: Keyword[] = [];
+    for (const row of chunk) {
+      const chunkData = row.json() as Record<string, unknown>;
+      if (chunkData.progress) {
+        if (Date.now() - lastProgressTime > 100) {
+          const clickhouseProgress = chunkData.progress as ClickhouseProgress;
+          const progress: Progress = {
+            isProgress: true,
+            percent:
+              clickhouseProgress.read_rows /
+              clickhouseProgress.total_rows_to_read,
+          };
+          yield progress;
+          lastProgressTime = Date.now();
+        }
+      } else {
+        results.push(chunkData.row as Keyword);
+        allResults.push(chunkData.row as Keyword);
+      }
+    }
     yield results;
   }
 

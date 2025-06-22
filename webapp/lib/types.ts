@@ -10,6 +10,18 @@ export type CacheMiss = {
   isCacheMiss: boolean;
 };
 
+export type ClickhouseProgress = {
+  read_rows: number;
+  total_rows_to_read: number;
+};
+
+export type Progress = {
+  isProgress: boolean;
+  percent: number;
+};
+
+export type KeywordsStreamResponse = Keyword[] | CacheMiss | Progress;
+
 export type KeywordRow =
   | Keyword
   | {

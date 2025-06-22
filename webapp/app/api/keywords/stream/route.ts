@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
       desc: isDescending,
     };
   });
-  console.log(sort);
   const page = getInt(searchParams.get("page"));
   const pageSize = getInt(searchParams.get("pageSize"));
 

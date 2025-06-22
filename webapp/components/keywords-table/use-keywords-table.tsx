@@ -30,7 +30,7 @@ export function useKeywordsTable(defaultPageSize: number) {
     debouncedFilters,
     isFiltersDebouncing,
   });
-  const { isLoading, error, keywords, isCacheMiss } = useKeywordsQuery({
+  const { progress, isLoading, error, keywords, isCacheMiss } = useKeywordsQuery({
     sorting,
     filters: debouncedFilters,
     apiPageIndex,
@@ -65,6 +65,7 @@ export function useKeywordsTable(defaultPageSize: number) {
 
   return {
     table,
+    progress,
     isLoading,
     isTotalRowsLoading,
     isCacheMiss,

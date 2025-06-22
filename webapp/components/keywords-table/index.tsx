@@ -22,6 +22,7 @@ const PAGE_SIZE = 10;
 export function KeywordsTable() {
   const {
     table,
+    progress,
     isLoading,
     isTotalRowsLoading,
     isCacheMiss,
@@ -36,6 +37,14 @@ export function KeywordsTable() {
     <div className="flex flex-col justify-center max-w-xs sm:max-w-fit mx-auto h-full">
       <Filters table={table} />
       <div className="rounded-md border relative">
+        {progress != null && (
+          <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted rounded-t-md overflow-hidden z-20">
+            <div 
+              className="h-full bg-primary transition-all duration-300 ease-out"
+              style={{ width: `${progress * 100}%` }}
+            />
+          </div>
+        )}
         {!isClickhouseReady && isCacheMiss && (
           <div className="absolute inset-0 bg-background/50 backdrop-blur-xs z-10 flex items-center justify-center rounded-md">
             <div className="text-center space-y-2">
