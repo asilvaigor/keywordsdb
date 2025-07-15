@@ -46,7 +46,7 @@ class Keywords:
     @staticmethod
     def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str, None, None]:
         """
-        Query the keywords table to get the N oldest records based on ingested_at.
+        Query the keywords table to get the k oldest records based on ingested_at.
 
         Args:
             k: Number of records to retrieve
@@ -63,7 +63,8 @@ class Keywords:
             query = """
                 SELECT keyword
                 FROM keywords
-                WHERE volume_history = ''
+                WHERE avg_monthly_searches > 2000
+                ORDER BY ingested_at ASC
                 LIMIT %(batch_size)s OFFSET %(offset)s
             """
             df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
