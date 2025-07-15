@@ -14,7 +14,6 @@ import { LoaderCircle } from "lucide-react";
 import { columns } from "./columns";
 import { Filters } from "./filters";
 import { Pagination } from "./pagination";
-import useClickhouseReady from "./use-clickhouse-ready";
 import { useKeywordsTable } from "./use-keywords-table";
 
 const PAGE_SIZE = 10;
@@ -31,7 +30,10 @@ export function KeywordsTable() {
     pageIndex,
     pageSize,
   } = useKeywordsTable(PAGE_SIZE);
-  const isClickhouseReady = useClickhouseReady();
+
+  // TODO: put this back on when landing page is ready
+  // const isClickhouseReady = useClickhouseReady();
+  const isClickhouseReady = !isCacheMiss;
 
   return (
     <div className="flex flex-col justify-center max-w-xs sm:max-w-fit mx-auto h-full">
