@@ -135,6 +135,8 @@ def configure_logger(
     _logger_instance = structlog.get_logger()
 
     if mode == "json":
+        sys.stdout.reconfigure(line_buffering=True)  # type: ignore[union-attr]
+        sys.stderr.reconfigure(line_buffering=True)  # type: ignore[union-attr]
         _override_pywarnings(_logger_instance)
         _override_stderr(_logger_instance)
 

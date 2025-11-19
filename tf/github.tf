@@ -30,6 +30,7 @@ resource "google_project_iam_custom_role" "compute_update" {
     "compute.instances.setMetadata",
     "compute.instances.start",
     "compute.instances.stop",
+    "compute.instances.reset",
   ]
 }
 
