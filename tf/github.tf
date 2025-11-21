@@ -26,11 +26,16 @@ resource "google_project_iam_custom_role" "compute_update" {
   title   = "Compute Instance Update"
   permissions = [
     "compute.projects.get",
-    "compute.instances.get",
+    "compute.instanceGroupManagers.get",
+    "compute.instanceGroupManagers.update",
+    "compute.instanceTemplates.useReadOnly",
+    "compute.instanceTemplates.get",
+    "compute.instances.create",
     "compute.instances.setMetadata",
-    "compute.instances.start",
-    "compute.instances.stop",
-    "compute.instances.reset",
+    "compute.instances.setLabels",
+    "compute.disks.create",
+    "compute.subnetworks.use",
+    "compute.subnetworks.useExternalIp",
   ]
 }
 

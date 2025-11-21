@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import zlib
 from typing import Iterator, MutableSequence
@@ -7,7 +8,9 @@ import polars as pl
 from asyncer import SoonValue, asyncify, create_task_group
 from asynciolimiter import Limiter
 from google.ads.googleads.client import GoogleAdsClient
-from google.ads.googleads.v19.services.types import (
+from google.ads.googleads.errors import GoogleAdsException
+from google.ads.googleads.v22.services.services.keyword_plan_idea_service.client import KeywordPlanIdeaServiceClient
+from google.ads.googleads.v22.services.types import (
     GenerateKeywordIdeaResponse,
     GenerateKeywordIdeaResult,
     GenerateKeywordIdeasRequest,
@@ -22,8 +25,12 @@ class AdsClient:
 
     def __init__(self, logger: BoundLogger) -> None:
         os.environ["GOOGLE_ADS_USE_PROTO_PLUS"] = "true"
+        logging.getLogger("google.ads.googleads.client").setLevel(logging.ERROR)
+
         self._client = GoogleAdsClient.load_from_env()
-        self._keyword_plan_idea_service = self._client.get_service("KeywordPlanIdeaService")
+        self._keyword_plan_idea_service: KeywordPlanIdeaServiceClient = self._client.get_service(
+            "KeywordPlanIdeaService"
+        )
         self._logger = logger
 
     async def get_keyword_info(self, keywords: list[str], min_search_volume: int | None = None) -> pl.DataFrame:
@@ -80,7 +87,7 @@ class AdsClient:
         self._logger.debug("Getting first page")
         pager = await asyncify(self._keyword_plan_idea_service.generate_keyword_ideas)(request=request)
         pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages
-        return pages, AdsClient._get_page(pages)  # First page doesnt need await
+        return pages, self._get_page(pages)  # First page doesnt need await
 
     async def _fetch_next_page(
         self, pages: Iterator[GenerateKeywordIdeaResponse]
@@ -88,7 +95,7 @@ class AdsClient:
         await AdsClient._rate_limiter.wait()
         await self._wait_backoff()
         self._logger.debug("Getting next page")
-        return await asyncify(AdsClient._get_page)(pages)
+        return await asyncify(self._get_page)(pages)
 
     async def _wait_backoff(self) -> None:
         if AdsClient._backoff:
@@ -102,12 +109,16 @@ class AdsClient:
         self._logger.debug("Backoff finished")
         AdsClient._backoff = False
 
-    @staticmethod
-    def _get_page(pages: Iterator[GenerateKeywordIdeaResponse]) -> GenerateKeywordIdeaResponse | None:
+    def _get_page(self, pages: Iterator[GenerateKeywordIdeaResponse]) -> GenerateKeywordIdeaResponse | None:
         try:
             return next(pages)
         except StopIteration:
             return None
+        except GoogleAdsException as ex:
+            if "INVALID_PAGE_TOKEN" in str(ex.failure):
+                self._logger.debug("Invalid page token")
+                return None
+            raise
 
     @staticmethod
     def _parse_results(

@@ -202,7 +202,7 @@ class Keywords:
                 "DROP TABLE keywords_old;",
             ]
 
-            while not clickhouse_client.client.ping():
+            while not clickhouse_client.ping():
                 logger.info("Waiting for ClickHouse server to be up...")
                 time.sleep(5)
             for query in clickhouse_queries:

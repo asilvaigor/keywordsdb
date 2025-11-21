@@ -5,26 +5,26 @@ description = "keywordsdb"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "asyncer>=0.0.8",
+    "asyncer>=0.0.10",
     "asynciolimiter>=1.2.0",
-    "clickhouse-connect>=0.8.17",
-    "google-ads-stubs>=21.0.0",
-    "google-ads>=26.1.0",
-    "google-cloud-bigquery>=3.33.0",
-    "google-cloud-secret-manager>=2.23.3",
-    "google-cloud-storage>=3.1.0",
-    "numpy>=2.2.6",
-    "polars[pyarrow]>=1.30.0",
-    "structlog>=25.3.0",
-    "google-cloud-firestore>=2.20.2",
+    "clickhouse-connect>=0.10.0",
+    "google-ads>=28.4.0",
+    "google-ads-stubs>=24.0.0",
+    "google-cloud-bigquery>=3.38.0",
+    "google-cloud-firestore>=2.21.0",
+    "google-cloud-secret-manager>=2.25.0",
+    "google-cloud-storage>=3.6.0",
+    "numpy>=2.3.5",
+    "polars[pyarrow]>=1.35.2",
+    "structlog>=25.5.0",
 ]
 
 [dependency-groups]
 dev = [
-    "ipykernel>=6.29.5",
-    "mypy>=1.15.0",
-    "python-dotenv>=1.1.0",
-    "ruff>=0.11.11",
+    "ipykernel>=7.1.0",
+    "mypy>=1.18.2",
+    "python-dotenv>=1.2.1",
+    "ruff>=0.14.6",
 ]
 
 [tool.ruff]

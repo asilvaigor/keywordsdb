@@ -27,24 +27,9 @@ runs:
     - uses: "google-github-actions/auth@v2"
       with:
         project_id: ${{ inputs.project_id }}
-        workload_identity_provider: ${{ inputs.WORKLOAD_IDENTITY_PROVIDER }}
+        workload_identity_provider: ${{ inputs.workload_identity_provider }}
     - run: |
-        # Get the current instance template
-        CURRENT_TEMPLATE=$(gcloud compute instance-group-managers describe ${{ inputs.name }}-${{ inputs.env }}-igm \
+        gcloud compute instance-groups managed rolling-action restart ${{ inputs.name }}-${{ inputs.env }}-igm \
           --zone=${{ inputs.zone }} \
-          --format="value(instanceTemplate)")
-        
-        # Create a new instance template with updated image tag
-        NEW_TEMPLATE_NAME="${{ inputs.name }}-${{ inputs.env }}-$(date +%s)"
-        gcloud compute instance-templates create $NEW_TEMPLATE_NAME \
-          --source-instance-template=$CURRENT_TEMPLATE \
-          --metadata=image-tag=${{ inputs.tag != '' && inputs.tag || inputs.env }}
-        
-        # Start rolling update with the new template
-        gcloud compute instance-group-managers rolling-action start-update ${{ inputs.name }}-${{ inputs.env }}-igm \
-          --zone=${{ inputs.zone }} \
-          --version=template=projects/${{ inputs.project_id }}/global/instanceTemplates/$NEW_TEMPLATE_NAME \
           --max-unavailable=1
-        
-        echo "Rolling update initiated. New template: $NEW_TEMPLATE_NAME"
       shell: bash
