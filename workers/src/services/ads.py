@@ -75,7 +75,8 @@ class AdsClient:
             except Exception:
                 delay_seconds = 30
 
-            self._logger.warning(f"Google Ads API: Resource Exhausted, wait for {delay_seconds}")
+            level = logging.WARNING if delay_seconds >= 10 else logging.DEBUG
+            self._logger.log(level, f"Google Ads API: Resource Exhausted, wait for {delay_seconds} seconds")
             await self._do_backoff(delay_seconds)
             return await self._get_keyword_batch_info(keywords, min_search_volume)
 
