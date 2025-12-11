@@ -19,6 +19,12 @@ from google.api_core.exceptions import ResourceExhausted
 from structlog.stdlib import BoundLogger
 
 
+class ResourceExhaustedError(Exception):
+    """Raised when Google Ads API requires a delay longer than 1800 seconds"""
+
+    pass
+
+
 class AdsClient:
     _rate_limiter = Limiter(1, max_burst=1)
     _backoff: bool = False
@@ -74,6 +80,12 @@ class AdsClient:
                 delay_seconds = int("".join(filter(str.isdigit, str(details).split("Retry in")[1].split("seconds")[0])))
             except Exception:
                 delay_seconds = 30
+
+            if delay_seconds > 1800:
+                self._logger.warning(
+                    f"Google Ads API: Resource Exhausted with delay {delay_seconds} seconds (> 1800), exiting"
+                )
+                raise ResourceExhaustedError(f"Delay required: {delay_seconds} seconds")
 
             level = logging.WARNING if delay_seconds >= 10 else logging.DEBUG
             self._logger.log(level, f"Google Ads API: Resource Exhausted, wait for {delay_seconds} seconds")

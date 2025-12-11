@@ -62,23 +62,6 @@ jobs:
           name: webapp
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
-  deploy-workers:
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: "read"
-      id-token: "write"
-    needs: [build-workers]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: ./.github/actions/deploy-vm
-        with:
-          env: prd
-          tag: keep
-          name: worker-ingestion
-          image_name: workers
-          zone: us-central1-a
-          project_id: ${{ vars.PROJECT_ID }}
-          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
   deploy-webapp:
     runs-on: ubuntu-24.04
     permissions:

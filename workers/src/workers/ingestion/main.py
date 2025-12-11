@@ -1,5 +1,6 @@
 import asyncio
 
+from src.services.ads import ResourceExhaustedError
 from src.workers.ingestion.context import Context
 from src.workers.ingestion.keywords import Keywords
 
@@ -26,7 +27,12 @@ async def main() -> None:
             chunk = keywords[i : i + 2000]
 
             ctx.logger.info("Querying google ads")
-            df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
+            try:
+                df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
+            except ExceptionGroup as eg:
+                if any(isinstance(e, ResourceExhaustedError) for e in eg.exceptions):
+                    return  # Finish worker, will be restarted on next schedule
+                raise
 
             ctx.logger.info(f"Got {len(df)} results, saving in temp table")
             Keywords.insert(ctx.bigquery_client, df, chunk)
