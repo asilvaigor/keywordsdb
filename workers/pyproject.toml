@@ -3,28 +3,28 @@ name = "keywordsdb"
 version = "0.1.0"
 description = "keywordsdb"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 dependencies = [
-    "asyncer>=0.0.10",
+    "asyncer>=0.0.11",
     "asynciolimiter>=1.2.0",
     "clickhouse-connect>=0.10.0",
-    "google-ads>=28.4.0",
+    "google-ads>=28.4.1",
     "google-ads-stubs>=24.0.0",
     "google-cloud-bigquery>=3.38.0",
     "google-cloud-firestore>=2.21.0",
     "google-cloud-secret-manager>=2.25.0",
-    "google-cloud-storage>=3.6.0",
+    "google-cloud-storage>=3.7.0",
     "numpy>=2.3.5",
-    "polars[pyarrow]>=1.35.2",
+    "polars[pyarrow]>=1.36.1",
     "structlog>=25.5.0",
 ]
 
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
-    "mypy>=1.18.2",
+    "mypy>=1.19.0",
     "python-dotenv>=1.2.1",
-    "ruff>=0.14.6",
+    "ruff>=0.14.9",
 ]
 
 [tool.ruff]
