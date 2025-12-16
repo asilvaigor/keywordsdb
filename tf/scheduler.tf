@@ -33,7 +33,6 @@ resource "google_cloud_scheduler_job" "worker_ingestion_prd" {
     uri         = "https://batch.googleapis.com/v1/projects/${var.project_id}/locations/${var.location}/jobs"
     headers = {
       "Content-Type" = "application/json"
-      "User-Agent"   = "Google-Cloud-Scheduler"
     }
 
     body = base64encode(jsonencode({

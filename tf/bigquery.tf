@@ -48,6 +48,11 @@ resource "google_bigquery_table" "keywords" {
       mode = "NULLABLE"
     },
     {
+      name = "group_id"
+      type = "INTEGER"
+      mode = "NULLABLE"
+    },
+    {
       name = "updated_at"
       type = "DATE"
       mode = "REQUIRED"
@@ -91,6 +96,16 @@ resource "google_bigquery_table" "keywords_tmp" {
       name = "cpc_high"
       type = "FLOAT"
       mode = "REQUIRED"
+    },
+    {
+      name = "cpc_low"
+      type = "FLOAT"
+      mode = "NULLABLE"
+    },
+    {
+      name = "cpc_avg"
+      type = "FLOAT"
+      mode = "NULLABLE"
     },
     {
       name = "volume_history"

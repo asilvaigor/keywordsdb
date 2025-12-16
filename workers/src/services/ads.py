@@ -142,6 +142,8 @@ class AdsClient:
         avg_searches = []
         competition = []
         cpc_high = []
+        cpc_low = []
+        cpc_avg = []
         volume_history: list[bytes | None] = []
 
         divisor = 1e6
@@ -151,6 +153,8 @@ class AdsClient:
             avg_searches.append(metrics.avg_monthly_searches)
             competition.append(metrics.competition_index)
             cpc_high.append(metrics.high_top_of_page_bid_micros / divisor)
+            cpc_low.append(metrics.low_top_of_page_bid_micros / divisor)
+            cpc_avg.append(metrics.average_cpc_micros / divisor)
 
             if metrics.monthly_search_volumes:
                 volumes = metrics.monthly_search_volumes
@@ -165,6 +169,8 @@ class AdsClient:
                 "avg_monthly_searches": avg_searches,
                 "competition_index": competition,
                 "cpc_high": cpc_high,
+                "cpc_low": cpc_low,
+                "cpc_avg": cpc_avg,
                 "volume_history": volume_history,
             }
         )
