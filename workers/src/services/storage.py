@@ -1,5 +1,5 @@
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 from google.cloud.storage import Blob, Bucket, Client
@@ -28,7 +28,7 @@ class StorageClient:
         Path(local_prefix).parent.mkdir(parents=True, exist_ok=True)
 
         with ThreadPoolExecutor(max_workers=64) as executor:
-            futures = []
+            futures: list[Future] = []
             for blob in blobs:
                 local_path = str(Path(prefix) / blob.name)
                 future = executor.submit(blob.download_to_filename, local_path)

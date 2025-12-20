@@ -8,7 +8,7 @@ class BigQueryClient:
     def __init__(self) -> None:
         self._project_id = "keywordsdb-3"
         self._dataset = "keywords"
-        self.client = Client(self._project_id)
+        self.client: Client = Client(self._project_id)
 
     def get_full_name(self, tablename: str) -> str:
         return f"{self._project_id}.{self._dataset}.{tablename}"

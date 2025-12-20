@@ -1,9 +1,9 @@
 import hashlib
 import os
-from typing import Generator
+from collections.abc import Generator
 
 import polars as pl
-from google.cloud.firestore import Client, DocumentReference, DocumentSnapshot
+from google.cloud.firestore import Client, DocumentSnapshot
 
 
 class FirestoreClient:
@@ -12,7 +12,7 @@ class FirestoreClient:
     keywords_to_ingest = "keywords-to-ingest"
 
     def __init__(self) -> None:
-        self.client = Client(database=f"keywordsdb-{os.getenv('ENV', 'dev')}")
+        self.client: Client = Client(database=f"keywordsdb-{os.getenv('ENV', 'dev')}")
 
     def put_keywords_cache(self, df: pl.DataFrame, count: int) -> None:
         """
@@ -25,7 +25,7 @@ class FirestoreClient:
         """
         cache_key = 'keywords-{}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
         hash_value = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
-        doc_ref: DocumentReference = self.client.collection(FirestoreClient.keywords_cache).document(hash_value)
+        doc_ref = self.client.collection(FirestoreClient.keywords_cache).document(hash_value)
         doc_value = {
             "results": df.with_columns(pl.col("updated_at").dt.strftime("%Y-%m-%d")).to_dicts(),
             "expires_at": None,
@@ -34,7 +34,7 @@ class FirestoreClient:
 
         cache_key = "keyword-counts-{}"
         hash_value = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
-        doc_ref: DocumentReference = self.client.collection(FirestoreClient.keywords_counts_cache).document(hash_value)
+        doc_ref = self.client.collection(FirestoreClient.keywords_counts_cache).document(hash_value)
         doc_ref.set({"count": count, "expires_at": None})
 
     def pop_keywords_to_ingest(self) -> tuple[str, list[str]]:
@@ -52,7 +52,7 @@ class FirestoreClient:
 
         return "", []
 
-    def insert_keywords_to_ingest(self, keywords: Generator[str, None, None]) -> None:
+    def insert_keywords_to_ingest(self, keywords: Generator[str]) -> None:
         """
         Insert keywords into the keywords-to-ingest collection in Firestore, in chunks of a fixed size.
 
@@ -75,5 +75,5 @@ class FirestoreClient:
         Args:
             filepath: The ID of the document to delete.
         """
-        doc_ref: DocumentReference = self.client.collection(FirestoreClient.keywords_to_ingest).document(filepath)
+        doc_ref = self.client.collection(FirestoreClient.keywords_to_ingest).document(filepath)
         doc_ref.delete()

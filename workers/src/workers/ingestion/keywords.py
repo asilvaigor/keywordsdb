@@ -1,6 +1,6 @@
 import time
+from collections.abc import Generator
 from datetime import date
-from typing import Generator
 
 import polars as pl
 from google.cloud.exceptions import NotFound
@@ -46,7 +46,7 @@ class Keywords:
         client.insert(Keywords.tmp_tablename, df)
 
     @staticmethod
-    def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str, None, None]:
+    def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str]:
         """
         Query the keywords table to get the k oldest records based on ingested_at.
 
@@ -72,8 +72,7 @@ class Keywords:
             df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
             assert df is not None
             keywords = df.select("keyword").to_series().to_list()
-            for keyword in keywords:
-                yield keyword
+            yield from keywords
 
             offset += current_batch_size
             if len(keywords) < current_batch_size:

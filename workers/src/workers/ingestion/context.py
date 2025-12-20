@@ -19,13 +19,15 @@ class Context:
         clickhouse_client: ClickhouseClient | None = None,
         storage_client: StorageClient | None = None,
         firestore_client: FirestoreClient | None = None,
-    ):
-        self.logger = logger if logger else get_logger()
-        self._secret_client = secret_client if secret_client is not None else SecretClient()
+    ) -> None:
+        self.logger: BoundLogger = logger if logger else get_logger()
+        self._secret_client: SecretClient = secret_client if secret_client is not None else SecretClient()
         self._secret_client.load_secrets()
 
-        self.ads_client = ads_client if ads_client is not None else AdsClient(self.logger)
-        self.bigquery_client = bigquery_client if bigquery_client is not None else BigQueryClient()
-        self.clickhouse_client = clickhouse_client if clickhouse_client is not None else ClickhouseClient()
-        self.storage_client = storage_client if storage_client is not None else StorageClient()
-        self.firestore_client = firestore_client if firestore_client is not None else FirestoreClient()
+        self.ads_client: AdsClient = ads_client if ads_client is not None else AdsClient(self.logger)
+        self.bigquery_client: BigQueryClient = bigquery_client if bigquery_client is not None else BigQueryClient()
+        self.clickhouse_client: ClickhouseClient = (
+            clickhouse_client if clickhouse_client is not None else ClickhouseClient()
+        )
+        self.storage_client: StorageClient = storage_client if storage_client is not None else StorageClient()
+        self.firestore_client: FirestoreClient = firestore_client if firestore_client is not None else FirestoreClient()

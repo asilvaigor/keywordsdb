@@ -10,8 +10,8 @@ dependencies = [
     "clickhouse-connect>=0.10.0",
     "google-ads>=28.4.1",
     "google-ads-stubs>=24.0.0",
-    "google-cloud-bigquery>=3.38.0",
-    "google-cloud-firestore>=2.21.0",
+    "google-cloud-bigquery>=3.39.0",
+    "google-cloud-firestore>=2.22.0",
     "google-cloud-secret-manager>=2.25.0",
     "google-cloud-storage>=3.7.0",
     "numpy>=2.3.5",
@@ -22,22 +22,13 @@ dependencies = [
 [dependency-groups]
 dev = [
     "ipykernel>=7.1.0",
-    "mypy>=1.19.0",
     "python-dotenv>=1.2.1",
-    "ruff>=0.14.9",
+    "ruff>=0.14.10",
+    "ty>=0.0.4",
 ]
 
 [tool.ruff]
 format.skip-magic-trailing-comma = true
 line-length = 120
 lint.isort.split-on-trailing-comma = false
-lint.select = ["E", "F", "W", "I", "N"]
-
-[tool.mypy]
-allow_redefinition = true
-pretty = true
-strict = true
-
-[[tool.mypy.overrides]]
-ignore_missing_imports = true
-module = ["google.cloud.storage", "google.cloud.firestore"]
+lint.select = ["E", "F", "W", "I", "N", "ANN", "UP"]

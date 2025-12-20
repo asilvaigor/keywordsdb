@@ -2,7 +2,7 @@ import asyncio
 import logging
 import os
 import zlib
-from typing import Iterator, MutableSequence
+from collections.abc import Iterator, MutableSequence
 
 import polars as pl
 from asyncer import SoonValue, asyncify, create_task_group
@@ -33,14 +33,14 @@ class AdsClient:
         os.environ["GOOGLE_ADS_USE_PROTO_PLUS"] = "true"
         logging.getLogger("google.ads.googleads.client").setLevel(logging.ERROR)
 
-        self._client = GoogleAdsClient.load_from_env()
+        self._client: GoogleAdsClient = GoogleAdsClient.load_from_env()
         self._keyword_plan_idea_service: KeywordPlanIdeaServiceClient = self._client.get_service(
             "KeywordPlanIdeaService"
         )
         self._logger = logger
 
     async def get_keyword_info(self, keywords: list[str], min_search_volume: int | None = None) -> pl.DataFrame:
-        batches = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
+        batches: list[list[str]] = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
         df = pl.DataFrame()
 
         results: list[SoonValue[pl.DataFrame | None]] = []
