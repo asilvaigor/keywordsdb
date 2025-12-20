@@ -1,3 +1,4 @@
+import os
 import time
 from collections.abc import Generator
 from datetime import date
@@ -101,103 +102,8 @@ class Keywords:
             except NotFound:
                 return
 
-            merge_query = f"""
-                MERGE `{client.get_full_name(Keywords.tablename)}` keywords
-                USING (
-                    WITH tmp_with_groups AS (
-                        SELECT
-                            keyword,
-                            avg_monthly_searches,
-                            competition_index,
-                            cpc_high,
-                            cpc_low,
-                            cpc_avg,
-                            volume_history,
-                            updated_at,
-                            ingested_at,
-                            FARM_FINGERPRINT(
-                                CONCAT(
-                                    CAST(COALESCE(updated_at, DATE '1970-01-01') AS STRING),
-                                    CAST(COALESCE(competition_index, 0) AS STRING),
-                                    COALESCE(TO_HEX(volume_history), ''),
-                                    CAST(COALESCE(cpc_high, 0) AS STRING),
-                                    CAST(COALESCE(cpc_low, 0) AS STRING),
-                                    CAST(COALESCE(cpc_avg, 0) AS STRING)
-                                )
-                            ) AS tmp_group_id
-                        FROM `{tmp_tablename}`
-                        QUALIFY ROW_NUMBER() OVER (PARTITION BY keyword, FARM_FINGERPRINT(
-                            CONCAT(
-                                CAST(COALESCE(updated_at, DATE '1970-01-01') AS STRING),
-                                CAST(COALESCE(competition_index, 0) AS STRING),
-                                COALESCE(TO_HEX(volume_history), ''),
-                                CAST(COALESCE(cpc_high, 0) AS STRING),
-                                CAST(COALESCE(cpc_low, 0) AS STRING),
-                                CAST(COALESCE(cpc_avg, 0) AS STRING)
-                            )
-                        ) ORDER BY updated_at DESC) = 1
-                    ),
-                    existing_groups AS (
-                        SELECT
-                            tmp.tmp_group_id,
-                            CASE
-                                WHEN COUNT(DISTINCT keywords.group_id) = 0 THEN ANY_VALUE(tmp.tmp_group_id)
-                                WHEN COUNT(DISTINCT keywords.group_id) = 1 THEN MIN(keywords.group_id)
-                                ELSE MIN(keywords.group_id)
-                            END AS merged_group_id
-                        FROM tmp_with_groups tmp
-                        LEFT JOIN `{client.get_full_name(Keywords.tablename)}` keywords
-                            ON tmp.keyword = keywords.keyword
-                        GROUP BY tmp.tmp_group_id
-                    )
-                    SELECT
-                        tmp.keyword,
-                        tmp.avg_monthly_searches,
-                        tmp.competition_index,
-                        tmp.cpc_high,
-                        tmp.volume_history,
-                        tmp.updated_at,
-                        tmp.ingested_at,
-                        eg.merged_group_id AS group_id
-                    FROM tmp_with_groups tmp
-                    LEFT JOIN existing_groups eg ON tmp.tmp_group_id = eg.tmp_group_id
-                    QUALIFY ROW_NUMBER() OVER (PARTITION BY keyword ORDER BY updated_at DESC) = 1
-                ) tmp
-                ON keywords.keyword = tmp.keyword
-                WHEN MATCHED THEN
-                    UPDATE SET
-                        avg_monthly_searches = tmp.avg_monthly_searches,
-                        competition_index = tmp.competition_index,
-                        cpc_high = tmp.cpc_high,
-                        volume_history = tmp.volume_history,
-                        updated_at = tmp.updated_at,
-                        ingested_at = CASE
-                            WHEN tmp.ingested_at IS NULL THEN keywords.ingested_at
-                            ELSE tmp.ingested_at
-                        END,
-                        group_id = tmp.group_id
-                WHEN NOT MATCHED THEN
-                    INSERT (
-                        keyword,
-                        avg_monthly_searches,
-                        competition_index,
-                        cpc_high,
-                        volume_history,
-                        updated_at,
-                        ingested_at,
-                        group_id
-                    )
-                    VALUES (
-                        keyword,
-                        avg_monthly_searches,
-                        competition_index,
-                        cpc_high,
-                        volume_history,
-                        updated_at,
-                        ingested_at,
-                        group_id
-                    )
-            """
+            with open(os.path.join(os.path.dirname(__file__), "merge.sql")) as f:
+                merge_query = f.read()
 
             logger.info("Merging keywords_tmp into keywords table")
             merge_job = client.client.query(merge_query)
