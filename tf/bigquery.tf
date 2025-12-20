@@ -93,6 +93,11 @@ resource "google_bigquery_table" "keywords_tmp" {
       mode = "REQUIRED"
     },
     {
+      name = "volume_history"
+      type = "BYTES"
+      mode = "NULLABLE"
+    },
+    {
       name = "cpc_high"
       type = "FLOAT"
       mode = "REQUIRED"
@@ -100,17 +105,12 @@ resource "google_bigquery_table" "keywords_tmp" {
     {
       name = "cpc_low"
       type = "FLOAT"
-      mode = "NULLABLE"
+      mode = "REQUIRED"
     },
     {
       name = "cpc_avg"
       type = "FLOAT"
-      mode = "NULLABLE"
-    },
-    {
-      name = "volume_history"
-      type = "BYTES"
-      mode = "NULLABLE"
+      mode = "REQUIRED"
     },
     {
       name = "updated_at"
