@@ -5,7 +5,6 @@ import zlib
 from collections.abc import Iterator, MutableSequence
 
 import polars as pl
-from asyncer import SoonValue, asyncify, create_task_group
 from asynciolimiter import Limiter
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
@@ -41,14 +40,11 @@ class AdsClient:
 
     async def get_keyword_info(self, keywords: list[str], min_search_volume: int | None = None) -> pl.DataFrame:
         batches: list[list[str]] = [keywords[i : i + 20] for i in range(0, len(keywords), 20)]
-        df = pl.DataFrame()
 
-        results: list[SoonValue[pl.DataFrame | None]] = []
-        async with create_task_group() as task_group:
-            for batch in batches:
-                r = task_group.soonify(self._get_keyword_batch_info)(batch, min_search_volume)
-                results.append(r)
-        df = pl.concat([r.value for r in results if r.value is not None]).unique(subset=["keyword"])
+        tasks = [self._get_keyword_batch_info(batch, min_search_volume) for batch in batches]
+        results: list[pl.DataFrame | None] = await asyncio.gather(*tasks)
+
+        df = pl.concat([r for r in results if r is not None]).unique(subset=["keyword"])
         return df
 
     async def _get_keyword_batch_info(self, keywords: list[str], min_search_volume: int | None) -> pl.DataFrame | None:
@@ -98,7 +94,7 @@ class AdsClient:
         await AdsClient._rate_limiter.wait()
         await self._wait_backoff()
         self._logger.debug("Getting first page")
-        pager = await asyncify(self._keyword_plan_idea_service.generate_keyword_ideas)(request=request)
+        pager = await asyncio.to_thread(self._keyword_plan_idea_service.generate_keyword_ideas, request)
         pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages
         return pages, self._get_page(pages)  # First page doesnt need await
 
@@ -108,7 +104,7 @@ class AdsClient:
         await AdsClient._rate_limiter.wait()
         await self._wait_backoff()
         self._logger.debug("Getting next page")
-        return await asyncify(self._get_page)(pages)
+        return await asyncio.to_thread(self._get_page, pages)
 
     async def _wait_backoff(self) -> None:
         if AdsClient._backoff:

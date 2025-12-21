@@ -46,11 +46,13 @@ class FirestoreClient:
         """
         docs: Generator[DocumentSnapshot] = self.client.collection(FirestoreClient.keywords_to_ingest).stream()
 
-        for doc in docs:
-            keywords: list[str] = doc.to_dict()["keywords"]
-            return doc.id, keywords
+        doc = next(docs, None)
+        if doc is None:
+            return "", []
 
-        return "", []
+        docs.close()
+        keywords: list[str] = doc.to_dict()["keywords"]
+        return doc.id, keywords
 
     def insert_keywords_to_ingest(self, keywords: Generator[str]) -> None:
         """
@@ -67,6 +69,8 @@ class FirestoreClient:
             if len(batch) >= chunk_size:
                 collection.add({"keywords": batch})
                 batch = []
+        if batch:
+            collection.add({"keywords": batch})
 
     def delete_keywords_to_ingest(self, filepath: str) -> None:
         """

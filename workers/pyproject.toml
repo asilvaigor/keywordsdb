@@ -5,7 +5,6 @@ description = "keywordsdb"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
-    "asyncer>=0.0.11",
     "asynciolimiter>=1.2.0",
     "clickhouse-connect>=0.10.0",
     "google-ads>=28.4.1",
@@ -14,7 +13,7 @@ dependencies = [
     "google-cloud-firestore>=2.22.0",
     "google-cloud-secret-manager>=2.25.0",
     "google-cloud-storage>=3.7.0",
-    "numpy>=2.3.5",
+    "numpy>=2.4.0",
     "polars[pyarrow]>=1.36.1",
     "structlog>=25.5.0",
 ]
@@ -24,7 +23,7 @@ dev = [
     "ipykernel>=7.1.0",
     "python-dotenv>=1.2.1",
     "ruff>=0.14.10",
-    "ty>=0.0.4",
+    "ty>=0.0.5",
 ]
 
 [tool.ruff]
