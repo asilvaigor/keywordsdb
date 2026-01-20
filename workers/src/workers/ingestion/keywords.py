@@ -239,4 +239,4 @@ class Keywords:
     def _count(client: ClickhouseClient) -> int:
         df = client.execute_query("SELECT count(*) FROM keywords")
         assert df is not None
-        return df[0, 0]  # type: ignore[no-any-return]
+        return df[0, 0]

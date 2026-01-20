@@ -9,12 +9,12 @@ dependencies = [
     "clickhouse-connect>=0.10.0",
     "google-ads>=28.4.1",
     "google-ads-stubs>=24.0.0",
-    "google-cloud-bigquery>=3.39.0",
-    "google-cloud-firestore>=2.22.0",
+    "google-cloud-bigquery>=3.40.0",
+    "google-cloud-firestore>=2.23.0",
     "google-cloud-secret-manager>=2.25.0",
-    "google-cloud-storage>=3.7.0",
-    "numpy>=2.4.0",
-    "polars[pyarrow]>=1.36.1",
+    "google-cloud-storage>=3.8.0",
+    "numpy>=2.4.1",
+    "polars[pyarrow]>=1.37.1",
     "structlog>=25.5.0",
 ]
 
@@ -22,8 +22,8 @@ dependencies = [
 dev = [
     "ipykernel>=7.1.0",
     "python-dotenv>=1.2.1",
-    "ruff>=0.14.10",
-    "ty>=0.0.5",
+    "ruff>=0.14.13",
+    "ty>=0.0.12",
 ]
 
 [tool.ruff]

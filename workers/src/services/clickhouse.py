@@ -58,7 +58,7 @@ class ClickhouseClient:
             with self._lock:
                 if self._last_query_time and datetime.now() - self._last_query_time >= timedelta(minutes=2):
                     if self._client is not None:
-                        self._client.close()  # type: ignore[no-untyped-call]
+                        self._client.close()
                         self._client = None
 
         self._cancel_cleanup()

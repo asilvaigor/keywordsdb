@@ -172,4 +172,4 @@ class AdsClient:
         )
         if min_search_volume is not None:
             df = df.filter(pl.col("avg_monthly_searches") >= min_search_volume)
-        return df
+        return df.unique(subset=["keyword"])
