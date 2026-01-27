@@ -84,9 +84,16 @@ class AdsClient:
                 raise ResourceExhaustedError(f"Delay required: {delay_seconds} seconds")
 
             level = logging.WARNING if delay_seconds >= 10 else logging.DEBUG
-            self._logger.log(level, f"Google Ads API: Resource Exhausted, wait for {delay_seconds} seconds")
+            self._logger.log(level, f"Google Ads API: Resource Exhausted, waiting for {delay_seconds} seconds")
             await self._do_backoff(delay_seconds)
             return await self._get_keyword_batch_info(keywords, min_search_volume)
+
+        except GoogleAdsException as e:
+            if "UNAVAILABLE" in str(e.failure):
+                self._logger.warning("Google Ads API: UNAVAILABLE error, waiting for 30 seconds")
+                await self._do_backoff(30)
+                return await self._get_keyword_batch_info(keywords, min_search_volume)
+            raise
 
     async def _fetch_first_page(
         self, request: GenerateKeywordIdeasRequest

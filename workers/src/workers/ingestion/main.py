@@ -1,4 +1,6 @@
 import asyncio
+import multiprocessing
+import sys
 
 from src.services.ads import ResourceExhaustedError
 from src.workers.ingestion.context import Context
@@ -13,34 +15,43 @@ def commit(ctx: Context) -> None:
     ctx.firestore_client.insert_keywords_to_ingest(keywords_gen)
 
 
-async def main() -> None:
+async def main_async() -> None:
     ctx = Context()
 
-    while True:
-        ctx.logger.info("Getting keywords list")
-        filepath, keywords = ctx.firestore_client.pop_keywords_to_ingest()
-        if len(keywords) == 0:
-            commit(ctx)
-            continue
+    ctx.logger.info("Getting keywords list")
+    filepath, keywords = ctx.firestore_client.pop_keywords_to_ingest()
+    if len(keywords) == 0:
+        commit(ctx)
+        return
 
-        for i in range(0, len(keywords), 2000):
-            chunk = keywords[i : i + 2000]
+    for i in range(0, len(keywords), 2000):
+        chunk = keywords[i : i + 2000]
 
-            ctx.logger.info("Querying google ads")
-            try:
-                df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
-            except ExceptionGroup as eg:
-                if any(isinstance(e, ResourceExhaustedError) for e in eg.exceptions):
-                    return  # Finish worker, will be restarted on next schedule
-                raise
+        ctx.logger.info("Querying google ads")
+        try:
+            df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
+        except ExceptionGroup as eg:
+            if any(isinstance(e, ResourceExhaustedError) for e in eg.exceptions):
+                sys.exit(1)  # Exit with code 1 to stop the worker
+            raise
 
-            ctx.logger.info(f"Got {len(df)} results, saving in temp table")
-            Keywords.insert(ctx.bigquery_client, df, chunk)
+        ctx.logger.info(f"Got {len(df)} results, saving in temp table")
+        Keywords.insert(ctx.bigquery_client, df, chunk)
 
-        ctx.logger.info("Deleting keywords_to_ingest firestore doc")
-        ctx.firestore_client.delete_keywords_to_ingest(filepath)
-        ctx.logger.info("Success")
+    ctx.logger.info("Deleting keywords_to_ingest firestore doc")
+    ctx.firestore_client.delete_keywords_to_ingest(filepath)
+    ctx.logger.info("Success")
+
+
+def main() -> None:
+    return asyncio.run(main_async())
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    while True:
+        # Run each ingestion in a separate process to avoid memory leaks
+        p = multiprocessing.Process(target=main)
+        p.start()
+        p.join()
+        if p.exitcode != 0:
+            break
