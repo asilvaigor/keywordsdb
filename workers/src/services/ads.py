@@ -14,7 +14,7 @@ from google.ads.googleads.v22.services.types import (
     GenerateKeywordIdeaResult,
     GenerateKeywordIdeasRequest,
 )
-from google.api_core.exceptions import ResourceExhausted
+from google.api_core.exceptions import ResourceExhausted, ServiceUnavailable
 from structlog.stdlib import BoundLogger
 
 
@@ -94,6 +94,11 @@ class AdsClient:
                 await self._do_backoff(30)
                 return await self._get_keyword_batch_info(keywords, min_search_volume)
             raise
+
+        except ServiceUnavailable:
+            self._logger.warning("Google Ads API: Service Unavailable (502/503), waiting for 30 seconds")
+            await self._do_backoff(30)
+            return await self._get_keyword_batch_info(keywords, min_search_volume)
 
     async def _fetch_first_page(
         self, request: GenerateKeywordIdeasRequest
