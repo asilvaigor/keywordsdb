@@ -38,3 +38,27 @@ variable "clickhouse_password" {
   description = "ClickHouse password"
   sensitive   = true
 }
+
+variable "bing_client_id" {
+  type        = string
+  description = "Bing Ads Client ID"
+  sensitive   = true
+}
+
+variable "bing_account_id" {
+  type        = string
+  description = "Bing Ads Account ID"
+  sensitive   = true
+}
+
+variable "bing_developer_token" {
+  type        = string
+  description = "Bing Ads Developer Token"
+  sensitive   = true
+}
+
+variable "bing_refresh_token" {
+  type        = string
+  description = "Bing Ads Refresh Token"
+  sensitive   = true
+}

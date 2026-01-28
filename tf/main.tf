@@ -2,15 +2,15 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "6.18.0"
+      version = "7.18.0"
     }
     github = {
       source  = "integrations/github"
-      version = "6.5"
+      version = "6.11.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.1.0"
+      version = "5.16.0"
     }
   }
   backend "gcs" {

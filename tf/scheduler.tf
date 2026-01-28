@@ -98,3 +98,85 @@ resource "google_cloud_scheduler_job" "worker_ingestion_prd" {
     google_project_service.batch
   ]
 }
+
+resource "google_cloud_scheduler_job" "worker_bing_prd" {
+  name             = "worker-bing-prd"
+  description      = "Triggers worker bing ingestion batch job, to be launched manually"
+  schedule         = "0 0 1 1 *"
+  time_zone        = "UTC"
+  attempt_deadline = "320s"
+
+  retry_config {
+    retry_count = 1
+  }
+
+  http_target {
+    http_method = "POST"
+    uri         = "https://batch.googleapis.com/v1/projects/${var.project_id}/locations/${var.location}/jobs"
+    headers = {
+      "Content-Type" = "application/json"
+    }
+
+    body = base64encode(jsonencode({
+      labels = {
+        job_name = "worker-bing-prd"
+      }
+      taskGroups = [
+        {
+          taskSpec = {
+            runnables = {
+              container = {
+                imageUri = "us-central1-docker.pkg.dev/${var.project_id}/keywordsdb/workers:keep"
+                commands = ["python", "-u", "src/workers/bing/main.py"]
+              }
+            }
+            computeResource = {
+              cpuMilli  = 1000
+              memoryMib = 1740
+            }
+            environment = {
+              variables = {
+                ENV = "prd"
+              }
+            }
+            maxRunDuration = "43200s" # 12 hours
+            maxRetryCount  = 10
+          }
+          taskCount   = 1
+          parallelism = 1
+        }
+      ],
+      allocationPolicy = {
+        instances = [{
+          policy = {
+            machineType       = "g1-small"
+            provisioningModel = "SPOT"
+            bootDisk = {
+              type   = "pd-standard"
+              sizeGb = 30 # minimum size for COS image
+              image  = "batch-cos"
+            }
+          }
+        }]
+        serviceAccount = {
+          email = "${google_service_account.worker_bing.email}"
+        }
+        labels = {
+          job_name = "worker-bing-prd"
+        }
+      },
+      logsPolicy = {
+        destination = "CLOUD_LOGGING"
+      }
+    }))
+
+    oauth_token {
+      service_account_email = google_service_account.batch_scheduler.email
+    }
+  }
+
+  depends_on = [
+    google_project_service.cloud_scheduler,
+    google_project_service.batch
+  ]
+}

@@ -34,3 +34,27 @@ resource "google_project_iam_member" "worker_ingestion" {
   role    = each.key
   member  = "serviceAccount:${google_service_account.worker_ingestion.email}"
 }
+
+resource "google_service_account" "worker_bing" {
+  account_id   = "worker-bing"
+  display_name = "Worker-bing"
+}
+
+resource "google_service_account_key" "worker_bing" {
+  service_account_id = google_service_account.worker_bing.name
+}
+
+resource "google_project_iam_member" "worker_bing" {
+  for_each = toset([
+    "roles/artifactregistry.reader",
+    "roles/logging.logWriter",
+    "roles/secretmanager.secretAccessor",
+    "roles/bigquery.user",
+    "roles/bigquery.dataOwner",
+    "roles/storage.objectUser",
+    "roles/batch.agentReporter",
+  ])
+  project = var.project_id
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.worker_bing.email}"
+}

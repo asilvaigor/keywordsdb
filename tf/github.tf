@@ -53,32 +53,31 @@ resource "google_project_iam_member" "github_actions" {
   member  = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github.name}/attribute.repository/asilvaigor/keywordsdb"
 }
 
-resource "github_actions_variable" "workload_identity_provider" {
-  variable_name = "WORKLOAD_IDENTITY_PROVIDER"
-  repository    = "keywordsdb"
-  value         = google_iam_workload_identity_pool_provider.github.name
+locals {
+  github_variables = {
+    WORKLOAD_IDENTITY_PROVIDER = google_iam_workload_identity_pool_provider.github.name
+    PROJECT_ID                 = var.project_id
+    CLICKHOUSE_URL             = var.clickhouse_url
+    CLICKHOUSE_USERNAME        = var.clickhouse_username
+  }
+
+  github_secrets = {
+    CLICKHOUSE_PASSWORD  = var.clickhouse_password
+  }
 }
 
-resource "github_actions_variable" "project_id" {
-  variable_name = "PROJECT_ID"
+resource "github_actions_variable" "variables" {
+  for_each = local.github_variables
+
+  variable_name = each.key
   repository    = "keywordsdb"
-  value         = var.project_id
+  value         = each.value
 }
 
-resource "github_actions_variable" "location" {
-  variable_name = "CLICKHOUSE_URL"
-  repository    = "keywordsdb"
-  value         = var.clickhouse_url
-}
+resource "github_actions_secret" "secrets" {
+  for_each = local.github_secrets
 
-resource "github_actions_variable" "clickhouse_username" {
-  variable_name = "CLICKHOUSE_USERNAME"
-  repository    = "keywordsdb"
-  value         = var.clickhouse_username
-}
-
-resource "github_actions_secret" "clickhouse_password" {
-  secret_name     = "CLICKHOUSE_PASSWORD"
+  secret_name     = each.key
   repository      = "keywordsdb"
-  plaintext_value = var.clickhouse_password
+  plaintext_value = each.value
 }

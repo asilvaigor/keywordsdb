@@ -124,3 +124,28 @@ resource "google_bigquery_table" "keywords_tmp" {
     }
   ])
 }
+
+resource "google_bigquery_table" "bing_volumes_tmp" {
+  dataset_id = google_bigquery_dataset.keywords.dataset_id
+  table_id   = "bing-volumes-tmp"
+
+  clustering = ["keyword"]
+  table_constraints {
+    primary_key {
+      columns = ["keyword"]
+    }
+  }
+
+  schema = jsonencode([
+    {
+      name = "keyword"
+      type = "STRING"
+      mode = "REQUIRED"
+    },
+    {
+      name = "avg_monthly_searches"
+      type = "INTEGER"
+      mode = "REQUIRED"
+    }
+  ])
+}

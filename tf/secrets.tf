@@ -10,7 +10,10 @@ locals {
     "CLICKHOUSE_PASSWORD"          = var.clickhouse_password
     "GCS_ACCESS_KEY_ID"            = google_storage_hmac_key.clickhouse_hmac_key.access_id
     "GCS_SECRET_ACCESS_KEY"        = google_storage_hmac_key.clickhouse_hmac_key.secret
-    # WARNING: 6 secrets is the maximum free tier limit
+    "BING_CLIENT_ID"               = var.bing_client_id
+    "BING_ACCOUNT_ID"              = var.bing_account_id
+    "BING_DEVELOPER_TOKEN"         = var.bing_developer_token
+    "BING_REFRESH_TOKEN"           = var.bing_refresh_token
   }
 }
 
