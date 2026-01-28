@@ -30,10 +30,8 @@ async def main_async() -> None:
         ctx.logger.info("Querying google ads")
         try:
             df = await ctx.ads_client.get_keyword_info(chunk, min_search_volume=1)
-        except ExceptionGroup as eg:
-            if any(isinstance(e, ResourceExhaustedError) for e in eg.exceptions):
-                sys.exit(1)  # Exit with code 1 to stop the worker
-            raise
+        except ResourceExhaustedError:
+            sys.exit(1)  # Exit with code 1 to stop the worker
 
         ctx.logger.info(f"Got {len(df)} results, saving in temp table")
         Keywords.insert(ctx.bigquery_client, df, chunk)
