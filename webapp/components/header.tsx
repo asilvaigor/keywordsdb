@@ -1,6 +1,6 @@
-import { DarkModeToggle } from "@/components/ui/dark-mode-toggle";
 import { Box } from "lucide-react";
 import Link from "next/link";
+import { DarkModeToggle } from "@/components/ui/dark-mode-toggle";
 
 const Header = () => {
   return (

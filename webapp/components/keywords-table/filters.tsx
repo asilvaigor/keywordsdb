@@ -1,3 +1,6 @@
+import type { Table } from "@tanstack/react-table";
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,9 +11,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { KeywordRow } from "@/lib/types";
-import type { Table } from "@tanstack/react-table";
-import { Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
 
 interface Props {
   table: Table<KeywordRow>;
@@ -136,7 +136,7 @@ export function Filters({ table }: Props) {
     const val1 = Number.parseFloat(filter.value1);
     const val2 = Number.parseFloat(filter.value2);
 
-    let value = undefined;
+    let value: { min?: number; max?: number } | null = null;
     switch (filter.operator) {
       case "eq":
         if (!Number.isNaN(val1)) {

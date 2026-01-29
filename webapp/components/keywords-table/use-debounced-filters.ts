@@ -1,6 +1,6 @@
-import type { KeywordFilters } from "@/lib/types";
 import type { ColumnFiltersState } from "@tanstack/react-table";
 import { useState } from "react";
+import type { KeywordFilters } from "@/lib/types";
 import useDebounce from "./use-debounce";
 
 export function useDebouncedFilters({

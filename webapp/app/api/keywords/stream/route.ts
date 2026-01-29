@@ -1,9 +1,9 @@
-import { getKeywordsStream } from "@/lib/keywords";
 import type { SortingState } from "@tanstack/react-table";
 import type { NextRequest } from "next/server";
+import { getKeywordsStream } from "@/lib/keywords";
 
 function getInt(value: string | null): number | undefined {
-  return value ? Number.parseInt(value) : undefined;
+  return value ? Number.parseInt(value, 10) : undefined;
 }
 
 export async function GET(request: NextRequest) {

@@ -1,3 +1,6 @@
+import type { SortingState } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+import useSWRSubscription from "swr/subscription";
 import type {
   CacheMiss,
   Keyword,
@@ -5,9 +8,6 @@ import type {
   KeywordRow,
   KeywordsStreamResponse,
 } from "@/lib/types";
-import type { SortingState } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
-import useSWRSubscription from "swr/subscription";
 import { API_PAGE_SIZE, calcDataSlice } from "./use-pagination";
 
 class KeywordsStreamer extends EventTarget {
@@ -183,8 +183,8 @@ export function useKeywordsQuery({
     },
   );
 
-  const isLoading =
-    keywordsStreamer.isStreaming() || !hasReceivedData || isFiltersDebouncing;
+  const isStreaming = keywordsStreamer.isStreaming();
+  const isLoading = isStreaming || !hasReceivedData || isFiltersDebouncing;
   const displayData: KeywordRow[] = useMemo(() => {
     if (isFiltersDebouncing) {
       return Array(pageSize)

@@ -1,5 +1,5 @@
-import { pingClickhouse } from "@/lib/clickhouse-utils";
 import useSWR from "swr";
+import { pingClickhouse } from "@/lib/clickhouse-utils";
 
 const useClickhouseReady = () => {
   const {

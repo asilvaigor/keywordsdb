@@ -1,12 +1,15 @@
-import { getKeywordsCount } from "@/lib/keywords";
 import useSWR from "swr";
+import { getKeywordsCount } from "@/lib/keywords";
 
 import type { KeywordFilters } from "@/lib/types";
 
 export function useCountsQuery({
   debouncedFilters,
   isFiltersDebouncing,
-}: { debouncedFilters: KeywordFilters; isFiltersDebouncing: boolean }) {
+}: {
+  debouncedFilters: KeywordFilters;
+  isFiltersDebouncing: boolean;
+}) {
   const { data: totalRows, isLoading: isTotalRowsLoadingQuery } = useSWR(
     [debouncedFilters],
     async ([filters]) => getKeywordsCount(filters),

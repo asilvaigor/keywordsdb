@@ -1,7 +1,7 @@
+import type { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { KeywordRow } from "@/lib/types";
-import type { Table } from "@tanstack/react-table";
 import { formatLargeNumber } from "./utils";
 
 interface PaginationProps {

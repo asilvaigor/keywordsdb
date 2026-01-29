@@ -1,5 +1,7 @@
 "use client";
 
+import { flexRender } from "@tanstack/react-table";
+import { AlertOctagon, LoaderCircle, Search } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -8,9 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { flexRender } from "@tanstack/react-table";
-import { AlertOctagon, Search } from "lucide-react";
-import { LoaderCircle } from "lucide-react";
 import { columns } from "./columns";
 import { Filters } from "./filters";
 import { Pagination } from "./pagination";
@@ -19,6 +18,7 @@ import { useKeywordsTable } from "./use-keywords-table";
 const PAGE_SIZE = 10;
 
 export function KeywordsTable() {
+  "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
   const {
     table,
     progress,

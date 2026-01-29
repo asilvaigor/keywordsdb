@@ -1,8 +1,8 @@
+import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
+import { ArrowDown, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Keyword, KeywordRow } from "@/lib/types";
-import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp } from "lucide-react";
 import { formatLargeNumber } from "./utils";
 
 const Header = ({ title }: { title: string }) => {
