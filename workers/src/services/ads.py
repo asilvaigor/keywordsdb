@@ -89,7 +89,8 @@ class AdsClient:
             return await self._get_keyword_batch_info(keywords, min_search_volume)
 
         except GoogleAdsException as e:
-            if "UNAVAILABLE" in str(e.failure):
+            e_str = str(e.failure)
+            if "UNAVAILABLE" in e_str or "DEADLINE_EXCEEDED" in e_str:
                 self._logger.warning("Google Ads API: UNAVAILABLE error, waiting for 30 seconds")
                 await self._do_backoff(30)
                 return await self._get_keyword_batch_info(keywords, min_search_volume)
