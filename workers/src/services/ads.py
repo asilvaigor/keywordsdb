@@ -90,10 +90,17 @@ class AdsClient:
 
         except GoogleAdsException as e:
             e_str = str(e.failure)
+
+            if "UNAUTHENTICATED" in e_str:
+                self._logger.warning("Google Ads API: Authentication expired, refreshing credentials")
+                self._refresh_client()
+                return await self._get_keyword_batch_info(keywords, min_search_volume)
+
             if "UNAVAILABLE" in e_str or "DEADLINE_EXCEEDED" in e_str:
                 self._logger.warning("Google Ads API: UNAVAILABLE error, waiting for 30 seconds")
                 await self._do_backoff(30)
                 return await self._get_keyword_batch_info(keywords, min_search_volume)
+
             raise
 
         except ServiceUnavailable:
@@ -130,6 +137,10 @@ class AdsClient:
         await asyncio.sleep(delay_seconds)
         self._logger.debug("Backoff finished")
         AdsClient._backoff = False
+
+    def _refresh_client(self) -> None:
+        self._client = GoogleAdsClient.load_from_env()
+        self._keyword_plan_idea_service = self._client.get_service("KeywordPlanIdeaService")
 
     def _get_page(self, pages: Iterator[GenerateKeywordIdeaResponse]) -> GenerateKeywordIdeaResponse | None:
         try:
