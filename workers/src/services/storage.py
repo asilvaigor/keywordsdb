@@ -2,6 +2,7 @@ import os
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from pathlib import Path
 
+import polars as pl
 from google.cloud.storage import Blob, Bucket, Client
 
 
@@ -40,3 +41,33 @@ class StorageClient:
     def get_hmac_keys(self) -> tuple[str, str]:
         """Get the HMAC keys for the bucket."""
         return os.environ["GCS_ACCESS_KEY_ID"], os.environ["GCS_SECRET_ACCESS_KEY"]
+
+    def exists(self, path: str) -> bool:
+        """Check if a file exists in the bucket."""
+        blob = self.bucket.blob(path)
+        return blob.exists()
+
+    def touch(self, path: str) -> None:
+        """Create an empty file in the bucket."""
+        blob = self.bucket.blob(path)
+        blob.upload_from_string("")
+
+    def find(self, prefix: str, suffix: str) -> str:
+        """Finds a file in the bucket that start with the given prefix and ends with the given suffix."""
+        blobs: list[Blob] = self.bucket.list_blobs(prefix=prefix)
+        for blob in blobs:
+            if blob.name.startswith(prefix) and blob.name.endswith(suffix):
+                return blob.name
+        raise FileNotFoundError(f"No file found with prefix {prefix}")
+
+    def get_df(self, path: str) -> pl.DataFrame:
+        """Get a parquet file from the bucket as a DataFrame."""
+        assert path.endswith(".parquet")
+        blob = self.bucket.blob(path)
+        with blob.open("rb") as f:
+            return pl.read_parquet(f)
+
+    def delete(self, path: str) -> None:
+        """Delete a file in the bucket."""
+        blob = self.bucket.blob(path)
+        blob.delete()

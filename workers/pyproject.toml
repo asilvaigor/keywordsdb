@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "asynciolimiter>=1.2.0",
+    "bingads>=13.0.26",
     "clickhouse-connect>=0.10.0",
     "google-ads>=28.4.1",
     "google-ads-stubs>=24.0.0",

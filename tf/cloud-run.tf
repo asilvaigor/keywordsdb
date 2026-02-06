@@ -102,11 +102,10 @@ resource "cloudflare_dns_record" "webapp_aaaa" {
 }
 
 resource "cloudflare_dns_record" "webapp" {
-  # for_each = google_cloud_run_v2_service.webapp
-  zone_id  = var.cloudflare_zone_id
-  name     = "www"
-  content  = "ghs.googlehosted.com"
-  type     = "CNAME"
-  proxied  = true
-  ttl      = 1
+  zone_id = var.cloudflare_zone_id
+  name    = "www"
+  content = "ghs.googlehosted.com"
+  type    = "CNAME"
+  proxied = true
+  ttl     = 1
 }

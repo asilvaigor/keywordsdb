@@ -127,8 +127,11 @@ class AdsClient:
         return await asyncio.to_thread(self._get_page, pages)
 
     async def _wait_backoff(self) -> None:
-        if AdsClient._backoff:
+        waited_backoff = False
+        while AdsClient._backoff:
+            waited_backoff = True
             await asyncio.sleep(5)
+        if waited_backoff:
             await AdsClient._rate_limiter.wait()
 
     async def _do_backoff(self, delay_seconds: int) -> None:

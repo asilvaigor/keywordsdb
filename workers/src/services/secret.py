@@ -15,6 +15,10 @@ class SecretClient:
             "CLICKHOUSE_PASSWORD",
             "GCS_ACCESS_KEY_ID",
             "GCS_SECRET_ACCESS_KEY",
+            "BING_CLIENT_ID",
+            "BING_ACCOUNT_ID",
+            "BING_DEVELOPER_TOKEN",
+            "BING_REFRESH_TOKEN",
         }
         self._client: SecretManagerServiceClient | None = None
         if self._envvars - set(os.environ.keys()):
