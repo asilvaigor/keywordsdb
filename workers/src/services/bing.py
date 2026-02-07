@@ -1,9 +1,6 @@
 import asyncio
+import logging
 import os
-import sys
-from collections.abc import Generator
-from contextlib import contextmanager
-from io import StringIO
 from typing import Any
 
 import polars as pl
@@ -61,8 +58,11 @@ class BingAdsClient:
             authentication=self._oauth,
             account_id=os.environ["BING_ACCOUNT_ID"],
         )
-        self._adinsight_service: ServiceClient | None = None
+        self._adinsight_service: ServiceClient = ServiceClient(
+            service="AdInsightService", version=13, authorization_data=self._authorization_data
+        )
         self._logger = logger
+        logging.getLogger("suds").setLevel(logging.ERROR)
 
     async def get_keyword_info(self, keywords: list[str]) -> pl.DataFrame:
         if not self._oauth.oauth_tokens.refresh_token:
@@ -80,7 +80,6 @@ class BingAdsClient:
             )
 
         batches: list[list[str]] = [keywords[i : i + 500] for i in range(0, len(keywords), 500)]
-
         tasks = [self._get_keyword_batch_info(batch) for batch in batches]
         results: list[pl.DataFrame] = await asyncio.gather(*tasks)
 
@@ -97,16 +96,13 @@ class BingAdsClient:
 
         await BingAdsClient._rate_limiter.wait()
 
-        ideas_attributes, search_parameters = self._setup_arguments(keywords)
-        assert self._adinsight_service is not None
-
         self._logger.debug(f"Fetching Bing keyword data for {len(keywords)} keywords")
-        with BingAdsClient._suppress_stdout_stderr():  # WebFault warning is also printed to stderr
-            response = await asyncio.to_thread(
-                self._adinsight_service.GetKeywordIdeas,
-                IdeaAttributes=ideas_attributes,
-                SearchParameters=search_parameters,
-            )
+        search_parameters, ideas_attributes = self._setup_arguments(keywords)
+        response = await asyncio.to_thread(
+            self._adinsight_service.GetKeywordIdeas,
+            IdeaAttributes=ideas_attributes,
+            SearchParameters=search_parameters,
+        )
 
         out = []
         for k in response.KeywordIdea:
@@ -124,8 +120,11 @@ class BingAdsClient:
                 out.append({"keyword": keyword, "avg_monthly_searches": 0})
 
         df = pl.DataFrame(out)
-        if len(df) != len(keywords):
-            raise ValueError(f"Expected {len(keywords)} keywords in response, got {len(df)}")
+        if set(keywords) != set(df["keyword"].to_list()):
+            # I think there's a concurrency issue in bing ads package, the inputs get switched up and we might miss some
+            # responses. It does not seem to happen very often, so doing this retry approach.
+            self._logger.warning("Input keywords do not match output keywords. Retrying...")
+            return await self._get_keyword_batch_info(keywords)
         return df
 
     def get_oauth_link(self) -> str:
@@ -151,13 +150,7 @@ class BingAdsClient:
         oauth_tokens = self._oauth.request_oauth_tokens_by_response_uri(response_uri)
         return oauth_tokens.refresh_token
 
-    def _setup_arguments(self, keywords: list[str]) -> tuple[Any, Any]:
-        if self._adinsight_service is None:
-            adinsight_service = ServiceClient(
-                service="AdInsightService", version=13, authorization_data=self._authorization_data
-            )
-            self._adinsight_service = adinsight_service
-
+    def _setup_arguments(self, keywords: list[str]) -> tuple[Any, Any]:  # noqa: ANN401
         search_parameters = self._adinsight_service.factory.create("ArrayOfSearchParameter")
 
         query_search_parameter = self._adinsight_service.factory.create("QuerySearchParameter")
@@ -191,17 +184,4 @@ class BingAdsClient:
         ideas_attributes = self._adinsight_service.factory.create("ArrayOfKeywordIdeaAttribute")
         ideas_attributes.KeywordIdeaAttribute.append(["Keyword", "MonthlySearchCounts"])
 
-        return ideas_attributes, search_parameters
-
-    @contextmanager
-    def _suppress_stdout_stderr() -> Generator[None]:
-        """Suppress stdout and stderr temporarily."""
-        old_stdout = sys.stdout
-        old_stderr = sys.stderr
-        try:
-            sys.stdout = StringIO()
-            sys.stderr = StringIO()
-            yield
-        finally:
-            sys.stdout = old_stdout
-            sys.stderr = old_stderr
+        return search_parameters, ideas_attributes

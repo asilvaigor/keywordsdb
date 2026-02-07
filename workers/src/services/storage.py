@@ -11,6 +11,7 @@ class StorageClient:
         self._bucket_name = f"keywordsdb-{os.getenv('ENV', 'dev')}"
         self.client = Client()
         self.bucket: Bucket = self.client.bucket(self._bucket_name)
+        assert self.bucket.exists()
 
     def delete_prefix(self, prefix: str) -> None:
         """Delete all files in the given prefix."""

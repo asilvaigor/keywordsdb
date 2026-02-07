@@ -27,6 +27,7 @@ resource "google_project_iam_member" "worker_ingestion" {
     "roles/bigquery.user",
     "roles/bigquery.dataOwner",
     "roles/storage.objectUser",
+    "roles/storage.bucketViewer",
     "roles/datastore.user",
     "roles/batch.agentReporter",
   ])
@@ -52,6 +53,7 @@ resource "google_project_iam_member" "worker_bing" {
     "roles/bigquery.user",
     "roles/bigquery.dataOwner",
     "roles/storage.objectUser",
+    "roles/storage.bucketViewer",
     "roles/batch.agentReporter",
   ])
   project = var.project_id

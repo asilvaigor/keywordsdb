@@ -72,7 +72,7 @@ class Keywords:
             """
             df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
             assert df is not None
-            keywords = df.select("keyword").to_series().to_list()
+            keywords = df["keyword"].to_list()
             yield from keywords
 
             offset += current_batch_size
