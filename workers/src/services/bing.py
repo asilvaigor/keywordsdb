@@ -37,11 +37,11 @@ class BingAdsClient:
     For keywordsdb re-ban:
     - Go on this link https://ads.microsoft.com/cc/Settings/Account
     - Setup new account on i.a.silva@hotmail.com
-    - Fill up the mandatory fields, put the options that do not create a marketing campaign, skip the payment section
-    - Once logged in, get BING_ACCOUNT_ID from "aid" field in the url, and update the secret
+    - On the page it asks to put website url, take the "aid" field from the url for BING_ACCOUNT_ID
     """
 
     _rate_limiter = Limiter(40, max_burst=1)
+    _semaphore = asyncio.Semaphore(max(os.cpu_count() or 2, 4))
 
     def __init__(self, logger: BoundLogger) -> None:
         self._oauth: OAuthWebAuthCodeGrant = OAuthWebAuthCodeGrant(
@@ -71,22 +71,32 @@ class BingAdsClient:
         if len(keywords) == 0:
             return pl.DataFrame()
 
-        cnt_before = len(keywords)
-        keywords = [keyword for keyword in keywords if len(keyword) <= 100]  # 100 characters limit
-        keywords_long = [keyword for keyword in keywords if len(keyword) > 100]
-        cnt_after = len(keywords)
-        if cnt_before != cnt_after:
-            self._logger.warning(
-                f"Found {cnt_before - cnt_after} keywords that exceed 100 characters limit, setting their volume to 0"
-            )
+        valid_keywords = []
+        long_keywords = []
+        for keyword in keywords:
+            if len(keyword) <= 100:
+                valid_keywords.append(keyword)
+            else:
+                long_keywords.append(keyword)
 
-        batches: list[list[str]] = [keywords[i : i + 500] for i in range(0, len(keywords), 500)]
+        batches: list[list[str]] = [valid_keywords[i : i + 500] for i in range(0, len(valid_keywords), 500)]
         tasks = [self._get_keyword_batch_info(batch) for batch in batches]
         results: list[pl.DataFrame] = await asyncio.gather(*tasks)
 
         df = pl.concat(results).unique(subset=["keyword"])
-        if len(keywords_long) > 0:
-            df = pl.concat([df, pl.DataFrame({"keyword": keywords_long, "avg_monthly_searches": 0})])
+        if long_keywords:
+            self._logger.warning(
+                f"Found {len(long_keywords)} keywords that exceed 100 characters limit, setting their volume to 0"
+            )
+            df = pl.concat(
+                [
+                    df,
+                    pl.DataFrame(
+                        {"keyword": long_keywords, "avg_monthly_searches": 0},
+                        schema={"keyword": pl.String, "avg_monthly_searches": pl.Int64},
+                    ),
+                ]
+            )
         return df
 
     async def _get_keyword_batch_info(self, keywords: list[str]) -> pl.DataFrame:
@@ -95,48 +105,42 @@ class BingAdsClient:
         if any(len(keyword) > 100 for keyword in keywords):
             raise ValueError("All keywords must be 100 characters or less.")
 
-        await BingAdsClient._rate_limiter.wait()
+        async with BingAdsClient._semaphore:
+            await BingAdsClient._rate_limiter.wait()
 
-        self._logger.debug(f"Fetching Bing keyword data for {len(keywords)} keywords")
-        search_parameters, ideas_attributes = self._setup_arguments(keywords)
-        try:
-            response = await asyncio.to_thread(
-                self._adinsight_service.GetKeywordIdeas,
-                IdeaAttributes=ideas_attributes,
-                SearchParameters=search_parameters,
-            )
-        except URLError as e:
-            if e.errno == 32:
-                self._logger.warning("Error broken pipe, retrying...")
-                return await self._get_keyword_batch_info(keywords)
-            raise
-        except Exception as e:
-            if e.args and isinstance(e.args[0], tuple) and e.args[0][0] >= 500:
-                self._logger.warning(f"Error {e.args[0][0]}, retrying...")
-                return await self._get_keyword_batch_info(keywords)
-            raise
+            self._logger.debug(f"Fetching Bing keyword data for {len(keywords)} keywords")
+            search_parameters, ideas_attributes = self._setup_arguments(keywords)
+            try:
+                response = await asyncio.to_thread(
+                    self._adinsight_service.GetKeywordIdeas,
+                    IdeaAttributes=ideas_attributes,
+                    SearchParameters=search_parameters,
+                )
+            except URLError as e:
+                if e.errno == 32:
+                    self._logger.warning("Error broken pipe, retrying...")
+                    return await self._get_keyword_batch_info(keywords)
+                raise
+            except Exception as e:
+                if e.args and isinstance(e.args[0], tuple) and e.args[0][0] >= 500:
+                    self._logger.warning(f"Error {e.args[0][0]}, retrying...")
+                    return await self._get_keyword_batch_info(keywords)
+                raise
 
         out = []
         for k in response.KeywordIdea:
             keyword = k["Keyword"]
             monthly_search_counts = k["MonthlySearchCounts"]
-            if monthly_search_counts is not None:
-                out.append(
-                    {
-                        "keyword": keyword,
-                        # "volume_history": monthly_search_counts[0],
-                        "avg_monthly_searches": monthly_search_counts[0][-1],
-                    }
-                )
-            else:
-                out.append({"keyword": keyword, "avg_monthly_searches": 0})
+            avg_searches = monthly_search_counts[0][-1] if monthly_search_counts is not None else 0
+            out.append({"keyword": keyword, "avg_monthly_searches": avg_searches})
 
-        df = pl.DataFrame(out)
+        df = pl.DataFrame(out, schema={"keyword": pl.String, "avg_monthly_searches": pl.Int64})
         if set(keywords) != set(df["keyword"].to_list()):
             # I think there's a concurrency issue in bing ads package, the inputs get switched up and we might miss some
             # responses. It seems to happen about 5% of time, just doing a retry
             self._logger.debug("Input keywords do not match output keywords. Retrying...")
             return await self._get_keyword_batch_info(keywords)
+
         return df
 
     def get_oauth_link(self) -> str:

@@ -27,6 +27,7 @@ class ResourceExhaustedError(Exception):
 class AdsClient:
     _rate_limiter = Limiter(1, max_burst=1)
     _backoff: bool = False
+    _semaphore = asyncio.Semaphore(16)
 
     def __init__(self, logger: BoundLogger) -> None:
         os.environ["GOOGLE_ADS_USE_PROTO_PLUS"] = "true"
@@ -111,20 +112,22 @@ class AdsClient:
     async def _fetch_first_page(
         self, request: GenerateKeywordIdeasRequest
     ) -> tuple[Iterator[GenerateKeywordIdeaResponse], GenerateKeywordIdeaResponse | None]:
-        await AdsClient._rate_limiter.wait()
-        await self._wait_backoff()
-        self._logger.debug("Getting first page")
-        pager = await asyncio.to_thread(self._keyword_plan_idea_service.generate_keyword_ideas, request)
+        async with AdsClient._semaphore:
+            await AdsClient._rate_limiter.wait()
+            await self._wait_backoff()
+            self._logger.debug("Getting first page")
+            pager = await asyncio.to_thread(self._keyword_plan_idea_service.generate_keyword_ideas, request)
         pages: Iterator[GenerateKeywordIdeaResponse] = pager.pages
         return pages, self._get_page(pages)  # First page doesnt need await
 
     async def _fetch_next_page(
         self, pages: Iterator[GenerateKeywordIdeaResponse]
     ) -> GenerateKeywordIdeaResponse | None:
-        await AdsClient._rate_limiter.wait()
-        await self._wait_backoff()
-        self._logger.debug("Getting next page")
-        return await asyncio.to_thread(self._get_page, pages)
+        async with AdsClient._semaphore:
+            await AdsClient._rate_limiter.wait()
+            await self._wait_backoff()
+            self._logger.debug("Getting next page")
+            return await asyncio.to_thread(self._get_page, pages)
 
     async def _wait_backoff(self) -> None:
         waited_backoff = False
