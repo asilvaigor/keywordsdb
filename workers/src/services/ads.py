@@ -8,8 +8,8 @@ import polars as pl
 from asynciolimiter import Limiter
 from google.ads.googleads.client import GoogleAdsClient
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v22.services.services.keyword_plan_idea_service.client import KeywordPlanIdeaServiceClient
-from google.ads.googleads.v22.services.types import (
+from google.ads.googleads.v23.services.services.keyword_plan_idea_service.client import KeywordPlanIdeaServiceClient
+from google.ads.googleads.v23.services.types import (
     GenerateKeywordIdeaResponse,
     GenerateKeywordIdeaResult,
     GenerateKeywordIdeasRequest,

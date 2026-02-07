@@ -8,23 +8,23 @@ dependencies = [
     "asynciolimiter>=1.2.0",
     "bingads>=13.0.26",
     "clickhouse-connect>=0.10.0",
-    "google-ads>=28.4.1",
-    "google-ads-stubs>=24.0.0",
+    "google-ads>=29.0.0",
+    "google-ads-stubs>=25.0.0",
     "google-cloud-bigquery>=3.40.0",
     "google-cloud-firestore>=2.23.0",
     "google-cloud-secret-manager>=2.25.0",
-    "google-cloud-storage>=3.8.0",
-    "numpy>=2.4.1",
-    "polars[pyarrow]>=1.37.1",
+    "google-cloud-storage>=3.9.0",
+    "numpy>=2.4.2",
+    "polars[pyarrow]>=1.38.1",
     "structlog>=25.5.0",
 ]
 
 [dependency-groups]
 dev = [
-    "ipykernel>=7.1.0",
+    "ipykernel>=7.2.0",
     "python-dotenv>=1.2.1",
-    "ruff>=0.14.14",
-    "ty>=0.0.14",
+    "ruff>=0.15.0",
+    "ty>=0.0.15",
 ]
 
 [tool.ruff]
