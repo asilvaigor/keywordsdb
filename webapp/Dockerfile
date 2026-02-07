@@ -1,5 +1,5 @@
 # Build stage
-FROM node:22.16-slim AS builder
+FROM node:24.13-slim AS builder
 
 WORKDIR /app
 
@@ -11,6 +11,7 @@ RUN bun install --frozen-lockfile
 COPY app app
 COPY components components
 COPY lib lib
+COPY public public
 COPY next.config.ts components.json tsconfig.json postcss.config.mjs ./
 
 ARG ENV
@@ -20,12 +21,13 @@ ENV NODE_ENV=production
 RUN bun run build
 
 # Runner stage
-FROM node:22.16-slim AS runner
+FROM node:24.13-slim AS runner
 
 WORKDIR /app
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs

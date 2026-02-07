@@ -20,6 +20,8 @@ export function Pagination({
   pageIndex,
   pageSize,
 }: PaginationProps) {
+  "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
+
   return (
     <div className="flex items-center py-4 justify-between sm:justify-end sm:gap-8">
       {isTotalRowsLoading ? (
@@ -34,7 +36,6 @@ export function Pagination({
       <div className="space-x-2">
         <Button
           variant="outline"
-          size="sm"
           onMouseDown={() => table.previousPage()}
           disabled={!table.getCanPreviousPage()}
         >
@@ -42,7 +43,6 @@ export function Pagination({
         </Button>
         <Button
           variant="outline"
-          size="sm"
           onMouseDown={() => table.nextPage()}
           disabled={!table.getCanNextPage()}
         >

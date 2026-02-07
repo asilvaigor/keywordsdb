@@ -81,7 +81,7 @@ export function KeywordsTable() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody className="min-h-[400px]">
+          <TableBody className="min-h-100">
             {error ? (
               <TableRow>
                 <TableCell

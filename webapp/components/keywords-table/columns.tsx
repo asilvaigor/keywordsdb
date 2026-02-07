@@ -93,12 +93,12 @@ export const columns = columnsWithoutSkeleton.map((column) => ({
       if (info.row.original.showSkeleton) {
         return (
           <Skeleton
-            className="my-0.5 h-[16px]"
+            className="my-0.5 h-4"
             style={{ width: column.size ? 0.5 * column.size : undefined }}
           />
         );
       }
-      return <div className="my-0.5 h-[16px]" />;
+      return <div className="my-0.5 h-4" />;
     }
     if (typeof column.cell === "function") {
       return column.cell(info as CellContext<Keyword, unknown>);

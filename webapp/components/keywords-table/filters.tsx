@@ -1,5 +1,5 @@
 import type { Table } from "@tanstack/react-table";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -177,16 +177,15 @@ export function Filters({ table }: Props) {
           onChange={(event) =>
             table.getColumn("keyword")?.setFilterValue(event.target.value)
           }
-          className="max-w-sm"
+          className="max-w-full"
         />
         {/* Add filter button */}
         <Button
           variant="outline"
-          size="sm"
           onClick={addFilter}
           className="flex items-center gap-2"
         >
-          <Plus className="h-4 w-4" />
+          <Plus />
           Add filter
         </Button>
       </div>
@@ -252,7 +251,7 @@ export function Filters({ table }: Props) {
 
               {filter.operator === "between" && (
                 <>
-                  <span className="text-sm text-muted-foreground flex-shrink-0">
+                  <span className="text-sm text-muted-foreground shrink-0">
                     and
                   </span>
                   <div className="flex-2 space-y-1">
@@ -272,11 +271,11 @@ export function Filters({ table }: Props) {
               {/* Delete button */}
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => removeFilter(filter.id)}
-                className="h-8 w-8 p-0 flex-shrink-0 text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive"
               >
-                <Trash2 className="h-4 w-4" />
+                <X />
               </Button>
             </div>
           ))}
