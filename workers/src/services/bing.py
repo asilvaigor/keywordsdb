@@ -121,6 +121,13 @@ class BingAdsClient:
                     self._logger.warning("Error broken pipe, retrying...")
                     return await self._get_keyword_batch_info(keywords)
                 raise
+            except AttributeError as e:
+                if "NoneType" in str(e):
+                    # Bug on this line
+                    # https://github.com/suds-community/suds/blob/master/suds/bindings/document.py#L102
+                    self._logger.warning("Error NoneType, retrying...")
+                    return await self._get_keyword_batch_info(keywords)
+                raise
             except Exception as e:
                 if e.args and isinstance(e.args[0], tuple) and e.args[0][0] >= 500:
                     self._logger.warning(f"Error {e.args[0][0]}, retrying...")
