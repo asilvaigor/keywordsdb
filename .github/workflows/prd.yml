@@ -80,4 +80,9 @@ jobs:
           secrets: "\
             CLICKHOUSE_URL='${{ vars.CLICKHOUSE_URL }}',\
             CLICKHOUSE_USERNAME='${{ vars.CLICKHOUSE_USERNAME }}',\
-            CLICKHOUSE_PASSWORD='${{ secrets.CLICKHOUSE_PASSWORD }}'"
+            CLICKHOUSE_PASSWORD='${{ secrets.CLICKHOUSE_PASSWORD }}',\
+            BETTER_AUTH_RESEND_KEY='${{ secrets.BETTER_AUTH_RESEND_KEY }}',\
+            BETTER_AUTH_SECRET='${{ secrets.BETTER_AUTH_SECRET }}',\
+            BETTER_AUTH_GOOGLE_ID='${{ secrets.BETTER_AUTH_GOOGLE_ID }}',\
+            BETTER_AUTH_GOOGLE_SECRET='${{ secrets.BETTER_AUTH_GOOGLE_SECRET }}',\
+            BETTER_AUTH_URL='${{ secrets.BETTER_AUTH_URL }}'"

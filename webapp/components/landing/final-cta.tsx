@@ -25,7 +25,7 @@ export function FinalCTA() {
             className="h-12 px-8 text-base font-semibold"
             asChild
           >
-            <Link href="/dashboard">
+            <Link href="/login">
               Try KeywordsDB for Free
               <ArrowRight className="ml-2 h-4 w-4" data-icon="inline-end" />
             </Link>

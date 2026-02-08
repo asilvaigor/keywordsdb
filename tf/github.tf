@@ -62,7 +62,12 @@ locals {
   }
 
   github_secrets = {
-    CLICKHOUSE_PASSWORD  = var.clickhouse_password
+    CLICKHOUSE_PASSWORD       = var.clickhouse_password
+    BETTER_AUTH_RESEND_KEY    = var.better_auth_resend_key
+    BETTER_AUTH_SECRET        = var.better_auth_secret
+    BETTER_AUTH_GOOGLE_ID     = var.better_auth_google_id
+    BETTER_AUTH_GOOGLE_SECRET = var.better_auth_google_secret
+    BETTER_AUTH_URL           = var.better_auth_url
   }
 }
 

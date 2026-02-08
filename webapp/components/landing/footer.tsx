@@ -17,10 +17,7 @@ export function Footer() {
           >
             Privacy
           </Link>
-          <Link
-            href="/terms"
-            className="transition-colors hover:text-foreground"
-          >
+          <Link href="/tos" className="transition-colors hover:text-foreground">
             Terms
           </Link>
           <a

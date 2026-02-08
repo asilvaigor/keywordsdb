@@ -10,7 +10,6 @@ variable "google_ads_developer_token" {
   sensitive   = true
 }
 
-
 variable "cloudflare_api_token" {
   type        = string
   description = "Cloudflare API token"
@@ -61,4 +60,33 @@ variable "bing_refresh_token" {
   type        = string
   description = "Bing Ads Refresh Token"
   sensitive   = true
+}
+
+variable "better_auth_resend_key" {
+  type        = string
+  description = "BetterAuth Resend Key"
+  sensitive   = true
+}
+
+variable "better_auth_secret" {
+  type        = string
+  description = "BetterAuth Secret"
+  sensitive   = true
+}
+
+variable "better_auth_google_id" {
+  type        = string
+  description = "BetterAuth Google Client ID"
+  sensitive   = true
+}
+
+variable "better_auth_google_secret" {
+  type        = string
+  description = "BetterAuth Google Client Secret"
+  sensitive   = true
+}
+
+variable "better_auth_url" {
+  type        = string
+  description = "BetterAuth URL"
 }

@@ -25,7 +25,7 @@ const plans = [
       "No credit card required",
     ],
     cta: "Start Free",
-    href: "/app",
+    href: "/login",
   },
   {
     name: "Monthly",
@@ -42,7 +42,7 @@ const plans = [
       "CSV/Parquet export",
     ],
     cta: "Start Free Trial",
-    href: "/app",
+    href: "/login",
   },
   {
     name: "Yearly",
@@ -58,7 +58,7 @@ const plans = [
       "Save 50% vs monthly",
     ],
     cta: "Start Free Trial",
-    href: "/app",
+    href: "/login",
   },
 ];
 
