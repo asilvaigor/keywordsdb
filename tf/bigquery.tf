@@ -43,6 +43,16 @@ resource "google_bigquery_table" "keywords" {
       mode = "REQUIRED"
     },
     {
+      name = "updated_at"
+      type = "DATE"
+      mode = "REQUIRED"
+    },
+    {
+      name = "ingested_at"
+      type = "DATE"
+      mode = "NULLABLE"
+    },
+    {
       name = "volume_history"
       type = "BYTES"
       mode = "NULLABLE"
@@ -53,15 +63,10 @@ resource "google_bigquery_table" "keywords" {
       mode = "NULLABLE"
     },
     {
-      name = "updated_at"
-      type = "DATE"
-      mode = "REQUIRED"
-    },
-    {
-      name = "ingested_at"
-      type = "DATE"
+      name = "bing_avg_monthly_searches"
+      type = "INTEGER"
       mode = "NULLABLE"
-    }
+    },
   ])
 }
 

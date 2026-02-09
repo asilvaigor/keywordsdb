@@ -1,3 +1,4 @@
+import json
 import os
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from pathlib import Path
@@ -48,10 +49,10 @@ class StorageClient:
         blob = self.bucket.blob(path)
         return blob.exists()
 
-    def touch(self, path: str) -> None:
-        """Create an empty file in the bucket."""
-        blob = self.bucket.blob(path)
-        blob.upload_from_string("")
+    def ls(self, prefix: str) -> list[str]:
+        """List all files in the bucket with the given prefix."""
+        blobs: list[Blob] = self.bucket.list_blobs(prefix=prefix)
+        return [blob.name for blob in blobs]
 
     def find(self, prefix: str, suffix: str) -> str:
         """Finds a file in the bucket that start with the given prefix and ends with the given suffix."""
@@ -59,16 +60,29 @@ class StorageClient:
         for blob in blobs:
             if blob.name.startswith(prefix) and blob.name.endswith(suffix):
                 return blob.name
-        raise FileNotFoundError(f"No file found with prefix {prefix}")
+        raise FileNotFoundError(f"No file found with prefix {prefix} and suffix {suffix}")
 
-    def get_df(self, path: str) -> pl.DataFrame:
+    def delete(self, path: str) -> None:
+        """Delete a file in the bucket."""
+        blob = self.bucket.blob(path)
+        blob.delete()
+
+    def read_df(self, path: str) -> pl.DataFrame:
         """Get a parquet file from the bucket as a DataFrame."""
         assert path.endswith(".parquet")
         blob = self.bucket.blob(path)
         with blob.open("rb") as f:
             return pl.read_parquet(f)
 
-    def delete(self, path: str) -> None:
-        """Delete a file in the bucket."""
+    def read_json(self, path: str) -> dict:
+        """Read a JSON file from the bucket."""
         blob = self.bucket.blob(path)
-        blob.delete()
+        if not blob.exists():
+            raise FileNotFoundError(f"File {path} not found in bucket {self._bucket_name}")
+        content = blob.download_as_text()
+        return json.loads(content)
+
+    def write_json(self, path: str, data: dict) -> None:
+        """Write a JSON file to the bucket."""
+        blob = self.bucket.blob(path)
+        blob.upload_from_string(json.dumps(data), content_type="application/json")

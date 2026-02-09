@@ -13,6 +13,10 @@ class BigQueryClient:
     def get_full_name(self, tablename: str) -> str:
         return f"{self._project_id}.{self._dataset}.{tablename}"
 
+    def delete_table(self, tablename: str) -> None:
+        table_ref = self.client.dataset(self._dataset).table(tablename)
+        self.client.delete_table(table_ref, not_found_ok=True)
+
     def insert(self, tablename: str, df: pl.DataFrame) -> None:
         """
         Insert records into a table. Creates the table if it doesn't exist yet.
