@@ -1,4 +1,5 @@
 "use client";
+"use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
 
 import { flexRender } from "@tanstack/react-table";
 import { AlertOctagon, LoaderCircle, Search } from "lucide-react";
@@ -18,7 +19,6 @@ import { useKeywordsTable } from "./use-keywords-table";
 const PAGE_SIZE = 10;
 
 export function KeywordsTable() {
-  "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
   const {
     table,
     progress,

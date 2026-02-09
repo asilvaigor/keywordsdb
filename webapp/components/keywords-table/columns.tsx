@@ -1,3 +1,5 @@
+"use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
+
 import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -89,7 +91,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
 export const columns = columnsWithoutSkeleton.map((column) => ({
   ...column,
   cell: (info: CellContext<KeywordRow, unknown>) => {
-    if ("showSkeleton" in info.row.original) {
+    if (info.row.original && "showSkeleton" in info.row.original) {
       if (info.row.original.showSkeleton) {
         return (
           <Skeleton
@@ -100,7 +102,7 @@ export const columns = columnsWithoutSkeleton.map((column) => ({
       }
       return <div className="my-0.5 h-4" />;
     }
-    if (typeof column.cell === "function") {
+    if (info.row.original && typeof column.cell === "function") {
       return column.cell(info as CellContext<Keyword, unknown>);
     }
     return null;

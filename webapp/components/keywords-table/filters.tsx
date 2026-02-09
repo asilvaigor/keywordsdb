@@ -1,3 +1,5 @@
+"use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
+
 import type { Table } from "@tanstack/react-table";
 import { Plus, X } from "lucide-react";
 import { useState } from "react";

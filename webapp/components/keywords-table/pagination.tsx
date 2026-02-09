@@ -1,3 +1,5 @@
+"use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
+
 import type { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,8 +22,6 @@ export function Pagination({
   pageIndex,
   pageSize,
 }: PaginationProps) {
-  "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
-
   return (
     <div className="flex items-center py-4 justify-between sm:justify-end sm:gap-8">
       {isTotalRowsLoading ? (
