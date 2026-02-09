@@ -41,7 +41,7 @@ export const auth = betterAuth({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "noreply@login.keywordsdb.com",
+            from: "noreply@resend.dev",
             to: email,
             subject: "Sign in to KeywordsDB",
             html: html({ url }),
