@@ -111,11 +111,17 @@ class BingAdsClient:
             self._logger.debug(f"Fetching Bing keyword data for {len(keywords)} keywords")
             search_parameters, ideas_attributes = self._setup_arguments(keywords)
             try:
-                response = await asyncio.to_thread(
-                    self._adinsight_service.GetKeywordIdeas,
-                    IdeaAttributes=ideas_attributes,
-                    SearchParameters=search_parameters,
+                response = await asyncio.wait_for(
+                    asyncio.to_thread(
+                        self._adinsight_service.GetKeywordIdeas,
+                        IdeaAttributes=ideas_attributes,
+                        SearchParameters=search_parameters,
+                    ),
+                    timeout=600,  # 10 minutes
                 )
+            except TimeoutError:
+                self._logger.warning("GetKeywordIdeas timed out after 10 minutes, retrying...")
+                return await self._get_keyword_batch_info(keywords)
             except URLError as e:
                 if e.errno == 32:
                     self._logger.warning("Error broken pipe, retrying...")
