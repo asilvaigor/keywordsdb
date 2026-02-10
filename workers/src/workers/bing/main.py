@@ -16,7 +16,7 @@ def export_to_gcs(client: BigQueryClient, storage_client: StorageClient) -> None
         ) AS
         SELECT keyword
         FROM `{client.get_full_name("keywords")}`
-        WHERE bing_avg_monthly_searches IS NULL
+        WHERE bing_avg_monthly_searches IS NULL AND avg_monthly_searches > 10
         ORDER BY avg_monthly_searches DESC
     """
     export_job = client.client.query(extract_query)
@@ -31,8 +31,11 @@ def merge_to_main_table(client: BigQueryClient) -> None:
         MERGE `{client.get_full_name("keywords")}` k
         USING `{client.get_full_name("bing-volumes-tmp")}` b
         ON k.keyword = b.keyword
-        WHEN MATCHED THEN
-            UPDATE SET bing_avg_monthly_searches = b.avg_monthly_searches
+        WHEN MATCHED THEN UPDATE SET bing_avg_monthly_searches = b.avg_monthly_searches;
+
+        UPDATE `{client.get_full_name("keywords")}` k
+        SET bing_avg_monthly_searches = 0
+        WHERE k.avg_monthly_searches <= 10 AND bing_avg_monthly_searches IS NULL;
     """
     merge_job = client.client.query(merge_query)
     merge_job.result()
@@ -72,6 +75,7 @@ async def main_async() -> None:
     if i_max >= tot_keywords:
         ctx.logger.info("Finished ingesting file, deleting it")
         ctx.storage_client.delete(file_to_ingest)
+
     ctx.logger.info("Success")
 
 
