@@ -16,7 +16,6 @@ export const auth = betterAuth({
     errorURL: "/login/error",
   },
   database: firestoreAdapter({
-    debugLogs: true,
     firestore: firestore,
     collections: {
       users: "auth-users",
