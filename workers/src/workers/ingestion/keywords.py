@@ -64,8 +64,8 @@ def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str]:
         query = """
             SELECT keyword
             FROM keywords
-            WHERE avg_monthly_searches > 2000
-            ORDER BY ingested_at ASC
+            WHERE avg_monthly_searches > 2000 AND updated_at < '2026-02-01'
+            ORDER BY avg_monthly_searches DESC, updated_at ASC
             LIMIT %(batch_size)s OFFSET %(offset)s
         """
         df = client.execute_query(query, params={"batch_size": current_batch_size, "offset": offset})
