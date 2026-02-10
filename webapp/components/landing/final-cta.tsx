@@ -2,7 +2,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export function FinalCTA() {
+function FinalCTA() {
   return (
     <section className="relative overflow-hidden py-20 md:py-28">
       {/* Background glow */}
@@ -35,3 +35,5 @@ export function FinalCTA() {
     </section>
   );
 }
+
+export default FinalCTA;

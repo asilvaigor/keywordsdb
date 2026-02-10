@@ -5,7 +5,7 @@ const stats = [
   { value: "Weekly", label: "Data updates" },
 ];
 
-export function Stats() {
+function Stats() {
   return (
     <section className="border-y bg-muted/30 py-12">
       <div className="container mx-auto px-4">
@@ -25,3 +25,5 @@ export function Stats() {
     </section>
   );
 }
+
+export default Stats;

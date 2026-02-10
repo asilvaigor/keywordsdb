@@ -1,7 +1,7 @@
 import { Box } from "lucide-react";
 import Link from "next/link";
 
-export function Footer() {
+function Footer() {
   return (
     <footer className="border-t py-8">
       <div className="container mx-auto flex flex-col items-center justify-between gap-4 px-4 text-sm text-muted-foreground md:flex-row">
@@ -20,14 +20,16 @@ export function Footer() {
           <Link href="/tos" className="transition-colors hover:text-foreground">
             Terms
           </Link>
-          <a
-            href="mailto:support@keywordsdb.com"
+          <Link
+            href="/contact"
             className="transition-colors hover:text-foreground"
           >
             Contact
-          </a>
+          </Link>
         </div>
       </div>
     </footer>
   );
 }
+
+export default Footer;

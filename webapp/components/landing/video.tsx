@@ -1,6 +1,6 @@
 import { Play } from "lucide-react";
 
-export function Video() {
+function Video() {
   return (
     <section className="py-20 md:py-28 bg-muted/20">
       <div className="container mx-auto px-4">
@@ -48,3 +48,5 @@ export function Video() {
     </section>
   );
 }
+
+export default Video;

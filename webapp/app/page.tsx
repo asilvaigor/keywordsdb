@@ -1,14 +1,14 @@
+import Footer from "@/components/footer";
 import Header from "@/components/header";
-import { FAQ } from "@/components/landing/faq";
-import { Features } from "@/components/landing/features";
-import { FinalCTA } from "@/components/landing/final-cta";
-import { Footer } from "@/components/landing/footer";
-import { Hero } from "@/components/landing/hero";
-import { Pricing } from "@/components/landing/pricing";
-import { Stats } from "@/components/landing/stats";
-import { Video } from "@/components/landing/video";
+import FAQ from "@/components/landing/faq";
+import Features from "@/components/landing/features";
+import FinalCTA from "@/components/landing/final-cta";
+import Hero from "@/components/landing/hero";
+import Pricing from "@/components/landing/pricing";
+import Stats from "@/components/landing/stats";
+import Video from "@/components/landing/video";
 
-export default function Home() {
+function Home() {
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -25,3 +25,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home;

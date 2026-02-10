@@ -45,7 +45,7 @@ const faqs = [
   },
 ];
 
-export function FAQ() {
+function FAQ() {
   return (
     <section id="faq" className="border-t bg-muted/20 py-20 md:py-28">
       <div className="container mx-auto px-4">
@@ -76,3 +76,5 @@ export function FAQ() {
     </section>
   );
 }
+
+export default FAQ;

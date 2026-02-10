@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { KeywordsTable } from "../keywords-table";
 
-export function Hero() {
+function Hero() {
   return (
     <section className="relative overflow-hidden pt-24 pb-16 md:pt-18 md:pb-24">
       {/* Background glow */}
@@ -91,3 +91,5 @@ export function Hero() {
     </section>
   );
 }
+
+export default Hero;

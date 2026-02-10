@@ -45,7 +45,7 @@ const features = [
   },
 ];
 
-export function Features() {
+function Features() {
   return (
     <section id="features" className="py-20 md:py-28">
       <div className="container mx-auto px-4">
@@ -82,3 +82,5 @@ export function Features() {
     </section>
   );
 }
+
+export default Features;
