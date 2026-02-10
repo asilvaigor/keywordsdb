@@ -77,7 +77,7 @@ function Pricing() {
           </p>
         </div>
 
-        <div className="mx-auto mt-14 grid max-w-5xl gap-6 md:grid-cols-3 pt-4">
+        <div className="mx-auto mt-14 grid max-w-5xl gap-10 md:gap-6 md:grid-cols-3 pt-4">
           {plans.map((plan) => (
             <Card
               key={plan.name}
