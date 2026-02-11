@@ -126,6 +126,9 @@ class BingAdsClient:
                 if e.errno == 32:
                     self._logger.warning("Error broken pipe, retrying...")
                     return await self._get_keyword_batch_info(keywords)
+                elif "handshake operation timed out" in str(e):
+                    self._logger.warning("Error handshake operation timed out, retrying...")
+                    return await self._get_keyword_batch_info(keywords)
                 raise
             except AttributeError as e:
                 if "NoneType" in str(e):
