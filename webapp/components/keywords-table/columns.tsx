@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Keyword, KeywordRow } from "@/lib/types";
 import { formatLargeNumber } from "./utils";
+import { VolumeHistoryCell } from "./volume-history";
 
 const Header = ({ title }: { title: string }) => {
   return (
@@ -77,6 +78,15 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     header: ({ column }) => <SortableHeader column={column} title="CPC ($)" />,
     cell: ({ row }) => (row.getValue("cpc_high") as number).toFixed(2),
     size: 100,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "volume_history",
+    header: () => <Header title="Volume history" />,
+    cell: ({ row }) => (
+      <VolumeHistoryCell raw={row.getValue("volume_history") as string} />
+    ),
+    size: 150,
     enableResizing: false,
   },
   {

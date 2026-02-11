@@ -138,7 +138,7 @@ def commit(
                     avg_monthly_searches,
                     competition_index,
                     cpc_high,
-                    volume_history,
+                    base64Encode(volume_history) as volume_history,
                     updated_at,
                     ingested_at
                 FROM s3(

@@ -61,6 +61,7 @@ export async function* getKeywordsStream(
       kws.avg_monthly_searches,
       kws.competition_index,
       kws.cpc_high,
+      kws.volume_history,
       kws.updated_at
     FROM keywords kws
     ${whereClause}
