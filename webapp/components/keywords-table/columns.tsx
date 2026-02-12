@@ -1,51 +1,89 @@
 "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
 
 import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Keyword, KeywordRow } from "@/lib/types";
 import { formatLargeNumber } from "./utils";
 import { VolumeHistoryCell } from "./volume-history";
 
-const Header = ({ title }: { title: string }) => {
+function Header({ title, tooltip }: { title: string; tooltip: string }) {
   return (
-    <div className="text-sm font-medium text-muted-foreground">{title}</div>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="text-sm font-medium text-muted-foreground w-fit">
+            {title}
+          </div>
+        </TooltipTrigger>
+        <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
+          <Info className="h-4 w-4 shrink-0 mt-0.5" />
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
-};
+}
 
-const SortableHeader = ({
+function SortableHeader({
   column,
   title,
+  tooltip,
 }: {
   column: Column<Keyword>;
   title: string;
-}) => {
+  tooltip: string;
+}) {
   const sortDirection = column.getIsSorted();
+
   return (
-    <Button
-      variant="ghost"
-      onClick={() =>
-        column.toggleSorting(sortDirection === false || sortDirection === "asc")
-      }
-      className="font-medium -ml-3 hover:bg-transparent group"
-    >
-      {title}
-      {sortDirection === "asc" ? (
-        <ArrowUp className="ml-1 h-4 w-4" />
-      ) : sortDirection === "desc" ? (
-        <ArrowDown className="ml-1 h-4 w-4" />
-      ) : (
-        <ArrowDown className="ml-1 h-4 w-4 opacity-0 group-hover:opacity-30" />
-      )}
-    </Button>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            onClick={() =>
+              column.toggleSorting(
+                sortDirection === false || sortDirection === "asc",
+              )
+            }
+            className="font-medium -ml-3 hover:bg-transparent group hover:cursor-pointer w-fit"
+          >
+            {title}
+            {sortDirection === "asc" ? (
+              <ArrowUp className="ml-1 h-4 w-4" />
+            ) : sortDirection === "desc" ? (
+              <ArrowDown className="ml-1 h-4 w-4" />
+            ) : (
+              <ArrowDown className="ml-1 h-4 w-4 opacity-0 group-hover:opacity-30" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
+          <Info className="h-4 w-4 shrink-0 mt-0.5" />
+          <p>{tooltip}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
-};
+}
 
 const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   {
     accessorKey: "keyword",
-    header: () => <Header title="Keyword" />,
+    header: () => (
+      <Header
+        title="Keyword"
+        tooltip="The search term or phrase that users enter into Google"
+      />
+    ),
     cell: ({ row }) => (
       <div className="truncate" title={row.getValue("keyword")}>
         {row.getValue("keyword")}
@@ -56,7 +94,13 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   },
   {
     accessorKey: "avg_monthly_searches",
-    header: ({ column }) => <SortableHeader column={column} title="Volume" />,
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        title="Volume"
+        tooltip="Average number of times users searched for this keyword per month over the past 12 months"
+      />
+    ),
     cell: ({ row }) => {
       const value = row.getValue("avg_monthly_searches") as number;
       return formatLargeNumber(value, false);
@@ -67,7 +111,11 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   {
     accessorKey: "competition_index",
     header: ({ column }) => (
-      <SortableHeader column={column} title="Competition" />
+      <SortableHeader
+        column={column}
+        title="Competition"
+        tooltip="Competition level for this keyword in Google Ads, ranging from 0-100. Higher values indicate more advertisers bidding on this keyword"
+      />
     ),
     cell: ({ row }) => row.getValue("competition_index") as number,
     size: 130,
@@ -75,14 +123,25 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   },
   {
     accessorKey: "cpc_high",
-    header: ({ column }) => <SortableHeader column={column} title="CPC ($)" />,
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        title="CPC ($)"
+        tooltip="Cost Per Click - the average amount advertisers pay for a click on their ad for this keyword"
+      />
+    ),
     cell: ({ row }) => (row.getValue("cpc_high") as number).toFixed(2),
     size: 100,
     enableResizing: false,
   },
   {
     accessorKey: "volume_history",
-    header: () => <Header title="Volume history" />,
+    header: () => (
+      <Header
+        title="Volume history"
+        tooltip="Historical search volume trend showing how search interest has changed over time"
+      />
+    ),
     cell: ({ row }) => (
       <VolumeHistoryCell raw={row.getValue("volume_history") as string} />
     ),
@@ -91,7 +150,12 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   },
   {
     accessorKey: "updated_at",
-    header: () => <Header title="Last updated" />,
+    header: () => (
+      <Header
+        title="Last updated"
+        tooltip="The date when this keyword data was last refreshed from Google"
+      />
+    ),
     cell: ({ row }) => row.getValue("updated_at") as string,
     size: 140,
     enableResizing: false,
