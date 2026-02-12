@@ -130,6 +130,9 @@ class BingAdsClient:
                     self._logger.warning("Error handshake operation timed out, retrying...")
                     return await self._get_keyword_batch_info(keywords)
                 raise
+            except ConnectionResetError:
+                self._logger.warning("Error connection reset, retrying...")
+                return await self._get_keyword_batch_info(keywords)
             except AttributeError as e:
                 if "NoneType" in str(e):
                     # Bug on this line
