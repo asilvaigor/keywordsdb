@@ -13,6 +13,8 @@ const description =
 export const metadata: Metadata = {
   title: title,
   description: description,
+  metadataBase: "https://keywordsdb.com",
+  alternates: { canonical: "/" },
   openGraph: {
     title: title,
     description: description,
@@ -20,6 +22,12 @@ export const metadata: Metadata = {
     url: "https://keywordsdb.com",
     locale: "en_US",
     siteName: "keywordsdb",
+    images: {
+      url: "https://keywordsdb.com/og-image.png",
+      width: 2115,
+      height: 1189,
+      alt: title,
+    },
   },
 };
 
