@@ -32,7 +32,7 @@ export function KeywordsTable({ isSample = false }: { isSample?: boolean }) {
   } = useKeywordsTable({ defaultPageSize: PAGE_SIZE, isSample });
 
   return (
-    <div className="flex flex-col justify-center max-w-xs sm:max-w-fit mx-auto h-full">
+    <div className="flex flex-col justify-center h-full">
       <Filters table={table} isSample={isSample} />
       <div className="rounded-md border relative">
         {progress != null && (

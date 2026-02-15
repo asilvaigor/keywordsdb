@@ -9,7 +9,7 @@ export default async function AppPage() {
     redirect("/login");
   }
   return (
-    <div className="flex flex-col mx-auto h-screen">
+    <div className="flex flex-col items-center h-screen">
       <Header />
       <Dashboard userData={userData} />
     </div>

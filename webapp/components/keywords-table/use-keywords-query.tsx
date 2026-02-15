@@ -110,7 +110,7 @@ export function useKeywordsQuery({
   isFiltersDebouncing: boolean;
   isSample: boolean;
 }) {
-  const [hasReceivedData, setHasReceivedData] = useState(false);
+  const [hasFinishedStreaming, setHasFinishedStreaming] = useState(false);
   const [isCacheMiss, setIsCacheMiss] = useState(false);
   const [progress, setProgress] = useState<number | undefined>(undefined);
   const completedKeysRef = useRef<Set<string>>(new Set());
@@ -130,7 +130,7 @@ export function useKeywordsQuery({
     (key, { next }) => {
       // If this key was already fully streamed, don't re-stream.
       if (completedKeysRef.current.has(key)) {
-        setHasReceivedData(true);
+        setHasFinishedStreaming(true);
         return () => {};
       }
 
@@ -148,25 +148,24 @@ export function useKeywordsQuery({
           return;
         }
         accumulatedKeywords = [...accumulatedKeywords, ...res];
-        setHasReceivedData(true);
         next(null, accumulatedKeywords);
       };
 
       const handleError = (event: CustomEvent) => {
         const error = event.detail as Error;
-        setHasReceivedData(true);
+        setHasFinishedStreaming(true);
         setProgress(undefined);
         next(error);
       };
 
       const handleComplete = () => {
-        setHasReceivedData(true);
+        setHasFinishedStreaming(true);
         setProgress(undefined);
         completedKeysRef.current.add(key);
         keywordsStreamer.stopStreaming();
       };
 
-      setHasReceivedData(false);
+      setHasFinishedStreaming(false);
       setProgress(undefined);
       setIsCacheMiss(false);
       keywordsStreamer.stopStreaming();
@@ -196,8 +195,10 @@ export function useKeywordsQuery({
     },
   );
 
-  const isStreaming = keywordsStreamer.isStreaming();
-  const isLoading = isStreaming || !hasReceivedData || isFiltersDebouncing;
+  const isLoading =
+    !hasFinishedStreaming ||
+    isFiltersDebouncing ||
+    keywordsStreamer.isStreaming();
   const displayData: KeywordRow[] = useMemo(() => {
     if (isFiltersDebouncing) {
       return Array(pageSize)

@@ -23,7 +23,7 @@ export function Pagination({
   pageSize,
 }: PaginationProps) {
   return (
-    <div className="flex items-center py-4 justify-between sm:justify-end sm:gap-8">
+    <div className="flex items-center pt-4 justify-between sm:justify-end sm:gap-8">
       {isTotalRowsLoading ? (
         <Skeleton className="h-4 w-28" />
       ) : totalRows && totalRows > 0 ? (

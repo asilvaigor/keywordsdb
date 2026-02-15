@@ -85,6 +85,8 @@ export async function* getKeywordsStreamClickhouse(
 
   const allResults: Keyword[] = [];
   let lastProgressTime = Date.now();
+  let lastProgressReadRows = 0;
+  let firstProgressTime: number | null = null;
 
   for await (const chunk of resultSet.stream()) {
     const results: Keyword[] = [];
@@ -93,16 +95,24 @@ export async function* getKeywordsStreamClickhouse(
       if (chunkData.progress) {
         if (Date.now() - lastProgressTime > 100) {
           const clickhouseProgress = chunkData.progress as ClickhouseProgress;
-          const progress: Progress = {
-            isProgress: true,
-            percent:
-              clickhouseProgress.read_rows /
-              clickhouseProgress.total_rows_to_read,
-          };
-          yield progress;
-          lastProgressTime = Date.now();
+          if (clickhouseProgress.read_rows > lastProgressReadRows) {
+            const progress: Progress = {
+              isProgress: true,
+              percent:
+                clickhouseProgress.read_rows /
+                clickhouseProgress.total_rows_to_read,
+            };
+            if (firstProgressTime === null) {
+              // Very often the first updates give an innacurate total_rows_to_read, which makes the progress percentage jump around
+              firstProgressTime = Date.now();
+            } else {
+              yield progress;
+            }
+            lastProgressReadRows = clickhouseProgress.read_rows;
+            lastProgressTime = Date.now();
+          }
         }
-      } else {
+      } else if (chunkData.row) {
         results.push(chunkData.row as Keyword);
         allResults.push(chunkData.row as Keyword);
       }

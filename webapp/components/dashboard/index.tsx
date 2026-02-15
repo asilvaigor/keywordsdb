@@ -9,7 +9,11 @@ function Dashboard({ userData }: { userData: { email: string } }) {
     identify(userData.email);
   }, [userData.email]);
 
-  return <KeywordsTable />;
+  return (
+    <div className="flex-1 w-full max-w-fit px-6">
+      <KeywordsTable />
+    </div>
+  );
 }
 
 export default Dashboard;

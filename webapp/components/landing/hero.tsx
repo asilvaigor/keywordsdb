@@ -68,7 +68,7 @@ function Hero() {
         </div>
 
         {/* Product demo */}
-        <div className="relative mx-auto mt-16 max-w-fit">
+        <div className="relative mx-auto mt-16">
           {/* Scribbled arrow annotation */}
           <div className="absolute -top-12 right-4 z-10">
             <p className="text-primary -rotate-5 font-(family-name:--font-fuzzy-bubbles)">
@@ -93,7 +93,7 @@ function Hero() {
                 </div>
               </div>
             </div>
-            <div className="rounded-lg bg-background px-4 text-left">
+            <div className="rounded-lg bg-background py-4 px-4 text-left">
               <KeywordsTable isSample={true} />
             </div>
           </div>
