@@ -45,7 +45,7 @@ function Login() {
         >
           <Button
             variant="outline"
-            className="w-full justify-start gap-2 h-11 hover:cursor-pointer"
+            className="w-full justify-start gap-2 h-11"
             type="submit"
           >
             <div className="w-5 h-5">
@@ -84,11 +84,7 @@ function Login() {
               className="h-11"
             />
           </div>
-          <Button
-            type="submit"
-            variant="outline"
-            className="h-11 hover:cursor-pointer"
-          >
+          <Button type="submit" variant="outline" className="h-11">
             Continue with Email
           </Button>
         </form>

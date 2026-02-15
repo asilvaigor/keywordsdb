@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Fuzzy_Bubbles, Outfit } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-sans" });
+const outfit = Outfit({ variable: "--font-sans" });
+const fuzzyBubbles = Fuzzy_Bubbles({
+  weight: "400",
+  variable: "--font-fuzzy-bubbles",
+});
 
 const title = "Free Keyword Research Tool | KeywordsDB";
 const description =
@@ -39,7 +44,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${outfit.variable} dark`}
+      className={cn("dark", outfit.variable, fuzzyBubbles.variable)}
       suppressHydrationWarning
     >
       <body>

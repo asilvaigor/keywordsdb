@@ -1,5 +1,6 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { CurvedArrow } from "@/components/landing/curved-arrow";
 import { Button } from "@/components/ui/button";
 import { KeywordsTable } from "../keywords-table";
 
@@ -66,8 +67,18 @@ function Hero() {
           </span>
         </div>
 
-        {/* Product screenshot */}
-        <div className="relative mx-auto mt-16 w-fit">
+        {/* Product demo */}
+        <div className="relative mx-auto mt-16 max-w-fit">
+          {/* Scribbled arrow annotation */}
+          <div className="absolute -top-12 right-4 z-10">
+            <p className="text-primary -rotate-5 font-(family-name:--font-fuzzy-bubbles)">
+              Sample demo
+            </p>
+            <div className="absolute -right-5 top-3 w-5 text-primary">
+              <CurvedArrow />
+            </div>
+          </div>
+
           <div className="absolute -inset-4 rounded-2xl bg-primary/5 blur-2xl" />
           <div className="relative rounded-xl border bg-card p-2 shadow-2xl shadow-primary/10 ring-1 ring-primary/10">
             <div className="flex items-center gap-2 px-2 pb-2">
@@ -83,7 +94,7 @@ function Hero() {
               </div>
             </div>
             <div className="rounded-lg bg-background px-4 text-left">
-              <KeywordsTable />
+              <KeywordsTable isSample={true} />
             </div>
           </div>
         </div>

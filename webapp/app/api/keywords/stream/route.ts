@@ -1,6 +1,6 @@
 import type { SortingState } from "@tanstack/react-table";
 import type { NextRequest } from "next/server";
-import { getKeywordsStream } from "@/lib/keywords";
+import { getKeywordsStream } from "@/lib/keywords/keywords";
 
 function getInt(value: string | null): number | undefined {
   return value ? Number.parseInt(value, 10) : undefined;
@@ -28,6 +28,7 @@ export async function GET(request: NextRequest) {
   });
   const page = getInt(searchParams.get("page"));
   const pageSize = getInt(searchParams.get("pageSize"));
+  const isSample = searchParams.get("isSample") === "true";
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -38,6 +39,7 @@ export async function GET(request: NextRequest) {
           sort,
           page,
           pageSize,
+          isSample,
         )) {
           try {
             const data = `data: ${JSON.stringify(batch)}\n\n`;

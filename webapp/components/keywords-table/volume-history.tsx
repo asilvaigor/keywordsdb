@@ -119,7 +119,6 @@ function Sparkline({ points }: { points: VolumePoint[] }) {
       width={width}
       height={height}
       viewBox={`0 0 ${width} ${height}`}
-      className="cursor-pointer"
       role="img"
       aria-label="Search volume history sparkline"
     >
@@ -214,7 +213,7 @@ function VolumeHistoryModal({
                   className="fill-muted-foreground"
                   fontSize={11}
                 >
-                  {formatLargeNumber(Math.round(t.val), false)}
+                  {formatLargeNumber(Math.round(t.val))}
                 </text>
               </g>
             ))}
@@ -241,7 +240,7 @@ function VolumeHistoryModal({
                   />
                 </TooltipTrigger>
                 <TooltipContent>
-                  {formatLargeNumber(points[i].value, false, 3)}
+                  {formatLargeNumber(points[i].value, 3)}
                 </TooltipContent>
               </Tooltip>
             ))}

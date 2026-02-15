@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 
 const plans = [
   {
@@ -81,19 +82,20 @@ function Pricing() {
           {plans.map((plan) => (
             <Card
               key={plan.name}
-              className={`relative flex flex-col overflow-visible ${
-                plan.highlight
-                  ? "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10 scale-[1.02]"
-                  : ""
-              }`}
+              className={cn("relative flex flex-col overflow-visible", {
+                "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10 scale-[1.02]":
+                  plan.highlight,
+              })}
             >
               {plan.badge && (
                 <div
-                  className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold ${
-                    plan.highlight
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground"
-                  }`}
+                  className={cn(
+                    "absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold",
+                    {
+                      "bg-primary text-primary-foreground": plan.highlight,
+                      "bg-muted text-foreground": !plan.highlight,
+                    },
+                  )}
                 >
                   {plan.badge}
                 </div>

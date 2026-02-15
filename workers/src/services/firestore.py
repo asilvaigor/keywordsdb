@@ -14,7 +14,7 @@ class FirestoreClient:
     def __init__(self) -> None:
         self.client: Client = Client(database=f"keywordsdb-{os.getenv('ENV', 'dev')}")
 
-    def put_keywords_cache(self, df: pl.DataFrame, count: int) -> None:
+    def put_keywords_cache(self, df: pl.DataFrame, count: int, sample: bool) -> None:
         """
         Update the base document in keywords-cache and keywords-counts-cache collections (documents with default
         filters).
@@ -23,7 +23,16 @@ class FirestoreClient:
             df: Polars DataFrame containing query results.
             count: number of results in query.
         """
-        cache_key = 'keywords-{}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
+        if sample:
+            cache_key = (
+                'keywords-{"avg_monthly_searches":{"gte":100000000}}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
+            )
+            counts_cache_key = 'keyword-counts-{"avg_monthly_searches":{"gte":100000000}}'
+        else:
+            cache_key = 'keywords-{}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
+            counts_cache_key = "keyword-counts-{}"
+
+        # Save in keywords-cache
         hash_value = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
         doc_ref = self.client.collection(FirestoreClient.keywords_cache).document(hash_value)
         doc_value = {
@@ -32,8 +41,8 @@ class FirestoreClient:
         }
         doc_ref.set(doc_value)
 
-        cache_key = "keyword-counts-{}"
-        hash_value = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
+        # Save in keywords-counts-cache
+        hash_value = hashlib.sha256(counts_cache_key.encode("utf-8")).hexdigest()
         doc_ref = self.client.collection(FirestoreClient.keywords_counts_cache).document(hash_value)
         doc_ref.set({"count": count, "expires_at": None})
 

@@ -1,5 +1,5 @@
 import type { SortingState } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import useSWRSubscription from "swr/subscription";
 import type {
   CacheMiss,
@@ -17,12 +17,14 @@ class KeywordsStreamer extends EventTarget {
     page: number;
     filters: KeywordFilters;
     sorting: SortingState;
+    isSample: boolean;
   }) {
     this.stopStreaming();
 
     const urlParams = new URLSearchParams();
     urlParams.append("page", (params.page + 1).toString());
     urlParams.append("pageSize", API_PAGE_SIZE.toString());
+    urlParams.append("isSample", params.isSample.toString());
     if (params.filters.avg_monthly_searches) {
       urlParams.append(
         "avg_monthly_searches",
@@ -98,6 +100,7 @@ export function useKeywordsQuery({
   pageIndex,
   pageSize,
   isFiltersDebouncing,
+  isSample,
 }: {
   sorting: SortingState;
   filters: KeywordFilters;
@@ -105,23 +108,32 @@ export function useKeywordsQuery({
   pageIndex: number;
   pageSize: number;
   isFiltersDebouncing: boolean;
+  isSample: boolean;
 }) {
   const [hasReceivedData, setHasReceivedData] = useState(false);
   const [isCacheMiss, setIsCacheMiss] = useState(false);
   const [progress, setProgress] = useState<number | undefined>(undefined);
+  const completedKeysRef = useRef<Set<string>>(new Set());
 
   const streamKey = useMemo(() => {
     const key = JSON.stringify({
       page: apiPageIndex,
       filters: filters,
       sorting,
+      isSample,
     });
     return key;
-  }, [apiPageIndex, filters, sorting]);
+  }, [apiPageIndex, filters, sorting, isSample]);
 
   const { data: keywords = [], error } = useSWRSubscription(
     streamKey,
     (key, { next }) => {
+      // If this key was already fully streamed, don't re-stream.
+      if (completedKeysRef.current.has(key)) {
+        setHasReceivedData(true);
+        return () => {};
+      }
+
       const params = JSON.parse(key);
       let accumulatedKeywords: Keyword[] = [];
 
@@ -150,6 +162,7 @@ export function useKeywordsQuery({
       const handleComplete = () => {
         setHasReceivedData(true);
         setProgress(undefined);
+        completedKeysRef.current.add(key);
         keywordsStreamer.stopStreaming();
       };
 

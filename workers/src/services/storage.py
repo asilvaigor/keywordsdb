@@ -1,5 +1,6 @@
 import json
 import os
+import tempfile
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from pathlib import Path
 
@@ -73,6 +74,15 @@ class StorageClient:
         blob = self.bucket.blob(path)
         with blob.open("rb") as f:
             return pl.read_parquet(f)
+
+    def write_df(self, df: pl.DataFrame, path: str) -> None:
+        """Write a DataFrame to a parquet file in the bucket."""
+        assert path.endswith(".parquet")
+        blob = self.bucket.blob(path)
+        with tempfile.NamedTemporaryFile(suffix=".parquet") as tmp_file:
+            df.write_parquet(tmp_file.name)
+            tmp_file.flush()
+            blob.upload_from_filename(tmp_file.name)
 
     def read_json(self, path: str) -> dict:
         """Read a JSON file from the bucket."""

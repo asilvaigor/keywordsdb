@@ -30,7 +30,7 @@ export function Pagination({
         <div className="text-sm text-muted-foreground">
           {pageIndex * pageSize + 1} -{" "}
           {Math.min((pageIndex + 1) * pageSize, totalRows)} of{" "}
-          {formatLargeNumber(totalRows, true)}
+          {formatLargeNumber(totalRows)}
         </div>
       ) : null}
       <div className="space-x-2">

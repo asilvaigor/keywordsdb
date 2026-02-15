@@ -54,7 +54,7 @@ function SortableHeader({
                 sortDirection === false || sortDirection === "asc",
               )
             }
-            className="font-medium -ml-3 hover:bg-transparent group hover:cursor-pointer w-fit"
+            className="font-medium -ml-3 hover:bg-transparent group w-fit"
           >
             {title}
             {sortDirection === "asc" ? (
@@ -103,7 +103,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("avg_monthly_searches") as number;
-      return formatLargeNumber(value, false);
+      return formatLargeNumber(value);
     },
     size: 150,
     enableResizing: false,

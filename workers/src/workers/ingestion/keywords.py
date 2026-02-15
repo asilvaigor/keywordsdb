@@ -177,7 +177,10 @@ def commit(
         logger.info("Exporting top keywords to Firestore")
         df = _get_top_k_rows(clickhouse_client, 100)
         count = _count(clickhouse_client)
-        firestore_client.put_keywords_cache(df, count)
+        firestore_client.put_keywords_cache(df, count, False)
+        df = _get_sample(clickhouse_client, min_avg_monthly_searches=100_000_000)
+        firestore_client.put_keywords_cache(df, len(df), True)
+        storage_client.write_df(df, "keywords-sample/sample.parquet")
 
     migrate_tmp_table()
     export_to_clickhouse()
@@ -237,3 +240,23 @@ def _count(client: ClickhouseClient) -> int:
     df = client.execute_query("SELECT count(*) FROM keywords")
     assert df is not None
     return df[0, 0]
+
+
+def _get_sample(client: ClickhouseClient, min_avg_monthly_searches: int) -> pl.DataFrame:
+    df = client.execute_query(
+        """
+            SELECT
+                keyword,
+                avg_monthly_searches,
+                competition_index,
+                cpc_high,
+                volume_history,
+                updated_at
+            FROM keywords
+            WHERE avg_monthly_searches > %(min_avg_monthly_searches)s
+            ORDER BY avg_monthly_searches DESC
+        """,
+        params={"min_avg_monthly_searches": min_avg_monthly_searches},
+    )
+    assert df is not None
+    return df

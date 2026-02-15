@@ -18,26 +18,22 @@ import { useKeywordsTable } from "./use-keywords-table";
 
 const PAGE_SIZE = 10;
 
-export function KeywordsTable() {
+export function KeywordsTable({ isSample = false }: { isSample?: boolean }) {
   const {
     table,
     progress,
     isLoading,
     isTotalRowsLoading,
-    isCacheMiss,
+    isDbReady,
     error,
     totalRows,
     pageIndex,
     pageSize,
-  } = useKeywordsTable(PAGE_SIZE);
-
-  // TODO: put this back on when landing page is ready
-  // const isClickhouseReady = useClickhouseReady();
-  const isClickhouseReady = !isCacheMiss;
+  } = useKeywordsTable({ defaultPageSize: PAGE_SIZE, isSample });
 
   return (
     <div className="flex flex-col justify-center max-w-xs sm:max-w-fit mx-auto h-full">
-      <Filters table={table} />
+      <Filters table={table} isSample={isSample} />
       <div className="rounded-md border relative">
         {progress != null && (
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted rounded-t-md overflow-hidden z-20">
@@ -47,7 +43,7 @@ export function KeywordsTable() {
             />
           </div>
         )}
-        {!isClickhouseReady && isCacheMiss && (
+        {!isDbReady && (
           <div className="absolute inset-0 bg-background/50 backdrop-blur-xs z-10 flex items-center justify-center rounded-md">
             <div className="text-center space-y-2">
               <LoaderCircle className="animate-spin h-8 w-8 text-primary mx-auto" />

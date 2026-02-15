@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@clickhouse/client": "^1.16.0",
+    "@duckdb/node-api": "^1.4.4-r.1",
+    "@duckdb/node-bindings": "^1.4.4-r.1",
     "@google-cloud/firestore": "^8.2.0",
     "@tailwindcss/postcss": "^4.1.18",
     "@tanstack/react-table": "^8.21.3",

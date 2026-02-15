@@ -8,12 +8,19 @@ import {
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { columns } from "./columns";
+import useClickhouseReady from "./use-clickhouse-ready";
 import { useCountsQuery } from "./use-counts-query";
 import { useDebouncedFilters } from "./use-debounced-filters";
 import { useKeywordsQuery } from "./use-keywords-query";
 import { calcPageCount, usePagination } from "./use-pagination";
 
-export function useKeywordsTable(defaultPageSize: number) {
+export function useKeywordsTable({
+  defaultPageSize,
+  isSample,
+}: {
+  defaultPageSize: number;
+  isSample: boolean;
+}) {
   const { pageIndex, pageSize, setPagination, resetPagination, apiPageIndex } =
     usePagination(defaultPageSize);
   const {
@@ -21,15 +28,17 @@ export function useKeywordsTable(defaultPageSize: number) {
     setColumnFilters,
     debouncedFilters,
     isFiltersDebouncing,
-  } = useDebouncedFilters({ resetPagination });
+  } = useDebouncedFilters({ resetPagination, isSample });
   const [sorting, setSorting] = useState<SortingState>([
     { id: "avg_monthly_searches", desc: true },
   ]);
 
+  const isClickhouseReady = useClickhouseReady(!isSample);
   const { isLoading: isTotalRowsLoading, totalRows: totalRowsQuery } =
     useCountsQuery({
       debouncedFilters,
       isFiltersDebouncing,
+      isSample,
     });
   const { progress, isLoading, error, keywords, isCacheMiss } =
     useKeywordsQuery({
@@ -39,7 +48,9 @@ export function useKeywordsTable(defaultPageSize: number) {
       pageIndex,
       pageSize,
       isFiltersDebouncing,
+      isSample,
     });
+
   const totalRows =
     totalRowsQuery == null
       ? !isLoading && keywords.length < pageSize
@@ -76,7 +87,7 @@ export function useKeywordsTable(defaultPageSize: number) {
     progress,
     isLoading,
     isTotalRowsLoading,
-    isCacheMiss,
+    isDbReady: isClickhouseReady || !isCacheMiss,
     error,
     pageIndex,
     pageSize,

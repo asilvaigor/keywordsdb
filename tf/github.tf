@@ -68,6 +68,8 @@ locals {
     BETTER_AUTH_GOOGLE_ID     = var.better_auth_google_id
     BETTER_AUTH_GOOGLE_SECRET = var.better_auth_google_secret
     BETTER_AUTH_URL           = var.better_auth_url
+    GCS_ACCESS_KEY_ID         = google_storage_hmac_key.clickhouse_hmac_key.access_id
+    GCS_SECRET_ACCESS_KEY     = google_storage_hmac_key.clickhouse_hmac_key.secret
   }
 }
 

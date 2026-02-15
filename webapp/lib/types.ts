@@ -3,6 +3,7 @@ export type Keyword = {
   avg_monthly_searches: number;
   competition_index: number;
   cpc_high: number;
+  volume_history: string;
   updated_at: string;
 };
 

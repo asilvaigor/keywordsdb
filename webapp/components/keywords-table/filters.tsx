@@ -13,10 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import type { KeywordRow } from "@/lib/types";
-
-interface Props {
-  table: Table<KeywordRow>;
-}
+import { cn } from "@/lib/utils";
+import { getDefaultFilters, SAMPLE_MIN_VOLUME } from "./utils";
 
 type FilterOperator = "eq" | "gte" | "lte" | "between";
 type FilterColumn = "avg_monthly_searches" | "competition_index" | "cpc_high";
@@ -33,21 +31,29 @@ interface DynamicFilter {
   };
 }
 
-export function Filters({ table }: Props) {
-  const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>([]);
+const columnOptions = [
+  { value: "avg_monthly_searches", label: "Volume" },
+  { value: "competition_index", label: "Competition" },
+  { value: "cpc_high", label: "CPC ($)" },
+] as const;
 
-  const columnOptions = [
-    { value: "avg_monthly_searches", label: "Volume" },
-    { value: "competition_index", label: "Competition" },
-    { value: "cpc_high", label: "CPC ($)" },
-  ] as const;
+const operatorOptions = [
+  { value: "eq", label: "Equals" },
+  { value: "gte", label: "Greater Than or Equal" },
+  { value: "lte", label: "Less Than or Equal" },
+  { value: "between", label: "Between" },
+] as const;
 
-  const operatorOptions = [
-    { value: "eq", label: "Equals" },
-    { value: "gte", label: "Greater Than or Equal" },
-    { value: "lte", label: "Less Than or Equal" },
-    { value: "between", label: "Between" },
-  ] as const;
+export function Filters({
+  table,
+  isSample,
+}: {
+  table: Table<KeywordRow>;
+  isSample: boolean;
+}) {
+  const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>(
+    getDefaultFilters(isSample, "DynamicFilter") as DynamicFilter[],
+  );
 
   // Add validation function
   const validateFilter = (
@@ -81,13 +87,28 @@ export function Filters({ table }: Props) {
         "Second value must be greater than or equal to first value";
     }
 
+    // Check is sample, min volume cannot be less than SAMPLE_MIN_VOLUME
+    if (isSample && filter.column === "avg_monthly_searches") {
+      if (filter.value1 && !Number.isNaN(val1) && val1 < SAMPLE_MIN_VOLUME) {
+        errors.value1 = "Sample: Minimum volume cannot be less than 100M";
+      }
+      if (filter.value2 && !Number.isNaN(val2) && val2 < SAMPLE_MIN_VOLUME) {
+        errors.value2 = "Sample: Minimum volume cannot be less than 100M";
+      }
+    }
+
     return errors;
   };
 
   const addFilter = () => {
+    const availableColumn = columnOptions.find(
+      (opt) => !dynamicFilters.some((f) => f.column === opt.value),
+    );
+    if (!availableColumn) return;
+
     const newFilter: DynamicFilter = {
       id: Date.now().toString(),
-      column: "avg_monthly_searches",
+      column: availableColumn.value,
       operator: "eq",
       value1: "",
       value2: "",
@@ -98,8 +119,8 @@ export function Filters({ table }: Props) {
 
   const removeFilter = (id: string) => {
     const filterToRemove = dynamicFilters.find((f) => f.id === id);
-    if (filterToRemove) {
-      // Clear the filter from the table
+    if (filterToRemove && (filterToRemove.value1 || filterToRemove.value2)) {
+      // Only clear the table filter if this filter had actually applied values
       const column = table.getColumn(filterToRemove.column);
       column?.setFilterValue(undefined);
     }
@@ -110,7 +131,15 @@ export function Filters({ table }: Props) {
   const updateFilter = (id: string, updates: Partial<DynamicFilter>) => {
     const updatedFilters = dynamicFilters.map((filter) => {
       if (filter.id === id) {
+        const oldColumn = filter.column;
         const updatedFilter = { ...filter, ...updates };
+
+        // If column changed, clear the old column's table filter
+        if (updates.column && updates.column !== oldColumn) {
+          const oldCol = table.getColumn(oldColumn);
+          oldCol?.setFilterValue(undefined);
+        }
+
         // Validate the updated filter and update errors
         const errors = validateFilter(updatedFilter);
         return { ...updatedFilter, errors };
@@ -180,11 +209,13 @@ export function Filters({ table }: Props) {
             table.getColumn("keyword")?.setFilterValue(event.target.value)
           }
           className="max-w-full"
+          type="search"
         />
         {/* Add filter button */}
         <Button
           variant="outline"
           onClick={addFilter}
+          disabled={dynamicFilters.length >= columnOptions.length}
           className="flex items-center gap-2"
         >
           <Plus />
@@ -207,12 +238,25 @@ export function Filters({ table }: Props) {
                   updateFilter(filter.id, { column: value })
                 }
               >
-                <SelectTrigger className="flex-1">
+                <SelectTrigger
+                  className="flex-1 min-w-0"
+                  aria-label="Select column"
+                  disabled={
+                    isSample && filter.column === "avg_monthly_searches"
+                  }
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {columnOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      disabled={
+                        option.value !== filter.column &&
+                        dynamicFilters.some((f) => f.column === option.value)
+                      }
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
@@ -226,12 +270,23 @@ export function Filters({ table }: Props) {
                   updateFilter(filter.id, { operator: value })
                 }
               >
-                <SelectTrigger className="flex-1">
+                <SelectTrigger
+                  className="flex-1 min-w-0"
+                  aria-label="Select operator"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {operatorOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
+                    <SelectItem
+                      key={option.value}
+                      value={option.value}
+                      disabled={
+                        isSample &&
+                        filter.column === "avg_monthly_searches" &&
+                        option.value === "lte"
+                      }
+                    >
                       {option.label}
                     </SelectItem>
                   ))}
@@ -239,7 +294,7 @@ export function Filters({ table }: Props) {
               </Select>
 
               {/* Value input(s) */}
-              <div className="flex-2 space-y-1">
+              <div className="flex-2 space-y-1 min-w-0">
                 <Input
                   type="number"
                   placeholder="Value"
@@ -247,7 +302,13 @@ export function Filters({ table }: Props) {
                   onChange={(e) =>
                     updateFilter(filter.id, { value1: e.target.value })
                   }
-                  className={`[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${filter.errors.value1 ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                  className={cn(
+                    "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]",
+                    {
+                      "border-destructive focus-visible:ring-destructive":
+                        filter.errors.value1,
+                    },
+                  )}
                 />
               </div>
 
@@ -256,7 +317,7 @@ export function Filters({ table }: Props) {
                   <span className="text-sm text-muted-foreground shrink-0">
                     and
                   </span>
-                  <div className="flex-2 space-y-1">
+                  <div className="flex-2 space-y-1 min-w-0">
                     <Input
                       type="number"
                       placeholder="Value"
@@ -264,7 +325,13 @@ export function Filters({ table }: Props) {
                       onChange={(e) =>
                         updateFilter(filter.id, { value2: e.target.value })
                       }
-                      className={`[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield] ${filter.errors.value2 ? "border-destructive focus-visible:ring-destructive" : ""}`}
+                      className={cn(
+                        "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]",
+                        {
+                          "border-destructive focus-visible:ring-destructive":
+                            filter.errors.value2,
+                        },
+                      )}
                     />
                   </div>
                 </>
@@ -276,6 +343,8 @@ export function Filters({ table }: Props) {
                 size="icon"
                 onClick={() => removeFilter(filter.id)}
                 className="text-muted-foreground hover:text-destructive"
+                disabled={isSample && filter.column === "avg_monthly_searches"}
+                aria-label="Remove filter"
               >
                 <X />
               </Button>
