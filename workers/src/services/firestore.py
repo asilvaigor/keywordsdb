@@ -60,7 +60,7 @@ class FirestoreClient:
             return "", []
 
         docs.close()
-        keywords: list[str] = doc.to_dict()["keywords"]
+        keywords: list[str] = doc.to_dict()["keywords"]  # type: ignore[not-subscriptable]
         return doc.id, keywords
 
     def insert_keywords_to_ingest(self, keywords: Generator[str]) -> None:

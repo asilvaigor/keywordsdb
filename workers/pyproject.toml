@@ -7,10 +7,10 @@ requires-python = ">=3.14"
 dependencies = [
     "asynciolimiter>=1.2.0",
     "bingads>=13.0.26",
-    "clickhouse-connect>=0.10.0",
-    "google-ads>=29.0.0",
-    "google-ads-stubs>=25.0.0",
-    "google-cloud-bigquery>=3.40.0",
+    "clickhouse-connect>=0.11.0",
+    "google-ads>=29.1.0",
+    "google-ads-stubs>=25.1.0",
+    "google-cloud-bigquery>=3.40.1",
     "google-cloud-firestore>=2.23.0",
     "google-cloud-secret-manager>=2.25.0",
     "google-cloud-storage>=3.9.0",
@@ -23,8 +23,8 @@ dependencies = [
 dev = [
     "ipykernel>=7.2.0",
     "python-dotenv>=1.2.1",
-    "ruff>=0.15.0",
-    "ty>=0.0.15",
+    "ruff>=0.15.1",
+    "ty>=0.0.17",
 ]
 
 [tool.ruff]
