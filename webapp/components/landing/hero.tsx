@@ -68,7 +68,7 @@ function Hero() {
         </div>
 
         {/* Product demo */}
-        <div className="relative mx-auto mt-16">
+        <div className="relative max-w-fit mx-auto mt-16">
           {/* Scribbled arrow annotation */}
           <div className="absolute -top-12 right-4 z-10">
             <p className="text-primary -rotate-5 font-(family-name:--font-fuzzy-bubbles)">
