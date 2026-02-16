@@ -10,7 +10,7 @@ export default async function AppPage() {
   }
   return (
     <div className="flex flex-col items-center h-screen">
-      <Header />
+      <Header userData={userData} />
       <Dashboard userData={userData} />
     </div>
   );

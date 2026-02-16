@@ -35,3 +35,11 @@ export type KeywordFilters = {
   competition_index?: { min?: number; max?: number };
   cpc_high?: { min?: number; max?: number };
 };
+
+export type UserData = {
+  email: string;
+  freeCredits: number;
+  subscriptionActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+};

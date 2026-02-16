@@ -2,9 +2,10 @@
 
 import { useEffect } from "react";
 import { identify } from "@/lib/analytics/posthog";
+import type { UserData } from "@/lib/types";
 import { KeywordsTable } from "../keywords-table";
 
-function Dashboard({ userData }: { userData: { email: string } }) {
+function Dashboard({ userData }: { userData: UserData }) {
   useEffect(() => {
     identify(userData.email);
   }, [userData.email]);
