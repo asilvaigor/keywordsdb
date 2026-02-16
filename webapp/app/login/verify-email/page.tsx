@@ -10,7 +10,11 @@ export const metadata: Metadata = {
 async function VerifyEmailPage() {
   const userData = await getUserData();
   if (userData != null) {
-    redirect("/dashboard");
+    if (!userData.subscriptionActive && userData.freeCredits <= 0) {
+      redirect("/paywall");
+    } else {
+      redirect("/dashboard");
+    }
   }
   return (
     <main className="flex items-center justify-center h-screen">

@@ -1,6 +1,6 @@
 import { ArrowRight, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { CurvedArrow } from "@/components/landing/curved-arrow";
+import { CurvedArrow } from "@/components/icons/curved-arrow";
 import { Button } from "@/components/ui/button";
 import { KeywordsTable } from "../keywords-table";
 

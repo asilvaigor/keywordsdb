@@ -1,5 +1,3 @@
-"use client";
-
 import {
   Accordion,
   AccordionContent,
@@ -45,6 +43,48 @@ const faqs = [
   },
 ];
 
+const faqsPaywall = [
+  {
+    question: "Can I cancel anytime?",
+    answer:
+      "Absolutely. Both monthly and yearly plans can be cancelled at any time with no questions asked. You'll continue to have access until the end of your billing period.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer:
+      "We accept all major credit and debit cards (Visa, Mastercard, Amex) through Stripe. All payments are processed securely.",
+  },
+  {
+    question: "What happens after I subscribe?",
+    answer:
+      "You'll get instant access to unlimited keyword searches. Your subscription starts immediately and renews automatically.",
+  },
+  {
+    question: "Is there a money-back guarantee?",
+    answer:
+      "Yes! If you're not satisfied within the first 7 days of your subscription, contact us for a full refund — no questions asked.",
+  },
+];
+
+export function FAQAccordion({ isPaywall = false }: { isPaywall?: boolean }) {
+  const faqsToShow = isPaywall ? faqsPaywall : faqs;
+
+  return (
+    <Accordion type="single" collapsible className="w-full">
+      {faqsToShow.map((faq, i) => (
+        <AccordionItem key={faq.question} value={`item-${i}`}>
+          <AccordionTrigger className="text-left text-base">
+            {faq.question}
+          </AccordionTrigger>
+          <AccordionContent className="text-muted-foreground leading-relaxed h-fit">
+            {faq.answer}
+          </AccordionContent>
+        </AccordionItem>
+      ))}
+    </Accordion>
+  );
+}
+
 function FAQ() {
   return (
     <section id="faq" className="border-t bg-muted/20 py-20 md:py-28">
@@ -59,18 +99,7 @@ function FAQ() {
         </div>
 
         <div className="mx-auto mt-12 max-w-2xl">
-          <Accordion type="single" collapsible className="w-full">
-            {faqs.map((faq, i) => (
-              <AccordionItem key={faq.question} value={`item-${i}`}>
-                <AccordionTrigger className="text-left text-base">
-                  {faq.question}
-                </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed h-fit">
-                  {faq.answer}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
+          <FAQAccordion />
         </div>
       </div>
     </section>

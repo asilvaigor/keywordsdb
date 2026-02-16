@@ -10,8 +10,9 @@ import {
   Sun,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useEffect } from "react";
 import { useUserCredits } from "@/components/dashboard/use-user-credits";
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
@@ -38,10 +39,17 @@ import type { UserData } from "@/lib/types";
 
 function DashboardHeader({ userData }: { userData: UserData }) {
   const { setTheme, theme } = useTheme();
+  const router = useRouter();
   const { freeCredits } = useUserCredits({
     initialCredits: userData.freeCredits,
     subscriptionActive: userData.subscriptionActive,
   });
+
+  useEffect(() => {
+    if (!userData.subscriptionActive && freeCredits <= 0) {
+      router.push("/paywall");
+    }
+  }, [userData.subscriptionActive, freeCredits, router]);
 
   return (
     <div className="flex items-center gap-2">
@@ -204,29 +212,10 @@ const Header = ({ userData }: { userData?: UserData }) => {
             </nav>
           )}
           {isDashboard && userData && <DashboardHeader userData={userData} />}
-          {!isLanding && !isDashboard && <DarkModeToggleFallback />}
         </div>
       </div>
     </header>
   );
 };
-
-function DarkModeToggleFallback() {
-  const { setTheme, theme } = useTheme();
-  return (
-    <Button
-      variant="ghost"
-      size="icon"
-      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-    >
-      {theme === "light" ? (
-        <Sun className="h-[1.2rem] w-[1.2rem]" />
-      ) : (
-        <Moon className="h-[1.2rem] w-[1.2rem]" />
-      )}
-      <span className="sr-only">Toggle theme</span>
-    </Button>
-  );
-}
 
 export default Header;
