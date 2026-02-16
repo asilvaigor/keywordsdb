@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { KeywordsTable } from "@/components/keywords-table";
 import { identify } from "@/lib/analytics/posthog";
 import type { UserData } from "@/lib/types";
-import { KeywordsTable } from "../keywords-table";
 
 function Dashboard({ userData }: { userData: UserData }) {
   useEffect(() => {

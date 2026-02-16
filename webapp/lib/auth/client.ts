@@ -6,21 +6,21 @@ export const authClient = createAuthClient({
   plugins: [magicLinkClient()],
 });
 
-export const signInWithGoogle = async () => {
+export async function signInWithGoogle() {
   await authClient.signIn.social({
     provider: "google",
     callbackURL: "/dashboard",
   });
-};
+}
 
-export const signInWithMagicLink = async (email: string) => {
+export async function signInWithMagicLink(email: string) {
   await authClient.signIn.magicLink({
     email: email,
     callbackURL: "/dashboard",
   });
-};
+}
 
-export const signOut = async () => {
+export async function signOut() {
   await authClient.signOut({
     fetchOptions: {
       onSuccess: () => {
@@ -28,4 +28,4 @@ export const signOut = async () => {
       },
     },
   });
-};
+}

@@ -12,6 +12,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import { useUserCredits } from "@/components/dashboard/use-user-credits";
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -37,6 +38,10 @@ import type { UserData } from "@/lib/types";
 
 function DashboardHeader({ userData }: { userData: UserData }) {
   const { setTheme, theme } = useTheme();
+  const { freeCredits } = useUserCredits({
+    initialCredits: userData.freeCredits,
+    subscriptionActive: userData.subscriptionActive,
+  });
 
   return (
     <div className="flex items-center gap-2">
@@ -59,8 +64,8 @@ function DashboardHeader({ userData }: { userData: UserData }) {
           className="gap-1.5 text-xs font-medium hidden sm:inline-flex"
         >
           <Sparkles className="h-3 w-3 text-primary" />
-          {userData.freeCredits} free credit
-          {userData.freeCredits !== 1 ? "s" : ""} left
+          {freeCredits} free credit
+          {freeCredits !== 1 ? "s" : ""} left
         </Badge>
       )}
 
@@ -85,8 +90,8 @@ function DashboardHeader({ userData }: { userData: UserData }) {
               </Badge>
             ) : (
               <span className="text-xs text-muted-foreground">
-                {userData.freeCredits} free credit
-                {userData.freeCredits !== 1 ? "s" : ""} remaining
+                {freeCredits} free credit
+                {freeCredits !== 1 ? "s" : ""} remaining
               </span>
             )}
           </div>

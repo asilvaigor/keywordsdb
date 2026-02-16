@@ -2,7 +2,7 @@
 
 import { createHash } from "node:crypto";
 import type { SortingState } from "@tanstack/react-table";
-import { unauthorized } from "next/navigation";
+import { decreaseFreeCredits, getUserData } from "@/lib/auth/users";
 import firestore from "@/lib/firestore";
 import type {
   CacheMiss,
@@ -11,7 +11,6 @@ import type {
   KeywordsStreamResponse,
   Progress,
 } from "@/lib/types";
-import { getUserData } from "../auth/server";
 import {
   getKeywordsCountClickhouse,
   getKeywordsCountSample,
@@ -39,8 +38,11 @@ export async function* getKeywordsStream(
   isSample: boolean = false,
 ): AsyncGenerator<KeywordsStreamResponse, void, unknown> {
   const userData = await getUserData();
-  if (!isSample && !userData) {
-    unauthorized();
+  if (
+    !isSample &&
+    (!userData || (!userData.subscriptionActive && userData.freeCredits <= 0))
+  ) {
+    throw new Error("Unauthorized");
   }
 
   const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${page}-${pageSize}`;
@@ -61,6 +63,11 @@ export async function* getKeywordsStream(
     yield allResults;
   } else {
     console.log("Streaming keywords from clickhouse");
+
+    if (userData) {
+      // always true
+      decreaseFreeCredits(userData);
+    }
 
     const cacheMiss: CacheMiss = { isCacheMiss: true };
     yield cacheMiss;
@@ -96,8 +103,11 @@ export async function getKeywordsCount(
   isSample: boolean = false,
 ): Promise<number> {
   const userData = await getUserData();
-  if (!isSample && !userData) {
-    unauthorized();
+  if (
+    !isSample &&
+    (!userData || (!userData.subscriptionActive && userData.freeCredits <= 0))
+  ) {
+    throw new Error("Unauthorized");
   }
 
   const cacheKey = `keyword-counts-${JSON.stringify(filters)}`;

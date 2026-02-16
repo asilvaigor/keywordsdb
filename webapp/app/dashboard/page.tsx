@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Dashboard from "@/components/dashboard";
 import Header from "@/components/header";
-import { getUserData } from "@/lib/auth/server";
+import { getUserData } from "@/lib/auth/users";
 
 export default async function AppPage() {
   const userData = await getUserData();

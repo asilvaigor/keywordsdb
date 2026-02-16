@@ -39,7 +39,6 @@ export type KeywordFilters = {
 export type UserData = {
   email: string;
   freeCredits: number;
+  lastFreeCreditUsedAt: Date | null;
   subscriptionActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 };
