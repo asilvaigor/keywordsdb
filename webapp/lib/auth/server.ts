@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { magicLink } from "better-auth/plugins";
-import firestore from "@/lib/firestore";
+import firestore from "@/lib/db/firestore";
 import { firestoreAdapter } from "./firestore-adapter";
 import { html } from "./magic-link";
 

@@ -41,4 +41,5 @@ export type UserData = {
   freeCredits: number;
   lastFreeCreditUsedAt: Date | null;
   subscriptionActive: boolean;
+  subscriptionType: "pro" | "max" | null;
 };

@@ -3,6 +3,7 @@
 import {
   CreditCard,
   HelpCircle,
+  Loader2,
   LogOut,
   Menu,
   Moon,
@@ -12,7 +13,8 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { useEffect } from "react";
+import { useEffect, useTransition } from "react";
+import { toast } from "sonner";
 import { useUserCredits } from "@/components/dashboard/use-user-credits";
 import Logo from "@/components/logo";
 import { Badge } from "@/components/ui/badge";
@@ -26,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { signOut } from "@/lib/auth/client";
+import { billingPortal } from "@/lib/stripe/billing-portal";
 import type { UserData } from "@/lib/types";
 
 // const ALL_COLUMNS = [
@@ -40,6 +43,7 @@ import type { UserData } from "@/lib/types";
 function DashboardHeader({ userData }: { userData: UserData }) {
   const { setTheme, theme } = useTheme();
   const router = useRouter();
+  const [isBillingPending, startBillingTransition] = useTransition();
   const { freeCredits } = useUserCredits({
     initialCredits: userData.freeCredits,
     subscriptionActive: userData.subscriptionActive,
@@ -63,7 +67,9 @@ function DashboardHeader({ userData }: { userData: UserData }) {
         >
           <span>
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            Pro
+            {userData.subscriptionType === "pro"
+              ? "Pro subscription"
+              : "Max subscription"}
           </span>
         </Button>
       ) : (
@@ -94,7 +100,9 @@ function DashboardHeader({ userData }: { userData: UserData }) {
             {userData.subscriptionActive ? (
               <Badge variant="secondary" className="gap-1.5 text-xs">
                 <Sparkles className="h-3 w-3 text-primary" />
-                Pro plan
+                {userData.subscriptionType === "pro"
+                  ? "Pro subscription"
+                  : "Max subscription"}
               </Badge>
             ) : (
               <span className="text-xs text-muted-foreground">
@@ -159,11 +167,25 @@ function DashboardHeader({ userData }: { userData: UserData }) {
 
           {/* Billing */}
           {userData.subscriptionActive && (
-            <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/dashboard">
+            <DropdownMenuItem
+              className="cursor-pointer"
+              disabled={isBillingPending}
+              onSelect={(e) => {
+                e.preventDefault();
+                startBillingTransition(async () => {
+                  const result = await billingPortal({ email: userData.email });
+                  if (result?.error) {
+                    toast.error(result.error);
+                  }
+                });
+              }}
+            >
+              {isBillingPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
                 <CreditCard className="h-4 w-4" />
-                Billing
-              </Link>
+              )}
+              Billing
             </DropdownMenuItem>
           )}
 

@@ -24,7 +24,7 @@ const trustFeatures = [
   },
 ];
 
-function Paywall() {
+function Paywall({ email }: { email: string }) {
   return (
     <div className="w-full max-w-3xl mx-auto px-6">
       {/* Hero section */}
@@ -42,7 +42,7 @@ function Paywall() {
 
       {/* Plans */}
       <div className="mb-14">
-        <PricingCards isPaywall />
+        <PricingCards isPaywall email={email} />
       </div>
 
       {/* Trust signals */}

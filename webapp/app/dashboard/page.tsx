@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Dashboard from "@/components/dashboard";
 import Header from "@/components/header";
-import { getUserData } from "@/lib/auth/users";
+import { getUserData } from "@/lib/db/users";
 
 export default async function DashboardPage() {
   const userData = await getUserData();

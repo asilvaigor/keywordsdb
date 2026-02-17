@@ -1,5 +1,5 @@
 import useSWR from "swr";
-import { pingClickhouse } from "@/lib/clickhouse-utils";
+import { pingClickhouse } from "@/lib/db/clickhouse-utils";
 
 const useClickhouseReady = (shouldFetch: boolean) => {
   const {

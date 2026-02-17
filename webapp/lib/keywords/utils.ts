@@ -1,5 +1,5 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
-import { BUCKET_NAME } from "@/lib/storage";
+import { BUCKET_NAME } from "@/lib/db/storage";
 import type { KeywordFilters } from "@/lib/types";
 
 export async function createDuckDBCacheIfNeeded(connection: DuckDBConnection) {
