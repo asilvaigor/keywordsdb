@@ -1,5 +1,8 @@
+"use client";
+
 import { Check, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -9,138 +12,191 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 
 const plans = [
   {
     name: "Free",
-    price: "$0",
-    period: "",
+    monthly: { price: "$0" },
+    yearly: { price: "$0" },
     description: "Try KeywordsDB risk-free",
     highlight: false,
     badge: null,
     features: [
-      "10 keyword searches",
-      "All filters & sorting",
-      "Full dataset access",
+      "10 free searches",
       "No credit card required",
+      "Full dataset access",
     ],
-    cta: "Start Free",
   },
   {
-    name: "Monthly",
-    price: "$9",
-    originalPrice: "$18",
-    period: "/month",
+    name: "Pro",
+    monthly: { price: "$9", originalPrice: "$18" },
+    yearly: {
+      price: "$4.50",
+      originalPrice: "$9",
+      totalPrice: "$54",
+    },
     description: "For active keyword researchers",
     highlight: true,
     badge: "50% OFF",
     features: [
       "Unlimited searches",
-      "All filters & sorting",
       "Full dataset access",
-      "CSV/Parquet export",
+      "All filters & sorting",
     ],
-    cta: "Start Free Trial",
   },
   {
-    name: "Yearly",
-    price: "$54",
-    originalPrice: "$108",
-    period: "/year",
-    description: "Best value — just $4.50/mo",
+    name: "Max",
+    monthly: { price: "$14", originalPrice: "$28" },
+    yearly: {
+      price: "$7",
+      originalPrice: "$14",
+      totalPrice: "$84",
+    },
+    description: "For agencies & SEO professionals",
     highlight: false,
-    badge: "BEST VALUE",
-    features: [
-      "Everything in Monthly",
-      "Priority support",
-      "Save 50% vs monthly",
-    ],
-    cta: "Start Free Trial",
+    badge: null,
+    features: ["Everything in Pro", "CSV/Parquet export"],
   },
 ];
 
+function BillingToggle({
+  isYearly,
+  onChange,
+}: {
+  isYearly: boolean;
+  onChange: (v: boolean) => void;
+}) {
+  return (
+    <div className="flex items-center justify-center gap-3 pt-2">
+      <Label
+        htmlFor="billing-toggle"
+        className={cn(
+          "text-sm cursor-pointer",
+          !isYearly ? "text-foreground font-medium" : "text-muted-foreground",
+        )}
+      >
+        Monthly
+      </Label>
+      <Switch
+        id="billing-toggle"
+        checked={isYearly}
+        onCheckedChange={onChange}
+      />
+      <Label
+        htmlFor="billing-toggle"
+        className={cn(
+          "text-sm cursor-pointer",
+          isYearly ? "text-foreground font-medium" : "text-muted-foreground",
+        )}
+      >
+        Yearly
+      </Label>
+    </div>
+  );
+}
+
 export function PricingCards({ isPaywall = false }: { isPaywall?: boolean }) {
+  const [isYearly, setIsYearly] = useState(false);
   const columns = isPaywall ? 2 : 3;
   const plansToShow = isPaywall ? plans.slice(1) : plans;
 
   return (
-    <div
-      className={cn("mx-auto grid max-w-5xl gap-10 md:gap-6 pt-4", {
-        "md:grid-cols-2": columns === 2,
-        "md:grid-cols-3": columns === 3,
-      })}
-    >
-      {plansToShow.map((plan) => (
-        <Card
-          key={plan.name}
-          className={cn("relative flex flex-col overflow-visible", {
-            "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10 scale-[1.02]":
-              plan.highlight && columns === 3,
-            "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10":
-              plan.highlight && columns === 2,
-          })}
-        >
-          {plan.badge && (
-            <div
-              className={cn(
-                "absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold",
-                {
-                  "bg-primary text-primary-foreground": plan.highlight,
-                  "bg-muted text-foreground": !plan.highlight,
-                },
+    <div className="flex flex-col gap-6">
+      <BillingToggle isYearly={isYearly} onChange={setIsYearly} />
+
+      <div
+        className={cn("mx-auto grid gap-10 md:gap-6 w-full max-w-4xl", {
+          "md:grid-cols-2": columns === 2,
+          "md:grid-cols-3": columns === 3,
+        })}
+      >
+        {plansToShow.map((plan) => {
+          const pricing = isYearly ? plan.yearly : plan.monthly;
+          const isPaid = plan.name !== "Free";
+
+          return (
+            <Card
+              key={plan.name}
+              className={cn("relative flex flex-col overflow-visible", {
+                "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10 scale-[1.02]":
+                  plan.highlight && columns === 3,
+                "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10":
+                  plan.highlight && columns === 2,
+              })}
+            >
+              {plan.badge && (
+                <div
+                  className={cn(
+                    "absolute -top-3 left-1/2 -translate-x-1/2 rounded-full px-3 py-1 text-xs font-bold",
+                    {
+                      "bg-primary text-primary-foreground": plan.highlight,
+                      "bg-muted text-foreground": !plan.highlight,
+                    },
+                  )}
+                >
+                  {plan.badge}
+                </div>
               )}
-            >
-              {plan.badge}
-            </div>
-          )}
-          <CardHeader className="pt-6">
-            <CardTitle className="text-lg">{plan.name}</CardTitle>
-            <CardDescription>{plan.description}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1">
-            <div className="mb-6">
-              <div className="flex items-baseline gap-1">
-                {plan.originalPrice && (
-                  <span className="text-lg text-muted-foreground line-through">
-                    {plan.originalPrice}
-                  </span>
-                )}
-                <span className="text-4xl font-bold">{plan.price}</span>
-                {plan.period && (
-                  <span className="text-muted-foreground">{plan.period}</span>
-                )}
-              </div>
-            </div>
-            <ul className="space-y-3">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-2 text-sm">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button
-              className="w-full"
-              variant={plan.highlight ? "default" : "outline"}
-              size="lg"
-              asChild
-            >
-              <Link href={isPaywall ? "/checkout" : "/login"}>
-                {plan.highlight && (
-                  <Sparkles
-                    className="mr-1.5 h-4 w-4"
-                    data-icon="inline-start"
-                  />
-                )}
-                {plan.cta}
-              </Link>
-            </Button>
-          </CardFooter>
-        </Card>
-      ))}
+              <CardHeader className="pt-6">
+                <CardTitle className="text-lg">{plan.name}</CardTitle>
+                <CardDescription>{plan.description}</CardDescription>
+              </CardHeader>
+              <CardContent className="flex-1">
+                <div className="mb-6">
+                  <div className="flex items-baseline gap-1">
+                    {pricing.originalPrice && (
+                      <span className="text-lg text-muted-foreground line-through">
+                        {pricing.originalPrice}
+                      </span>
+                    )}
+                    <span className="text-4xl font-bold">{pricing.price}</span>
+                    {isPaid && (
+                      <span className="text-muted-foreground">/month</span>
+                    )}
+                  </div>
+                  {isYearly && isPaid && plan.yearly.totalPrice && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Billed yearly at {plan.yearly.totalPrice}
+                    </p>
+                  )}
+                </div>
+                <ul className="space-y-3">
+                  {plan.features.map((feature) => (
+                    <li
+                      key={feature}
+                      className="flex items-start gap-2 text-sm"
+                    >
+                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter>
+                <Button
+                  className="w-full"
+                  variant={plan.highlight ? "default" : "outline"}
+                  size="lg"
+                  asChild
+                >
+                  <Link href={isPaywall ? "/checkout" : "/login"}>
+                    {plan.highlight && (
+                      <Sparkles
+                        className="mr-1.5 h-4 w-4"
+                        data-icon="inline-start"
+                      />
+                    )}
+                    {isPaywall ? "Subscribe" : "Start Free Trial"}
+                  </Link>
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }
