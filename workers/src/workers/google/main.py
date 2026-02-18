@@ -2,10 +2,10 @@ import asyncio
 import multiprocessing
 import sys
 
-from src.services.ads import ResourceExhaustedError
-from src.workers.ingestion.context import Context
-from src.workers.ingestion.keywords import commit as keywords_commit
-from src.workers.ingestion.keywords import get_oldest_k_keywords, insert
+from src.services.google import ResourceExhaustedError
+from src.workers.google.context import Context
+from src.workers.google.keywords import commit as keywords_commit
+from src.workers.google.keywords import get_oldest_k_keywords, insert
 
 
 def commit(ctx: Context) -> None:

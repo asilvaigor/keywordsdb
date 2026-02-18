@@ -56,7 +56,7 @@ Python workers for ingesting keyword data from Google Ads and Bing Ads APIs.
 - **Linting**: Ruff
 
 **File Organization:**
-- `/src/workers/*` - Worker implementations (bing, ingestion)
+- `/src/workers/*` - Worker implementations (bing, google)
 - `/src/services/*` - Shared services (ads, bigquery, clickhouse, storage, etc.)
 
 **Worker Jobs**

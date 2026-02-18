@@ -19,7 +19,7 @@ resource "google_project_service" "cloudrun" {
 }
 
 resource "google_cloud_run_v2_service" "webapp" {
-  for_each = toset(["prd"])
+  for_each = toset(["stg", "prd"])
   name     = "webapp-${each.key}"
   location = var.location
   ingress  = "INGRESS_TRAFFIC_ALL"

@@ -1,9 +1,9 @@
 from structlog.stdlib import BoundLogger
 
-from src.services.ads import AdsClient
 from src.services.bigquery import BigQueryClient
 from src.services.clickhouse import ClickhouseClient
 from src.services.firestore import FirestoreClient
+from src.services.google import GoogleAdsClient
 from src.services.logger import get_logger
 from src.services.secret import SecretClient
 from src.services.storage import StorageClient
@@ -14,7 +14,7 @@ class Context:
         self,
         logger: BoundLogger | None = None,
         secret_client: SecretClient | None = None,
-        ads_client: AdsClient | None = None,
+        ads_client: GoogleAdsClient | None = None,
         bigquery_client: BigQueryClient | None = None,
         clickhouse_client: ClickhouseClient | None = None,
         storage_client: StorageClient | None = None,
@@ -24,7 +24,7 @@ class Context:
         self._secret_client: SecretClient = secret_client if secret_client is not None else SecretClient()
         self._secret_client.load_secrets()
 
-        self.ads_client: AdsClient = ads_client if ads_client is not None else AdsClient(self.logger)
+        self.ads_client: GoogleAdsClient = ads_client if ads_client is not None else GoogleAdsClient(self.logger)
         self.bigquery_client: BigQueryClient = bigquery_client if bigquery_client is not None else BigQueryClient()
         self.clickhouse_client: ClickhouseClient = (
             clickhouse_client if clickhouse_client is not None else ClickhouseClient()

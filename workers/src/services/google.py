@@ -6,7 +6,7 @@ from collections.abc import Iterator, MutableSequence
 
 import polars as pl
 from asynciolimiter import Limiter
-from google.ads.googleads.client import GoogleAdsClient
+from google.ads.googleads.client import GoogleAdsClient as GoogleAdsClient_
 from google.ads.googleads.errors import GoogleAdsException
 from google.ads.googleads.v23.services.services.keyword_plan_idea_service.client import KeywordPlanIdeaServiceClient
 from google.ads.googleads.v23.services.types import (
@@ -14,7 +14,7 @@ from google.ads.googleads.v23.services.types import (
     GenerateKeywordIdeaResult,
     GenerateKeywordIdeasRequest,
 )
-from google.api_core.exceptions import ResourceExhausted, ServiceUnavailable
+from google.api_core.exceptions import InternalServerError, ResourceExhausted, ServiceUnavailable
 from structlog.stdlib import BoundLogger
 
 
@@ -24,7 +24,7 @@ class ResourceExhaustedError(Exception):
     pass
 
 
-class AdsClient:
+class GoogleAdsClient:
     _rate_limiter = Limiter(1, max_burst=1)
     _backoff: bool = False
     _semaphore = asyncio.Semaphore(16)
@@ -33,7 +33,7 @@ class AdsClient:
         os.environ["GOOGLE_ADS_USE_PROTO_PLUS"] = "true"
         logging.getLogger("google.ads.googleads.client").setLevel(logging.ERROR)
 
-        self._client: GoogleAdsClient = GoogleAdsClient.load_from_env()
+        self._client: GoogleAdsClient_ = GoogleAdsClient_.load_from_env()
         self._keyword_plan_idea_service: KeywordPlanIdeaServiceClient = self._client.get_service(
             "KeywordPlanIdeaService"
         )
@@ -62,7 +62,7 @@ class AdsClient:
             while current_page is not None:
                 res = current_page.results
                 if len(res) > 0:
-                    df = AdsClient._parse_results(res, min_search_volume)
+                    df = GoogleAdsClient._parse_results(res, min_search_volume)
                     results.append(df)
 
                 if not current_page.next_page_token:
@@ -109,11 +109,16 @@ class AdsClient:
             await self._do_backoff(30)
             return await self._get_keyword_batch_info(keywords, min_search_volume)
 
+        except InternalServerError:
+            self._logger.warning("Google Ads API: Internal Server Error (500), waiting for 30 seconds")
+            await self._do_backoff(30)
+            return await self._get_keyword_batch_info(keywords, min_search_volume)
+
     async def _fetch_first_page(
         self, request: GenerateKeywordIdeasRequest
     ) -> tuple[Iterator[GenerateKeywordIdeaResponse], GenerateKeywordIdeaResponse | None]:
-        async with AdsClient._semaphore:
-            await AdsClient._rate_limiter.wait()
+        async with GoogleAdsClient._semaphore:
+            await GoogleAdsClient._rate_limiter.wait()
             await self._wait_backoff()
             self._logger.debug("Getting first page")
             pager = await asyncio.to_thread(self._keyword_plan_idea_service.generate_keyword_ideas, request)
@@ -123,29 +128,29 @@ class AdsClient:
     async def _fetch_next_page(
         self, pages: Iterator[GenerateKeywordIdeaResponse]
     ) -> GenerateKeywordIdeaResponse | None:
-        async with AdsClient._semaphore:
-            await AdsClient._rate_limiter.wait()
+        async with GoogleAdsClient._semaphore:
+            await GoogleAdsClient._rate_limiter.wait()
             await self._wait_backoff()
             self._logger.debug("Getting next page")
             return await asyncio.to_thread(self._get_page, pages)
 
     async def _wait_backoff(self) -> None:
         waited_backoff = False
-        while AdsClient._backoff:
+        while GoogleAdsClient._backoff:
             waited_backoff = True
             await asyncio.sleep(5)
         if waited_backoff:
-            await AdsClient._rate_limiter.wait()
+            await GoogleAdsClient._rate_limiter.wait()
 
     async def _do_backoff(self, delay_seconds: int) -> None:
-        AdsClient._backoff = True
+        GoogleAdsClient._backoff = True
         self._logger.debug("Backoff")
         await asyncio.sleep(delay_seconds)
         self._logger.debug("Backoff finished")
-        AdsClient._backoff = False
+        GoogleAdsClient._backoff = False
 
     def _refresh_client(self) -> None:
-        self._client = GoogleAdsClient.load_from_env()
+        self._client = GoogleAdsClient_.load_from_env()
         self._keyword_plan_idea_service = self._client.get_service("KeywordPlanIdeaService")
 
     def _get_page(self, pages: Iterator[GenerateKeywordIdeaResponse]) -> GenerateKeywordIdeaResponse | None:

@@ -85,8 +85,3 @@ variable "better_auth_google_secret" {
   description = "BetterAuth Google Client Secret"
   sensitive   = true
 }
-
-variable "better_auth_url" {
-  type        = string
-  description = "BetterAuth URL"
-}

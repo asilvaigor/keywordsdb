@@ -3,7 +3,7 @@ resource "google_project_service" "firestore" {
 }
 
 resource "google_firestore_database" "database" {
-  for_each    = toset(["prd"])
+  for_each    = toset(["stg", "prd"])
   name        = "keywordsdb-${each.key}"
   type        = "FIRESTORE_NATIVE"
   location_id = var.location

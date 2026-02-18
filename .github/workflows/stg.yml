@@ -1,0 +1,65 @@
+name: stg
+on:
+  push:
+    branches:
+      - 'main'
+jobs:
+  check-changes:
+    runs-on: ubuntu-24.04
+    outputs:
+      webapp: ${{ steps.filter.outputs.webapp }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            webapp:
+              - 'webapp/**'
+  lint-js:
+    needs: [check-changes]
+    if: needs.check-changes.outputs.webapp == 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/lint-js
+  build-webapp:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: "read"
+      id-token: "write"
+    needs: [lint-js]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/build
+        with:
+          env: stg
+          name: webapp
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+  deploy-webapp:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: "read"
+      id-token: "write"
+    needs: [build-webapp]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/deploy-cloudrun
+        with:
+          env: stg
+          name: webapp
+          image_name: webapp
+          project_id: ${{ vars.PROJECT_ID }}
+          workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
+          secrets: "\
+            CLICKHOUSE_URL='${{ vars.CLICKHOUSE_URL }}',\
+            CLICKHOUSE_USERNAME='${{ vars.CLICKHOUSE_USERNAME }}',\
+            CLICKHOUSE_PASSWORD='${{ secrets.CLICKHOUSE_PASSWORD }}',\
+            GCS_ACCESS_KEY_ID='${{ secrets.GCS_ACCESS_KEY_ID }}',\
+            GCS_SECRET_ACCESS_KEY='${{ secrets.GCS_SECRET_ACCESS_KEY }}',\
+            BETTER_AUTH_RESEND_KEY='${{ secrets.BETTER_AUTH_RESEND_KEY }}',\
+            BETTER_AUTH_SECRET='${{ secrets.BETTER_AUTH_SECRET }}',\
+            BETTER_AUTH_GOOGLE_ID='${{ secrets.BETTER_AUTH_GOOGLE_ID }}',\
+            BETTER_AUTH_GOOGLE_SECRET='${{ secrets.BETTER_AUTH_GOOGLE_SECRET }}',\
+            BETTER_AUTH_URL='${{ vars.BETTER_AUTH_URL_STG }}'"

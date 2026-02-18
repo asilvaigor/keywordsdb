@@ -1,4 +1,4 @@
-export async function html({ url }: { url: string }) {
+export function html({ url }: { url: string }) {
   return `
 <body style="background: #f9f9f9; padding: 20px;">
   <table

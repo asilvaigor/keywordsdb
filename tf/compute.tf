@@ -10,16 +10,16 @@ resource "google_project_service" "batch" {
   service = "batch.googleapis.com"
 }
 
-resource "google_service_account" "worker_ingestion" {
-  account_id   = "worker-ingestion"
-  display_name = "Worker-ingestion"
+resource "google_service_account" "worker_google" {
+  account_id   = "worker-google"
+  display_name = "Worker-google"
 }
 
-resource "google_service_account_key" "worker_ingestion" {
-  service_account_id = google_service_account.worker_ingestion.name
+resource "google_service_account_key" "worker_google" {
+  service_account_id = google_service_account.worker_google.name
 }
 
-resource "google_project_iam_member" "worker_ingestion" {
+resource "google_project_iam_member" "worker_google" {
   for_each = toset([
     "roles/artifactregistry.reader",
     "roles/logging.logWriter",
@@ -33,7 +33,7 @@ resource "google_project_iam_member" "worker_ingestion" {
   ])
   project = var.project_id
   role    = each.key
-  member  = "serviceAccount:${google_service_account.worker_ingestion.email}"
+  member  = "serviceAccount:${google_service_account.worker_google.email}"
 }
 
 resource "google_service_account" "worker_bing" {

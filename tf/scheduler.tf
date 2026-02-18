@@ -17,9 +17,9 @@ resource "google_project_iam_member" "batch_scheduler" {
   member  = "serviceAccount:${google_service_account.batch_scheduler.email}"
 }
 
-resource "google_cloud_scheduler_job" "worker_ingestion_prd" {
-  name             = "worker-ingestion-prd"
-  description      = "Triggers worker ingestion batch job daily at 8pm UTC"
+resource "google_cloud_scheduler_job" "worker_google_prd" {
+  name             = "worker-google-prd"
+  description      = "Triggers google worker batch job daily at 8pm UTC"
   schedule         = "0 20 * * *"
   time_zone        = "UTC"
   attempt_deadline = "320s"
@@ -37,7 +37,7 @@ resource "google_cloud_scheduler_job" "worker_ingestion_prd" {
 
     body = base64encode(jsonencode({
       labels = {
-        job_name = "worker-ingestion-prd"
+        job_name = "worker-google-prd"
       }
       taskGroups = [
         {
@@ -45,7 +45,7 @@ resource "google_cloud_scheduler_job" "worker_ingestion_prd" {
             runnables = {
               container = {
                 imageUri = "us-central1-docker.pkg.dev/${var.project_id}/keywordsdb/workers:keep"
-                commands = ["python", "-u", "src/workers/ingestion/main.py"]
+                commands = ["python", "-u", "src/workers/google/main.py"]
               }
             }
             computeResource = {
@@ -77,10 +77,10 @@ resource "google_cloud_scheduler_job" "worker_ingestion_prd" {
           }
         }]
         serviceAccount = {
-          email = "${google_service_account.worker_ingestion.email}"
+          email = "${google_service_account.worker_google.email}"
         }
         labels = {
-          job_name = "worker-ingestion-prd"
+          job_name = "worker-google-prd"
         }
       },
       logsPolicy = {
@@ -101,7 +101,7 @@ resource "google_cloud_scheduler_job" "worker_ingestion_prd" {
 
 resource "google_cloud_scheduler_job" "worker_bing_prd" {
   name             = "worker-bing-prd"
-  description      = "Triggers worker bing ingestion batch job, to be launched manually"
+  description      = "Triggers bing worker batch job, to be launched manually"
   schedule         = "0 0 1 1 *"
   time_zone        = "UTC"
   attempt_deadline = "320s"

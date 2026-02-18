@@ -1,34 +1,15 @@
 name: prd
 on:
   push:
-    branches:
-      - main
+    tags:
+      - '*'
 jobs:
-  check-changes:
-    runs-on: ubuntu-24.04
-    outputs:
-      webapp: ${{ steps.filter.outputs.webapp }}
-      workers: ${{ steps.filter.outputs.workers }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            webapp:
-              - 'webapp/**'
-            workers:
-              - 'workers/**'
   lint-py:
-    needs: [check-changes]
-    if: needs.check-changes.outputs.workers == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-py
   lint-js:
-    needs: [check-changes]
-    if: needs.check-changes.outputs.webapp == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
@@ -87,4 +68,4 @@ jobs:
             BETTER_AUTH_SECRET='${{ secrets.BETTER_AUTH_SECRET }}',\
             BETTER_AUTH_GOOGLE_ID='${{ secrets.BETTER_AUTH_GOOGLE_ID }}',\
             BETTER_AUTH_GOOGLE_SECRET='${{ secrets.BETTER_AUTH_GOOGLE_SECRET }}',\
-            BETTER_AUTH_URL='${{ secrets.BETTER_AUTH_URL }}'"
+            BETTER_AUTH_URL='${{ vars.BETTER_AUTH_URL_PRD }}'"
