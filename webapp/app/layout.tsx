@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Fuzzy_Bubbles, Outfit } from "next/font/google";
 import { ThemeProvider } from "next-themes";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import "./globals.css";
 import { cn } from "@/lib/utils";
