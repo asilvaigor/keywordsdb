@@ -1,8 +1,9 @@
 "use client";
 
-import { Check, Sparkles } from "lucide-react";
+import { Check, Loader2, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { checkout } from "@/lib/stripe/checkout";
 import { cn } from "@/lib/utils";
 
 const plans = [
@@ -24,6 +26,7 @@ const plans = [
     description: "Try KeywordsDB risk-free",
     highlight: false,
     badge: null,
+    checkoutOption: null as null,
     features: [
       "10 free searches",
       "No credit card required",
@@ -41,6 +44,7 @@ const plans = [
     description: "For active keyword researchers",
     highlight: true,
     badge: "50% OFF",
+    checkoutOption: "pro" as const,
     features: [
       "Unlimited searches",
       "Full dataset access",
@@ -58,6 +62,7 @@ const plans = [
     description: "For agencies & SEO professionals",
     highlight: false,
     badge: null,
+    checkoutOption: "max" as const,
     features: ["Everything in Pro", "CSV/Parquet export"],
   },
 ];
@@ -98,10 +103,36 @@ function BillingToggle({
   );
 }
 
-export function PricingCards({ isPaywall = false }: { isPaywall?: boolean }) {
+export function PricingCards({
+  isPaywall = false,
+  email,
+}: {
+  isPaywall?: boolean;
+  email?: string;
+}) {
   const [isYearly, setIsYearly] = useState(false);
+  const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const columns = isPaywall ? 2 : 3;
   const plansToShow = isPaywall ? plans.slice(1) : plans;
+
+  function handleCheckout(plan: (typeof plans)[number]) {
+    if (!plan.checkoutOption || !email) return;
+    const option =
+      `${plan.checkoutOption}_${isYearly ? "yearly" : "monthly"}` as
+        | "pro_monthly"
+        | "pro_yearly"
+        | "max_monthly"
+        | "max_yearly";
+    setLoadingPlan(plan.name);
+    startTransition(async () => {
+      const result = await checkout({ email, checkoutOption: option });
+      if (result?.error) {
+        toast.error(result.error);
+        setLoadingPlan(null);
+      }
+    });
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -176,22 +207,44 @@ export function PricingCards({ isPaywall = false }: { isPaywall?: boolean }) {
                 </ul>
               </CardContent>
               <CardFooter>
-                <Button
-                  className="w-full"
-                  variant={plan.highlight ? "default" : "outline"}
-                  size="lg"
-                  asChild
-                >
-                  <Link href={isPaywall ? "/checkout" : "/login"}>
-                    {plan.highlight && (
-                      <Sparkles
-                        className="mr-1.5 h-4 w-4"
-                        data-icon="inline-start"
-                      />
+                {isPaywall && plan.checkoutOption ? (
+                  <Button
+                    className="w-full"
+                    variant={plan.highlight ? "default" : "outline"}
+                    size="lg"
+                    disabled={isPending}
+                    onClick={() => handleCheckout(plan)}
+                  >
+                    {loadingPlan === plan.name ? (
+                      <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                    ) : (
+                      plan.highlight && (
+                        <Sparkles
+                          className="mr-1.5 h-4 w-4"
+                          data-icon="inline-start"
+                        />
+                      )
                     )}
-                    {isPaywall ? "Subscribe" : "Start Free Trial"}
-                  </Link>
-                </Button>
+                    Subscribe
+                  </Button>
+                ) : (
+                  <Button
+                    className="w-full"
+                    variant={plan.highlight ? "default" : "outline"}
+                    size="lg"
+                    asChild
+                  >
+                    <Link href="/login">
+                      {plan.highlight && (
+                        <Sparkles
+                          className="mr-1.5 h-4 w-4"
+                          data-icon="inline-start"
+                        />
+                      )}
+                      Start Free Trial
+                    </Link>
+                  </Button>
+                )}
               </CardFooter>
             </Card>
           );

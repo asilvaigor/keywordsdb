@@ -71,6 +71,10 @@ locals {
     BETTER_AUTH_GOOGLE_SECRET = var.better_auth_google_secret
     GCS_ACCESS_KEY_ID         = google_storage_hmac_key.clickhouse_hmac_key.access_id
     GCS_SECRET_ACCESS_KEY     = google_storage_hmac_key.clickhouse_hmac_key.secret
+    STRIPE_SECRET_KEY_STG     = var.stripe_secret_key_stg
+    STRIPE_SECRET_KEY_PRD     = var.stripe_secret_key_prd
+    STRIPE_WEBHOOK_SECRET_STG = var.stripe_webhook_secret_stg
+    STRIPE_WEBHOOK_SECRET_PRD = var.stripe_webhook_secret_prd
   }
 }
 

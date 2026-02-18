@@ -68,4 +68,7 @@ jobs:
             BETTER_AUTH_SECRET='${{ secrets.BETTER_AUTH_SECRET }}',\
             BETTER_AUTH_GOOGLE_ID='${{ secrets.BETTER_AUTH_GOOGLE_ID }}',\
             BETTER_AUTH_GOOGLE_SECRET='${{ secrets.BETTER_AUTH_GOOGLE_SECRET }}',\
-            BETTER_AUTH_URL='${{ vars.BETTER_AUTH_URL_PRD }}'"
+            BETTER_AUTH_URL='${{ vars.BETTER_AUTH_URL_PRD }}',\
+            STRIPE_CHECKOUT_ACTIVATED='true',\
+            STRIPE_SECRET_KEY='${{ secrets.STRIPE_SECRET_KEY_PRD }}',\
+            STRIPE_WEBHOOK_SECRET='${{ secrets.STRIPE_WEBHOOK_SECRET_PRD }}'"

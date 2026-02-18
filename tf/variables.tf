@@ -85,3 +85,27 @@ variable "better_auth_google_secret" {
   description = "BetterAuth Google Client Secret"
   sensitive   = true
 }
+
+variable "stripe_secret_key_prd" {
+  type        = string
+  description = "Stripe Secret Key for production"
+  sensitive   = true
+}
+
+variable "stripe_secret_key_stg" {
+  type        = string
+  description = "Stripe Secret Key for staging"
+  sensitive   = true
+}
+
+variable "stripe_webhook_secret_stg" {
+  type        = string
+  description = "Stripe Webhook Secret for staging"
+  sensitive   = true
+}
+
+variable "stripe_webhook_secret_prd" {
+  type        = string
+  description = "Stripe Webhook Secret for production"
+  sensitive   = true
+}

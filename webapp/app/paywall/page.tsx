@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import Paywall from "@/components/paywall";
-import { getUserData } from "@/lib/auth/users";
+import { getUserData } from "@/lib/db/users";
 
 export const metadata: Metadata = {
   title: "Activate your subscription now to keep using KeywordsDB",
@@ -19,7 +19,7 @@ async function PaywallPage() {
   return (
     <main>
       <Header />
-      <Paywall />
+      <Paywall email={userData.email} />
       <Footer />
     </main>
   );

@@ -2,8 +2,8 @@
 
 import { createHash } from "node:crypto";
 import type { SortingState } from "@tanstack/react-table";
-import { decreaseFreeCredits, getUserData } from "@/lib/auth/users";
-import firestore from "@/lib/firestore";
+import firestore from "@/lib/db/firestore";
+import { decreaseFreeCredits, getUserData } from "@/lib/db/users";
 import type {
   CacheMiss,
   Keyword,

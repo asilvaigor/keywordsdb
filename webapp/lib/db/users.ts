@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 import { auth } from "@/lib/auth/server";
-import firestore from "@/lib/firestore";
+import firestore from "@/lib/db/firestore";
 import type { UserData } from "@/lib/types";
 
 export async function getUserData(): Promise<UserData | null> {
@@ -20,6 +20,7 @@ export async function getUserData(): Promise<UserData | null> {
         freeCredits: data.freeCredits,
         lastFreeCreditUsedAt: data.lastFreeCreditUsedAt?.toDate() ?? null,
         subscriptionActive: data.subscriptionActive,
+        subscriptionType: data.subscriptionType,
       };
     }
     const userData: UserData = {
@@ -27,6 +28,7 @@ export async function getUserData(): Promise<UserData | null> {
       freeCredits: 10,
       lastFreeCreditUsedAt: null,
       subscriptionActive: false,
+      subscriptionType: null,
     };
     await docRef.set(userData);
     return userData;
@@ -47,5 +49,24 @@ export async function decreaseFreeCredits(user: UserData) {
   await docRef.update({
     freeCredits: user.freeCredits - 1,
     lastFreeCreditUsedAt: now,
+  });
+}
+
+export async function upsertSubscription(
+  email: string,
+  subscriptionType: "pro" | "max",
+) {
+  const docRef = firestore.collection("users").doc(email);
+  await docRef.update({
+    subscriptionActive: true,
+    subscriptionType: subscriptionType,
+  });
+}
+
+export async function cancelSubscription(email: string) {
+  const docRef = firestore.collection("users").doc(email);
+  await docRef.update({
+    subscriptionActive: false,
+    subscriptionType: null,
   });
 }

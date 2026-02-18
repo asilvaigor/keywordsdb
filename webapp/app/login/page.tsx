@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Login from "@/components/auth/login";
-import { getUserData } from "@/lib/auth/users";
+import { getUserData } from "@/lib/db/users";
 
 export const metadata: Metadata = {
   title: "Login - keywordsdb.com",
