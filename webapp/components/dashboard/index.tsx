@@ -12,7 +12,7 @@ function Dashboard({ userData }: { userData: UserData }) {
 
   return (
     <div className="flex-1 w-full max-w-fit px-6">
-      <KeywordsTable isSample />
+      <KeywordsTable />
     </div>
   );
 }
