@@ -25,7 +25,7 @@ async function getCustomerEmail(
 }
 
 export const POST = async (req: NextRequest) => {
-  if (process.env.CHECKOUT_ACTIVATED === "false") {
+  if (process.env.STRIPE_CHECKOUT_ACTIVATED === "false") {
     return new Response("Checkout not activated", { status: 403 });
   }
   try {
