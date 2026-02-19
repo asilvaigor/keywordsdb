@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import { ContactUsIcon } from "@/components/icons/contact-us";
 
 export const metadata: Metadata = {
   title: "Contact Us | KeywordsDB",
@@ -10,23 +11,62 @@ export default function Contact() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="container max-w-3xl text-justify mx-auto px-4 py-8">
-        <h1 className="mb-4 text-3xl font-bold">Contact Us</h1>
-        <p className="mb-4">
-          If you have any questions, suggestions, or feedback regarding
-          KeywordsDB, please feel free to reach out to us. We value your input
-          and are here to assist you.
-        </p>
-        <p className="mb-4">
-          You can contact us via email at{" "}
-          <a
-            className="font-bold underline underline-offset-4"
-            href="mailto:support@keywordsdb.com"
-          >
-            support@keywordsdb.com
-          </a>
-          . We aim to respond to all inquiries within 24-48 hours.
-        </p>
+      <main className="container max-w-4xl mx-auto px-4 py-16 flex-1 flex items-center">
+        <div className="grid md:grid-cols-2 gap-12 items-center w-full">
+          {/* Illustration */}
+          <div className="flex justify-center">
+            <ContactUsIcon />
+          </div>
+
+          {/* Content */}
+          <div>
+            <p className="text-sm font-semibold tracking-widest uppercase text-primary mb-3">
+              Get in touch
+            </p>
+            <h1 className="mb-6 text-4xl font-bold leading-tight">
+              We&apos;d love to
+              <br />
+              hear from you
+            </h1>
+            <p className="mb-6 text-muted-foreground leading-relaxed">
+              Have a question about your keyword data, a feature request, or
+              just want to say hello? We read every message and reply
+              personally.
+            </p>
+            <a
+              href="mailto:support@keywordsdb.com"
+              className="inline-flex items-center gap-3 rounded-xl border border-border bg-muted px-5 py-4 text-sm font-semibold hover:bg-accent transition-colors"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 18 18"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="1"
+                  y="3.5"
+                  width="16"
+                  height="11"
+                  rx="2"
+                  className="stroke-primary"
+                  strokeWidth="1.5"
+                />
+                <path
+                  d="M1 6l8 5 8-5"
+                  className="stroke-primary"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                />
+              </svg>
+              support@keywordsdb.com
+            </a>
+            <p className="mt-4 text-xs text-muted-foreground">
+              We aim to respond within 24–48 hours.
+            </p>
+          </div>
+        </div>
       </main>
       <Footer />
     </div>
