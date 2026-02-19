@@ -1,7 +1,30 @@
 import useSWR from "swr";
-import { getKeywordsCount } from "@/lib/keywords/keywords";
-
 import type { KeywordFilters } from "@/lib/types";
+
+const fetchCounts = async (filters: KeywordFilters, isSample: boolean) => {
+  const params = new URLSearchParams();
+  if (filters.keyword) params.append("keyword", filters.keyword);
+  if (filters.avg_monthly_searches)
+    params.append(
+      "avg_monthly_searches",
+      JSON.stringify(filters.avg_monthly_searches),
+    );
+  if (filters.competition_index)
+    params.append(
+      "competition_index",
+      JSON.stringify(filters.competition_index),
+    );
+  if (filters.cpc_high)
+    params.append("cpc_high", JSON.stringify(filters.cpc_high));
+  params.append("isSample", String(isSample));
+
+  const response = await fetch(`/api/keywords/count?${params.toString()}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch counts");
+  }
+  const data = await response.json();
+  return data.count as number;
+};
 
 export function useCountsQuery({
   debouncedFilters,
@@ -14,7 +37,7 @@ export function useCountsQuery({
 }) {
   const { data: totalRows, isLoading: isTotalRowsLoadingQuery } = useSWR(
     [debouncedFilters, isSample],
-    async ([filters, isSample]) => getKeywordsCount(filters, isSample),
+    async ([filters, isSample]) => fetchCounts(filters, isSample),
     {
       revalidateOnFocus: false,
       revalidateOnReconnect: false,

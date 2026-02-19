@@ -11,7 +11,7 @@ export default function Contact() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="container max-w-4xl mx-auto px-4 py-16 flex-1 flex items-center">
+      <main className="container max-w-4xl mx-auto px-4 py-16 flex-1 flex items-center text-center md:text-left">
         <div className="grid md:grid-cols-2 gap-12 items-center w-full">
           {/* Illustration */}
           <div className="flex justify-center">

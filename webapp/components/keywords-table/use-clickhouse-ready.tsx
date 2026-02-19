@@ -1,12 +1,20 @@
 import useSWR from "swr";
-import { pingClickhouse } from "@/lib/db/clickhouse-utils";
+
+const fetchClickhousePing = async () => {
+  const response = await fetch("/api/db/pingClickhouse");
+  if (!response.ok) {
+    throw new Error("Failed to ping ClickHouse");
+  }
+  const data = await response.json();
+  return data.success as boolean;
+};
 
 const useClickhouseReady = (shouldFetch: boolean) => {
   const {
     data: isReady,
     error,
     isLoading,
-  } = useSWR(shouldFetch ? "clickhouse-ping" : null, pingClickhouse, {
+  } = useSWR(shouldFetch ? "clickhouse-ping" : null, fetchClickhousePing, {
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
     errorRetryCount: 3,
