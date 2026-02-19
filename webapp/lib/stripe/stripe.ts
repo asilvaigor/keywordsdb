@@ -16,10 +16,10 @@ export const PRICE_IDS =
         max_yearly: "price_1T1wrFQKrorq4nxeqe3J13Ik",
       }
     : {
-        pro_monthly: "price_1T1wEvKNXEzJl6yDONg33Dqj",
-        pro_yearly: "price_1T1wFAKNXEzJl6yDoYbpvCZb",
-        max_monthly: "price_1T1wo2KNXEzJl6yDc2lNyrMC",
-        max_yearly: "price_1T2JMVKNXEzJl6yDW7vuAFQV",
+        pro_monthly: "price_1T2Ss0KNXEzJl6yD1O6tjEcl",
+        pro_yearly: "price_1T2SsNKNXEzJl6yD1HYy0Npz",
+        max_monthly: "price_1T2St4KNXEzJl6yDmKB0JfBq",
+        max_yearly: "price_1T2StNKNXEzJl6yDghu6zjxe",
       };
 
 export function findSubscriptionType(

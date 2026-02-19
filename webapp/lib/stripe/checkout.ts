@@ -28,6 +28,7 @@ export async function checkout({
     }
     return { error: "Could not create checkout session. Please try again." };
   } catch (error) {
+    console.log("Error creating checkout session:", error);
     // Re-throw Next.js redirect errors so the router can handle them
     const digest = (error as unknown as { digest?: string }).digest;
     if (typeof digest === "string" && digest.startsWith("NEXT_REDIRECT")) {
