@@ -1,6 +1,7 @@
 import hashlib
 import os
 from collections.abc import Generator
+from typing import Literal
 
 import polars as pl
 from google.cloud.firestore import Client, DocumentSnapshot
@@ -11,8 +12,8 @@ class FirestoreClient:
     keywords_counts_cache = "keyword-counts-cache"
     keywords_to_ingest = "keywords-to-ingest"
 
-    def __init__(self) -> None:
-        self.client: Client = Client(database=f"keywordsdb-{os.getenv('ENV', 'dev')}")
+    def __init__(self, env: Literal["dev", "stg", "prd"] | None = None) -> None:
+        self.client: Client = Client(database=f"keywordsdb-{env or os.getenv('ENV', 'dev')}")
 
     def put_keywords_cache(self, df: pl.DataFrame, count: int, sample: bool) -> None:
         """
@@ -23,17 +24,8 @@ class FirestoreClient:
             df: Polars DataFrame containing query results.
             count: number of results in query.
         """
-        if sample:
-            cache_key = (
-                'keywords-{"avg_monthly_searches":{"gte":100000000}}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
-            )
-            counts_cache_key = 'keyword-counts-{"avg_monthly_searches":{"gte":100000000}}'
-        else:
-            cache_key = 'keywords-{}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
-            counts_cache_key = "keyword-counts-{}"
-
         # Save in keywords-cache
-        hash_value = hashlib.sha256(cache_key.encode("utf-8")).hexdigest()
+        hash_value = self.get_cache_doc_id(counts=False, sample=sample)
         doc_ref = self.client.collection(FirestoreClient.keywords_cache).document(hash_value)
         doc_value = {
             "results": df.with_columns(pl.col("updated_at").dt.strftime("%Y-%m-%d")).to_dicts(),
@@ -42,7 +34,7 @@ class FirestoreClient:
         doc_ref.set(doc_value)
 
         # Save in keywords-counts-cache
-        hash_value = hashlib.sha256(counts_cache_key.encode("utf-8")).hexdigest()
+        hash_value = self.get_cache_doc_id(counts=True, sample=sample)
         doc_ref = self.client.collection(FirestoreClient.keywords_counts_cache).document(hash_value)
         doc_ref.set({"count": count, "expires_at": None})
 
@@ -90,3 +82,52 @@ class FirestoreClient:
         """
         doc_ref = self.client.collection(FirestoreClient.keywords_to_ingest).document(filepath)
         doc_ref.delete()
+
+    def get_cache_doc_id(self, counts: bool, sample: bool) -> str:
+        cache_key_sample = (
+            'keywords-{"avg_monthly_searches":{"gte":100000000}}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
+        )
+        cache_key_counts_sample = 'keyword-counts-{"avg_monthly_searches":{"gte":100000000}}'
+        cache_key = 'keywords-{}-[{"id":"avg_monthly_searches","desc":true}]-1-100'
+        cache_key_counts = "keyword-counts-{}"
+
+        key = (
+            cache_key_counts_sample
+            if counts and sample
+            else cache_key_sample
+            if sample
+            else cache_key_counts
+            if counts
+            else cache_key
+        )
+
+        return hashlib.sha256(key.encode("utf-8")).hexdigest()
+
+    def copy_document(
+        self,
+        *,
+        source_collection: str,
+        dest_collection: str | None = None,
+        doc_id: str,
+        dest_client: FirestoreClient | None = None,
+    ) -> None:
+        """
+        Copies a document from one collection to another.
+
+        Args:
+            source_collection: The name of the source collection.
+            dest_client: The FirestoreClient instance of the destination collection.
+            dest_collection: The name of the destination collection.
+            doc_id: The ID of the document to copy.
+        """
+        if dest_client is None:
+            dest_client = self
+        if dest_collection is None:
+            dest_collection = source_collection
+
+        source_doc_ref = self.client.collection(source_collection).document(doc_id)
+        dest_doc_ref = dest_client.client.collection(dest_collection).document(doc_id)
+
+        doc: DocumentSnapshot = source_doc_ref.get()  # type: ignore[invalid-argument-type]
+        if doc.exists:
+            dest_doc_ref.set(doc.to_dict())  # type: ignore[invalid-argument-type]

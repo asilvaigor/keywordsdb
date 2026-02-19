@@ -3,14 +3,15 @@ import os
 import tempfile
 from concurrent.futures import Future, ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Literal
 
 import polars as pl
 from google.cloud.storage import Blob, Bucket, Client
 
 
 class StorageClient:
-    def __init__(self) -> None:
-        self._bucket_name = f"keywordsdb-{os.getenv('ENV', 'dev')}"
+    def __init__(self, env: Literal["dev", "stg", "prd"] | None = None) -> None:
+        self._bucket_name = f"keywordsdb-{env or os.getenv('ENV', 'dev')}"
         self.client = Client()
         self.bucket: Bucket = self.client.bucket(self._bucket_name)
         assert self.bucket.exists()
@@ -96,3 +97,16 @@ class StorageClient:
         """Write a JSON file to the bucket."""
         blob = self.bucket.blob(path)
         blob.upload_from_string(json.dumps(data), content_type="application/json")
+
+    def copy_blob(
+        self, *, source_path: str, dest_path: str | None = None, dest_client: StorageClient | None = None
+    ) -> None:
+        """Copy a file to another client."""
+        if dest_client is None:
+            dest_client = self
+        if dest_path is None:
+            dest_path = source_path
+
+        source_blob = self.bucket.blob(source_path)
+        dest_blob = dest_client.bucket.blob(dest_path)
+        dest_blob.rewrite(source_blob)

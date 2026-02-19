@@ -10,7 +10,7 @@ resource "google_storage_bucket" "keywordsdb" {
       type = "Delete"
     }
     condition {
-      age = 30
+      age = 1
     }
   }
 }

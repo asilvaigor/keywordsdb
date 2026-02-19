@@ -17,10 +17,31 @@ resource "google_project_iam_member" "batch_scheduler" {
   member  = "serviceAccount:${google_service_account.batch_scheduler.email}"
 }
 
-resource "google_cloud_scheduler_job" "worker_google_prd" {
-  name             = "worker-google-prd"
-  description      = "Triggers google worker batch job daily at 8pm UTC"
-  schedule         = "0 20 * * *"
+locals {
+  scheduler_jobs = {
+    google = {
+      description = "Triggers google worker batch job daily at 8pm UTC"
+      schedule    = "0 20 * * *"
+      command     = ["python", "-u", "src/workers/google/main.py"]
+    }
+    bing = {
+      description = "Triggers bing worker batch job, to be launched manually"
+      schedule    = "0 0 1 1 *"
+      command     = ["python", "-u", "src/workers/bing/main.py"]
+    }
+    replicator = {
+      description = "Triggers replicator worker batch job daily at 1am UTC"
+      schedule    = "0 1 * * *"
+      command     = ["python", "-u", "src/workers/replicator/main.py"]
+    }
+  }
+}
+
+resource "google_cloud_scheduler_job" "worker_prd" {
+  for_each         = local.scheduler_jobs
+  name             = "worker-${each.key}-prd"
+  description      = each.value.description
+  schedule         = each.value.schedule
   time_zone        = "UTC"
   attempt_deadline = "320s"
 
@@ -37,7 +58,7 @@ resource "google_cloud_scheduler_job" "worker_google_prd" {
 
     body = base64encode(jsonencode({
       labels = {
-        job_name = "worker-google-prd"
+        job_name = "worker-${each.key}-prd"
       }
       taskGroups = [
         {
@@ -45,7 +66,7 @@ resource "google_cloud_scheduler_job" "worker_google_prd" {
             runnables = {
               container = {
                 imageUri = "us-central1-docker.pkg.dev/${var.project_id}/keywordsdb/workers:keep"
-                commands = ["python", "-u", "src/workers/google/main.py"]
+                commands = each.value.command
               }
             }
             computeResource = {
@@ -77,10 +98,10 @@ resource "google_cloud_scheduler_job" "worker_google_prd" {
           }
         }]
         serviceAccount = {
-          email = "${google_service_account.worker_google.email}"
+          email = google_service_account.worker[each.key].email
         }
         labels = {
-          job_name = "worker-google-prd"
+          job_name = "worker-${each.key}-prd"
         }
       },
       logsPolicy = {
@@ -99,84 +120,3 @@ resource "google_cloud_scheduler_job" "worker_google_prd" {
   ]
 }
 
-resource "google_cloud_scheduler_job" "worker_bing_prd" {
-  name             = "worker-bing-prd"
-  description      = "Triggers bing worker batch job, to be launched manually"
-  schedule         = "0 0 1 1 *"
-  time_zone        = "UTC"
-  attempt_deadline = "320s"
-
-  retry_config {
-    retry_count = 1
-  }
-
-  http_target {
-    http_method = "POST"
-    uri         = "https://batch.googleapis.com/v1/projects/${var.project_id}/locations/${var.location}/jobs"
-    headers = {
-      "Content-Type" = "application/json"
-    }
-
-    body = base64encode(jsonencode({
-      labels = {
-        job_name = "worker-bing-prd"
-      }
-      taskGroups = [
-        {
-          taskSpec = {
-            runnables = {
-              container = {
-                imageUri = "us-central1-docker.pkg.dev/${var.project_id}/keywordsdb/workers:keep"
-                commands = ["python", "-u", "src/workers/bing/main.py"]
-              }
-            }
-            computeResource = {
-              cpuMilli  = 1000
-              memoryMib = 1740
-            }
-            environment = {
-              variables = {
-                ENV = "prd"
-              }
-            }
-            maxRunDuration = "43200s" # 12 hours
-            maxRetryCount  = 10
-          }
-          taskCount   = 1
-          parallelism = 1
-        }
-      ],
-      allocationPolicy = {
-        instances = [{
-          policy = {
-            machineType       = "g1-small"
-            provisioningModel = "SPOT"
-            bootDisk = {
-              type   = "pd-standard"
-              sizeGb = 30 # minimum size for COS image
-              image  = "batch-cos"
-            }
-          }
-        }]
-        serviceAccount = {
-          email = "${google_service_account.worker_bing.email}"
-        }
-        labels = {
-          job_name = "worker-bing-prd"
-        }
-      },
-      logsPolicy = {
-        destination = "CLOUD_LOGGING"
-      }
-    }))
-
-    oauth_token {
-      service_account_email = google_service_account.batch_scheduler.email
-    }
-  }
-
-  depends_on = [
-    google_project_service.cloud_scheduler,
-    google_project_service.batch
-  ]
-}

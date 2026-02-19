@@ -10,53 +10,71 @@ resource "google_project_service" "batch" {
   service = "batch.googleapis.com"
 }
 
-resource "google_service_account" "worker_google" {
-  account_id   = "worker-google"
-  display_name = "Worker-google"
-}
-
-resource "google_service_account_key" "worker_google" {
-  service_account_id = google_service_account.worker_google.name
-}
-
-resource "google_project_iam_member" "worker_google" {
-  for_each = toset([
+locals {
+  worker_common_roles = [
     "roles/artifactregistry.reader",
     "roles/logging.logWriter",
     "roles/secretmanager.secretAccessor",
-    "roles/bigquery.user",
-    "roles/bigquery.dataOwner",
-    "roles/storage.objectUser",
-    "roles/storage.bucketViewer",
-    "roles/datastore.user",
     "roles/batch.agentReporter",
-  ])
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${google_service_account.worker_google.email}"
+  ]
+
+  workers = {
+    google = {
+      display_name = "Worker-google"
+      roles = [
+        "roles/bigquery.user",
+        "roles/bigquery.dataOwner",
+        "roles/storage.objectUser",
+        "roles/storage.bucketViewer",
+        "roles/datastore.user",
+      ]
+    }
+    bing = {
+      display_name = "Worker-bing"
+      roles = [
+        "roles/bigquery.user",
+        "roles/bigquery.dataOwner",
+        "roles/storage.objectUser",
+        "roles/storage.bucketViewer",
+      ]
+    }
+    replicator = {
+      display_name = "Worker-replicator"
+      roles = [
+        "roles/storage.objectUser",
+        "roles/storage.bucketViewer",
+        "roles/datastore.user",
+      ]
+    }
+  }
+
+  worker_iam_bindings = {
+    for item in flatten([
+      for worker, cfg in local.workers : [
+        for role in concat(local.worker_common_roles, cfg.roles) : {
+          key    = "${worker}/${role}"
+          worker = worker
+          role   = role
+        }
+      ]
+    ]) : item.key => item
+  }
 }
 
-resource "google_service_account" "worker_bing" {
-  account_id   = "worker-bing"
-  display_name = "Worker-bing"
+resource "google_service_account" "worker" {
+  for_each     = local.workers
+  account_id   = "worker-${each.key}"
+  display_name = each.value.display_name
 }
 
-resource "google_service_account_key" "worker_bing" {
-  service_account_id = google_service_account.worker_bing.name
+resource "google_service_account_key" "worker" {
+  for_each           = local.workers
+  service_account_id = google_service_account.worker[each.key].name
 }
 
-resource "google_project_iam_member" "worker_bing" {
-  for_each = toset([
-    "roles/artifactregistry.reader",
-    "roles/logging.logWriter",
-    "roles/secretmanager.secretAccessor",
-    "roles/bigquery.user",
-    "roles/bigquery.dataOwner",
-    "roles/storage.objectUser",
-    "roles/storage.bucketViewer",
-    "roles/batch.agentReporter",
-  ])
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${google_service_account.worker_bing.email}"
+resource "google_project_iam_member" "worker" {
+  for_each = local.worker_iam_bindings
+  project  = var.project_id
+  role     = each.value.role
+  member   = "serviceAccount:${google_service_account.worker[each.value.worker].email}"
 }

@@ -1,6 +1,6 @@
 import { DuckDBConnection } from "@duckdb/node-api";
 
-export const BUCKET_NAME = "keywordsdb-prd";
+export const BUCKET_NAME = `keywordsdb-${process.env.NEXT_PUBLIC_ENV}`;
 
 let duckDBConnection: DuckDBConnection | null = null;
 
