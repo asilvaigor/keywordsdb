@@ -9,7 +9,8 @@ resource "google_storage_hmac_key" "clickhouse_hmac_key" {
 }
 
 resource "google_storage_bucket_iam_member" "clickhouse" {
-  bucket = google_storage_bucket.keywordsdb["prd"].name
+  for_each = toset(["prd", "stg"])
+  bucket = google_storage_bucket.keywordsdb[each.key].name
   role   = "roles/storage.objectUser"
   member = "serviceAccount:${google_service_account.clickhouse.email}"
 }

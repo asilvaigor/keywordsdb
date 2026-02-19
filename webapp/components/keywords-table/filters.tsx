@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select";
 import type { KeywordRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { DownloadModal } from "./download-modal";
 import { getDefaultFilters, SAMPLE_MIN_VOLUME } from "./utils";
 
 type FilterOperator = "eq" | "gte" | "lte" | "between";
@@ -47,9 +48,17 @@ const operatorOptions = [
 export function Filters({
   table,
   isSample,
+  totalRows,
+  canDownload,
+  handleDownload,
+  isDownloadLoading,
 }: {
   table: Table<KeywordRow>;
   isSample: boolean;
+  totalRows?: number;
+  canDownload: boolean;
+  handleDownload: (format: "parquet" | "csv") => void;
+  isDownloadLoading: boolean;
 }) {
   const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>(
     getDefaultFilters(isSample, "DynamicFilter") as DynamicFilter[],
@@ -199,28 +208,39 @@ export function Filters({
   };
 
   return (
-    <div className="space-y-4 pb-4">
-      <div className="flex items-center gap-2">
+    <div className="space-y-2 pb-4">
+      <div className="flex flex-col gap-2 sm:flex-row-reverse">
         {/* Search filter */}
-        <Input
-          placeholder="Search keywords..."
-          value={(table.getColumn("keyword")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("keyword")?.setFilterValue(event.target.value)
-          }
-          className="max-w-full"
-          type="search"
+        <DownloadModal
+          canDownload={canDownload}
+          totalRows={totalRows}
+          handleDownload={handleDownload}
+          isDownloadLoading={isDownloadLoading}
         />
-        {/* Add filter button */}
-        <Button
-          variant="outline"
-          onClick={addFilter}
-          disabled={dynamicFilters.length >= columnOptions.length}
-          className="flex items-center gap-2"
-        >
-          <Plus />
-          Add filter
-        </Button>
+
+        {/* Add filter + Download buttons */}
+        <div className="flex gap-2 w-full">
+          <Input
+            placeholder="Search keywords..."
+            value={
+              (table.getColumn("keyword")?.getFilterValue() as string) ?? ""
+            }
+            onChange={(event) =>
+              table.getColumn("keyword")?.setFilterValue(event.target.value)
+            }
+            className="w-full"
+            type="search"
+          />
+          <Button
+            variant="outline"
+            onClick={addFilter}
+            disabled={dynamicFilters.length >= columnOptions.length}
+            className="flex items-center gap-2"
+          >
+            <Plus />
+            Add filter
+          </Button>
+        </div>
       </div>
 
       {/* Dynamic filters */}

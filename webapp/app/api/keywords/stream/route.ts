@@ -1,34 +1,11 @@
-import type { SortingState } from "@tanstack/react-table";
 import type { NextRequest } from "next/server";
 import { getKeywordsStream } from "@/lib/keywords/keywords";
-
-function getInt(value: string | null): number | undefined {
-  return value ? Number.parseInt(value, 10) : undefined;
-}
+import { parseSearchParams } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const filters = {
-    keyword: searchParams.get("keyword") || undefined,
-    avg_monthly_searches:
-      JSON.parse(searchParams.get("avg_monthly_searches") || "null") ??
-      undefined,
-    competition_index:
-      JSON.parse(searchParams.get("competition_index") || "null") ?? undefined,
-    cpc_high: JSON.parse(searchParams.get("cpc_high") || "null") ?? undefined,
-  };
-  const sortParams = searchParams.getAll("sortBy");
-  const sort: SortingState = sortParams.map((param) => {
-    const isDescending = param.startsWith("-");
-    const columnId = param.slice(1);
-    return {
-      id: columnId,
-      desc: isDescending,
-    };
-  });
-  const page = getInt(searchParams.get("page"));
-  const pageSize = getInt(searchParams.get("pageSize"));
-  const isSample = searchParams.get("isSample") === "true";
+  const { filters, sorting, page, pageSize, isSample } =
+    parseSearchParams(searchParams);
 
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -36,7 +13,7 @@ export async function GET(request: NextRequest) {
       try {
         for await (const batch of getKeywordsStream(
           filters,
-          sort,
+          sorting,
           page,
           pageSize,
           isSample,

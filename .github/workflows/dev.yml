@@ -4,30 +4,13 @@ on:
     branches-ignore:
       - main
 jobs:
-  check-changes:
-    runs-on: ubuntu-24.04
-    outputs:
-      webapp: ${{ steps.filter.outputs.webapp }}
-      worker: ${{ steps.filter.outputs.workers }}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
-        id: filter
-        with:
-          filters: |
-            webapp:
-              - 'webapp/**'
-            workers:
-              - 'workers/**'
   lint-py:
     runs-on: ubuntu-24.04
-    if: needs.check-changes.outputs.workers == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-py
   lint-js:
     runs-on: ubuntu-24.04
-    if: needs.check-changes.outputs.webapp == 'true'
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-js

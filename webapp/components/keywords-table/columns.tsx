@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Keyword, KeywordRow } from "@/lib/types";
@@ -16,19 +15,17 @@ import { VolumeHistoryCell } from "./volume-history";
 
 function Header({ title, tooltip }: { title: string; tooltip: string }) {
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <div className="text-sm font-medium text-muted-foreground w-fit">
-            {title}
-          </div>
-        </TooltipTrigger>
-        <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
-          <Info className="h-4 w-4 shrink-0 mt-0.5" />
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="text-sm font-medium text-muted-foreground w-fit">
+          {title}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
+        <Info className="h-4 w-4 shrink-0 mt-0.5" />
+        <p>{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 
@@ -44,34 +41,32 @@ function SortableHeader({
   const sortDirection = column.getIsSorted();
 
   return (
-    <TooltipProvider>
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            onClick={() =>
-              column.toggleSorting(
-                sortDirection === false || sortDirection === "asc",
-              )
-            }
-            className="font-medium -ml-3 hover:bg-transparent group w-fit"
-          >
-            {title}
-            {sortDirection === "asc" ? (
-              <ArrowUp className="ml-1 h-4 w-4" />
-            ) : sortDirection === "desc" ? (
-              <ArrowDown className="ml-1 h-4 w-4" />
-            ) : (
-              <ArrowDown className="ml-1 h-4 w-4 opacity-0 group-hover:opacity-30" />
-            )}
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
-          <Info className="h-4 w-4 shrink-0 mt-0.5" />
-          <p>{tooltip}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          onClick={() =>
+            column.toggleSorting(
+              sortDirection === false || sortDirection === "asc",
+            )
+          }
+          className="font-medium -ml-3 hover:bg-transparent group w-fit"
+        >
+          {title}
+          {sortDirection === "asc" ? (
+            <ArrowUp className="ml-1 h-4 w-4" />
+          ) : sortDirection === "desc" ? (
+            <ArrowDown className="ml-1 h-4 w-4" />
+          ) : (
+            <ArrowDown className="ml-1 h-4 w-4 opacity-0 group-hover:opacity-30" />
+          )}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
+        <Info className="h-4 w-4 shrink-0 mt-0.5" />
+        <p>{tooltip}</p>
+      </TooltipContent>
+    </Tooltip>
   );
 }
 

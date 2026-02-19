@@ -129,5 +129,4 @@ class FirestoreClient:
         dest_doc_ref = dest_client.client.collection(dest_collection).document(doc_id)
 
         doc: DocumentSnapshot = source_doc_ref.get()  # type: ignore[invalid-argument-type]
-        if doc.exists:
-            dest_doc_ref.set(doc.to_dict())  # type: ignore[invalid-argument-type]
+        dest_doc_ref.set(doc.to_dict())  # type: ignore[invalid-argument-type]

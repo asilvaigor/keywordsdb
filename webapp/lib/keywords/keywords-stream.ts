@@ -8,11 +8,15 @@ import type {
   Progress,
 } from "@/lib/types";
 import { getDuckDBConnection } from "../db/storage";
-import { buildWhereClause, createDuckDBCacheIfNeeded } from "./utils";
+import {
+  buildOrderByClause,
+  buildWhereClause,
+  createDuckDBCacheIfNeeded,
+} from "./utils";
 
 export async function getKeywordsStreamSample(
   filters?: KeywordFilters,
-  sort?: SortingState,
+  sorting?: SortingState,
   page = 1,
   pageSize = 100,
 ): Promise<Keyword[]> {
@@ -20,7 +24,7 @@ export async function getKeywordsStreamSample(
   await createDuckDBCacheIfNeeded(connection);
 
   const { whereClause, params } = buildWhereClause("duckdb", filters);
-  const orderByClause = buildOrderByClause(sort);
+  const orderByClause = buildOrderByClause(sorting);
   const offset = (page - 1) * pageSize;
 
   const result = await connection.runAndReadAll(
@@ -121,10 +125,4 @@ export async function* getKeywordsStreamClickhouse(
   }
 
   return allResults;
-}
-
-function buildOrderByClause(sort?: SortingState) {
-  if (!sort || sort.length === 0) return "";
-  const sortClauses = sort.map((s) => `kws.${s.id} ${s.desc ? "DESC" : "ASC"}`);
-  return `ORDER BY ${sortClauses.join(", ")}`;
 }

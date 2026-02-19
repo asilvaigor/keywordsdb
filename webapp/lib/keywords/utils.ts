@@ -1,4 +1,5 @@
 import type { DuckDBConnection } from "@duckdb/node-api";
+import type { SortingState } from "@tanstack/react-table";
 import { BUCKET_NAME } from "@/lib/db/storage";
 import type { KeywordFilters } from "@/lib/types";
 
@@ -63,4 +64,10 @@ export function buildWhereClause(
     params = { ...params, max_cpc: filters?.cpc_high?.max };
   }
   return { whereClause, params };
+}
+
+export function buildOrderByClause(sort?: SortingState) {
+  if (!sort || sort.length === 0) return "";
+  const sortClauses = sort.map((s) => `kws.${s.id} ${s.desc ? "DESC" : "ASC"}`);
+  return `ORDER BY ${sortClauses.join(", ")}`;
 }

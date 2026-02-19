@@ -8,6 +8,7 @@ import type {
   KeywordRow,
   KeywordsStreamResponse,
 } from "@/lib/types";
+import { buildSearchParams } from "@/lib/utils";
 import { API_PAGE_SIZE, calcDataSlice } from "./use-pagination";
 
 class KeywordsStreamer extends EventTarget {
@@ -21,34 +22,11 @@ class KeywordsStreamer extends EventTarget {
   }) {
     this.stopStreaming();
 
-    const urlParams = new URLSearchParams();
-    urlParams.append("page", (params.page + 1).toString());
-    urlParams.append("pageSize", API_PAGE_SIZE.toString());
-    urlParams.append("isSample", params.isSample.toString());
-    if (params.filters.avg_monthly_searches) {
-      urlParams.append(
-        "avg_monthly_searches",
-        JSON.stringify(params.filters.avg_monthly_searches),
-      );
-    }
-    if (params.filters.competition_index) {
-      urlParams.append(
-        "competition_index",
-        JSON.stringify(params.filters.competition_index),
-      );
-    }
-    if (params.filters.cpc_high) {
-      urlParams.append("cpc_high", JSON.stringify(params.filters.cpc_high));
-    }
-    if (params.filters.keyword) {
-      urlParams.append("keyword", params.filters.keyword);
-    }
-    if (params.sorting.length > 0) {
-      for (const sort of params.sorting) {
-        urlParams.append("sortBy", `${sort.desc ? "-" : "+"}${sort.id}`);
-      }
-    }
-
+    const urlParams = buildSearchParams({
+      ...params,
+      page: params.page + 1,
+      pageSize: API_PAGE_SIZE,
+    });
     const url = `/api/keywords/stream?${urlParams.toString()}`;
     this.eventSource = new EventSource(url);
 

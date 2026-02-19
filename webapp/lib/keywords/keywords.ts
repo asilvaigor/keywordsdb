@@ -15,6 +15,7 @@ import {
   getKeywordsCountClickhouse,
   getKeywordsCountSample,
 } from "./keywords-count";
+import { generatePresignedUrls } from "./keywords-download";
 import {
   getKeywordsStreamClickhouse,
   getKeywordsStreamSample,
@@ -32,7 +33,7 @@ interface KeywordCountsCached {
 
 export async function* getKeywordsStream(
   filters?: KeywordFilters,
-  sort?: SortingState,
+  sorting?: SortingState,
   page = 1,
   pageSize = 100,
   isSample: boolean = false,
@@ -45,7 +46,7 @@ export async function* getKeywordsStream(
     throw new Error("Unauthorized");
   }
 
-  const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sort)}-${page}-${pageSize}`;
+  const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sorting)}-${page}-${pageSize}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keywords-cache").doc(hash);
   const doc = (await docRef.get()).data() as KeywordsCached | undefined;
@@ -59,7 +60,12 @@ export async function* getKeywordsStream(
   let allResults: Keyword[] = [];
   if (isSample) {
     console.log("Streaming keywords from sample");
-    allResults = await getKeywordsStreamSample(filters, sort, page, pageSize);
+    allResults = await getKeywordsStreamSample(
+      filters,
+      sorting,
+      page,
+      pageSize,
+    );
     yield allResults;
   } else {
     console.log("Streaming keywords from clickhouse");
@@ -74,7 +80,7 @@ export async function* getKeywordsStream(
 
     for await (const chunk of getKeywordsStreamClickhouse(
       filters,
-      sort,
+      sorting,
       page,
       pageSize,
     )) {
@@ -136,4 +142,35 @@ export async function getKeywordsCount(
   docRef.set(cacheData).catch(console.error);
 
   return count;
+}
+
+export async function getDownloadUrls({
+  format,
+  filters,
+  sorting,
+  isSample,
+}: {
+  format: "parquet" | "csv";
+  filters?: KeywordFilters;
+  sorting?: SortingState;
+  isSample: boolean;
+}) {
+  const userData = await getUserData();
+  if (
+    !isSample &&
+    (!userData ||
+      !userData.subscriptionActive ||
+      userData.subscriptionType !== "max") // only max plan users can download
+  ) {
+    throw new Error("Unauthorized");
+  }
+  const count = await getKeywordsCount(filters, isSample);
+  const urls = await generatePresignedUrls({
+    format,
+    count,
+    filters,
+    sorting,
+    isSample,
+  });
+  return urls;
 }
