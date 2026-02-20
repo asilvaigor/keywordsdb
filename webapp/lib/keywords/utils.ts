@@ -68,6 +68,13 @@ export function buildWhereClause(
 
 export function buildOrderByClause(sort?: SortingState) {
   if (!sort || sort.length === 0) return "";
+  sort.forEach((s) => {
+    if (
+      !["avg_monthly_searches", "competition_index", "cpc_high"].includes(s.id)
+    ) {
+      throw new Error(`Invalid sort column: ${s.id}`);
+    }
+  });
   const sortClauses = sort.map((s) => `kws.${s.id} ${s.desc ? "DESC" : "ASC"}`);
   return `ORDER BY ${sortClauses.join(", ")}`;
 }

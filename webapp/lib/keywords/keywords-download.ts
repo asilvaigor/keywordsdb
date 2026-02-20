@@ -34,6 +34,9 @@ export async function generatePresignedUrls({
       "CSV format has a limit of 1 million rows. Please apply more filters or choose Parquet format.",
     );
   }
+  if (format !== "parquet" && format !== "csv") {
+    throw new Error("Invalid format. Must be 'parquet' or 'csv'.");
+  }
 
   const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sorting)}-${format}-${isSample}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
