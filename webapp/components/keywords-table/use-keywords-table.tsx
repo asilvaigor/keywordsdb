@@ -11,6 +11,7 @@ import { columns } from "./columns";
 import useClickhouseReady from "./use-clickhouse-ready";
 import { useCountsQuery } from "./use-counts-query";
 import { useDebouncedFilters } from "./use-debounced-filters";
+import { useDownloadModal } from "./use-download-modal";
 import { useKeywordsQuery } from "./use-keywords-query";
 import { calcPageCount, usePagination } from "./use-pagination";
 
@@ -50,6 +51,11 @@ export function useKeywordsTable({
       isFiltersDebouncing,
       isSample,
     });
+  const { handleDownload, isLoading: isDownloadLoading } = useDownloadModal({
+    filters: debouncedFilters,
+    sorting,
+    isSample,
+  });
 
   const totalRows =
     totalRowsQuery == null
@@ -88,6 +94,8 @@ export function useKeywordsTable({
     isLoading,
     isTotalRowsLoading,
     isDbReady: isClickhouseReady || !isCacheMiss,
+    handleDownload,
+    isDownloadLoading,
     error,
     pageIndex,
     pageSize,

@@ -1,6 +1,6 @@
 import clickhouse from "@/lib/db/clickhouse";
+import { getDuckDBConnection } from "@/lib/db/storage";
 import type { KeywordFilters } from "@/lib/types";
-import { getDuckDBConnection } from "../db/storage";
 import { buildWhereClause, createDuckDBCacheIfNeeded } from "./utils";
 
 export async function getKeywordsCountSample(

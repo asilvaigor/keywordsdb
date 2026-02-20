@@ -20,14 +20,16 @@ jobs:
             workers:
               - 'workers/**'
   lint-py:
-    runs-on: ubuntu-24.04
+    needs: [check-changes]
     if: needs.check-changes.outputs.workers == 'true'
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-py
   lint-js:
-    runs-on: ubuntu-24.04
+    needs: [check-changes]
     if: needs.check-changes.outputs.webapp == 'true'
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-js

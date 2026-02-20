@@ -94,7 +94,7 @@ function Hero() {
               </div>
             </div>
             <div className="rounded-lg bg-background py-4 px-4 text-left">
-              <KeywordsTable isSample={true} />
+              <KeywordsTable isSample={true} canDownload={true} />
             </div>
           </div>
         </div>

@@ -14,7 +14,7 @@ if __name__ == "__main__":
     for counts, sample in [(True, True), (False, True), (True, False), (False, False)]:
         ctx.source_firestore_client.copy_document(
             dest_client=ctx.dest_firestore_client,
-            source_collection=FirestoreClient.keywords_cache,
+            source_collection=FirestoreClient.keywords_counts_cache if counts else FirestoreClient.keywords_cache,
             doc_id=ctx.source_firestore_client.get_cache_doc_id(counts=counts, sample=sample),
         )
     ctx.logger.info("Done")

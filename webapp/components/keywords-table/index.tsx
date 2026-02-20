@@ -18,7 +18,13 @@ import { useKeywordsTable } from "./use-keywords-table";
 
 const PAGE_SIZE = 10;
 
-export function KeywordsTable({ isSample = false }: { isSample?: boolean }) {
+export function KeywordsTable({
+  isSample = false,
+  canDownload = false,
+}: {
+  isSample?: boolean;
+  canDownload?: boolean;
+}) {
   const {
     table,
     progress,
@@ -29,11 +35,20 @@ export function KeywordsTable({ isSample = false }: { isSample?: boolean }) {
     totalRows,
     pageIndex,
     pageSize,
+    handleDownload,
+    isDownloadLoading,
   } = useKeywordsTable({ defaultPageSize: PAGE_SIZE, isSample });
 
   return (
     <div className="flex flex-col justify-center h-full">
-      <Filters table={table} isSample={isSample} />
+      <Filters
+        table={table}
+        isSample={isSample}
+        canDownload={canDownload}
+        totalRows={totalRows}
+        handleDownload={handleDownload}
+        isDownloadLoading={isDownloadLoading}
+      />
       <div className="rounded-md border relative">
         {progress != null && (
           <div className="absolute top-0 left-0 right-0 h-0.5 bg-muted rounded-t-md overflow-hidden z-20">
