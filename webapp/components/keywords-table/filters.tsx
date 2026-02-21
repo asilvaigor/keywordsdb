@@ -151,6 +151,20 @@ export function Filters({
           oldCol?.setFilterValue(undefined);
         }
 
+        // When switching between lte and between, migrate the upper-bound value
+        if (updates.operator && updates.operator !== filter.operator) {
+          if (filter.operator === "lte" && updates.operator === "between") {
+            updatedFilter.value2 = filter.value1;
+            updatedFilter.value1 = "";
+          } else if (
+            filter.operator === "between" &&
+            updates.operator === "lte"
+          ) {
+            updatedFilter.value1 = filter.value2;
+            updatedFilter.value2 = "";
+          }
+        }
+
         // Validate the updated filter and update errors
         const errors = validateFilter(updatedFilter);
         return { ...updatedFilter, errors };
@@ -198,6 +212,9 @@ export function Filters({
       case "between":
         if (!Number.isNaN(val1) && !Number.isNaN(val2)) {
           value = { min: val1, max: val2 };
+        } else if (filter.value1 || filter.value2) {
+          // Partial input (transition state) — leave the existing filter intact
+          return;
         }
         break;
     }
