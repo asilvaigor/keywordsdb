@@ -239,9 +239,9 @@ export function DownloadModal({
           </Button>
           <Button disabled={isRowsLoading} onClick={onConfirm}>
             <Download className="mr-1.5" />
-            Download ~
+            Download{" "}
             {!isRowsLoading && files != null && files > 1
-              ? `${files} files`
+              ? `~${files} files`
               : ""}
           </Button>
         </DialogFooter>

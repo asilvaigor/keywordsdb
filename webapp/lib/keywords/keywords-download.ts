@@ -167,7 +167,7 @@ async function exportDuckDBToGCS({
 }) {
   const connection = await getDuckDBConnection();
   await createDuckDBCacheIfNeeded(connection);
-  const whereClause = buildWhereClause("duckdb", filters).whereClause;
+  const { whereClause, params } = buildWhereClause("duckdb", filters);
   const orderByClause = buildOrderByClause(sorting);
   const query = `
     COPY (
@@ -190,7 +190,7 @@ async function exportDuckDBToGCS({
     )
   `;
   console.log("Executing DuckDB export query");
-  await connection.run(query);
+  await connection.run(query, params);
 }
 
 async function generatePresignedUrlsFromPaths(
