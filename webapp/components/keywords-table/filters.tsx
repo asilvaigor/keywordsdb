@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { KeywordRow } from "@/lib/types";
+import type { KeywordFilters, KeywordRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { DownloadModal } from "./download-modal";
 import { getDefaultFilters, SAMPLE_MIN_VOLUME } from "./utils";
@@ -52,6 +52,7 @@ export function Filters({
   canDownload,
   handleDownload,
   isDownloadLoading,
+  debouncedFilters,
 }: {
   table: Table<KeywordRow>;
   isSample: boolean;
@@ -59,6 +60,7 @@ export function Filters({
   canDownload: boolean;
   handleDownload: (format: "parquet" | "csv") => void;
   isDownloadLoading: boolean;
+  debouncedFilters: KeywordFilters;
 }) {
   const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>(
     getDefaultFilters(isSample, "DynamicFilter") as DynamicFilter[],
@@ -209,38 +211,37 @@ export function Filters({
 
   return (
     <div className="space-y-2 pb-4">
-      <div className="flex flex-col gap-2 sm:flex-row-reverse">
+      <div className="flex flex-row gap-2">
         {/* Search filter */}
+        <Input
+          placeholder="Search keywords..."
+          value={(table.getColumn("keyword")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("keyword")?.setFilterValue(event.target.value)
+          }
+          className="w-full"
+          type="search"
+        />
+
+        {/* Add filter button */}
+        <Button
+          variant="outline"
+          onClick={addFilter}
+          disabled={dynamicFilters.length >= columnOptions.length}
+          className="flex items-center gap-2"
+        >
+          <Plus />
+          <span className="hidden sm:block">Add filter</span>
+        </Button>
+
+        {/* Download button */}
         <DownloadModal
           canDownload={canDownload}
           totalRows={totalRows}
           handleDownload={handleDownload}
           isDownloadLoading={isDownloadLoading}
+          filters={debouncedFilters}
         />
-
-        {/* Add filter + Download buttons */}
-        <div className="flex gap-2 w-full">
-          <Input
-            placeholder="Search keywords..."
-            value={
-              (table.getColumn("keyword")?.getFilterValue() as string) ?? ""
-            }
-            onChange={(event) =>
-              table.getColumn("keyword")?.setFilterValue(event.target.value)
-            }
-            className="w-full"
-            type="search"
-          />
-          <Button
-            variant="outline"
-            onClick={addFilter}
-            disabled={dynamicFilters.length >= columnOptions.length}
-            className="flex items-center gap-2"
-          >
-            <Plus />
-            Add filter
-          </Button>
-        </div>
       </div>
 
       {/* Dynamic filters */}

@@ -110,9 +110,8 @@ def commit(
 
     def export_to_clickhouse() -> None:
         logger.info("Exporting to cloud storage")
-        export_prefix = "exports"
-        export_prefix_today = f"exports/{date.today()}"
-        _export_to_gcs(client, storage_client, export_prefix_today)
+        export_prefix = date.today().isoformat()
+        _export_to_gcs(client, storage_client, export_prefix)
 
         logger.info("Exporting to ClickHouse")
         hmac_keys = storage_client.get_hmac_keys()
@@ -164,14 +163,11 @@ def commit(
             clickhouse_client.execute_query(
                 query,
                 params={
-                    "gcs_path": f"https://storage.googleapis.com/{storage_client.bucket.name}/{export_prefix_today}/*.parquet",
+                    "gcs_path": f"https://storage.googleapis.com/{StorageClient.BUCKET_BACKUP}/{export_prefix}/*.parquet",
                     "gcs_access_key_id": hmac_keys[0],
                     "gcs_secret_access_key": hmac_keys[1],
                 },
             )
-
-        logger.info("Cleaning cloud storage")
-        storage_client.delete_prefix(export_prefix)
 
     def export_to_firestore() -> None:
         logger.info("Exporting top keywords to Firestore")
@@ -180,32 +176,17 @@ def commit(
         firestore_client.put_keywords_cache(df, count, False)
         df = _get_sample(clickhouse_client, min_avg_monthly_searches=100_000_000)
         firestore_client.put_keywords_cache(df, len(df), True)
-        storage_client.write_df(df, "keywords-sample/sample.parquet")
+        storage_client.write_df(df, f"gs://{StorageClient.BUCKET}/keywords-sample/sample.parquet")
 
     migrate_tmp_table()
     export_to_clickhouse()
     export_to_firestore()
 
 
-def download(client: BigQueryClient, storage_client: StorageClient, prefix: str) -> None:
-    """
-    Downloads the keywords table to a parquet file.
-    """
-    logger = get_logger()
-    cloud_prefix = f"exports/{date.today()}"
-    logger.info("Exporting keywords table to cloud storage")
-    _export_to_gcs(client, storage_client, cloud_prefix)
-    logger.info("Downloading keywords table from cloud storage")
-    storage_client.download_prefix(cloud_prefix, prefix)
-    logger.info("All files downloaded successfully. Cleaning up...")
-    storage_client.delete_prefix(cloud_prefix)
-    logger.info("Keywords table downloaded successfully.")
-
-
 def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix: str) -> None:
     extract_query = f"""
         EXPORT DATA OPTIONS(
-            uri='gs://{storage_client._bucket_name}/{prefix}/*.parquet',
+            uri='gs://{StorageClient.BUCKET_BACKUP}/{prefix}/*.parquet',
             format='PARQUET',
             compression='SNAPPY',
             overwrite=true
@@ -214,6 +195,7 @@ def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix
     """
     export_job = client.client.query(extract_query)
     export_job.result()
+    storage_client.write_string(f"gs://{StorageClient.BUCKET_BACKUP}/current", prefix)
 
 
 def _get_top_k_rows(client: ClickhouseClient, k: int) -> pl.DataFrame:

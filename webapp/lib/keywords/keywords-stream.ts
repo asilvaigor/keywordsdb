@@ -15,8 +15,8 @@ import {
 } from "./utils";
 
 export async function getKeywordsStreamSample(
-  filters?: KeywordFilters,
-  sorting?: SortingState,
+  filters: KeywordFilters,
+  sorting: SortingState,
   page = 1,
   pageSize = 100,
 ): Promise<Keyword[]> {
@@ -57,13 +57,13 @@ export async function getKeywordsStreamSample(
 }
 
 export async function* getKeywordsStreamClickhouse(
-  filters?: KeywordFilters,
-  sort?: SortingState,
+  filters: KeywordFilters,
+  sorting: SortingState,
   page = 1,
   pageSize = 100,
 ): AsyncGenerator<KeywordsStreamResponse, Keyword[], unknown> {
   const { whereClause, params } = buildWhereClause("clickhouse", filters);
-  const orderByClause = buildOrderByClause(sort);
+  const orderByClause = buildOrderByClause(sorting);
 
   const query = `
     SELECT

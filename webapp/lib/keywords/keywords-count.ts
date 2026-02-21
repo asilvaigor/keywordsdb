@@ -4,7 +4,7 @@ import type { KeywordFilters } from "@/lib/types";
 import { buildWhereClause, createDuckDBCacheIfNeeded } from "./utils";
 
 export async function getKeywordsCountSample(
-  filters?: KeywordFilters,
+  filters: KeywordFilters,
 ): Promise<number> {
   const connection = await getDuckDBConnection();
   await createDuckDBCacheIfNeeded(connection);
@@ -18,7 +18,7 @@ export async function getKeywordsCountSample(
 }
 
 export async function getKeywordsCountClickhouse(
-  filters?: KeywordFilters,
+  filters: KeywordFilters,
 ): Promise<number> {
   const { whereClause, params } = buildWhereClause("clickhouse", filters);
   const query = `

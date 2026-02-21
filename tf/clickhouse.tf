@@ -15,6 +15,13 @@ resource "google_storage_bucket_iam_member" "clickhouse" {
   member = "serviceAccount:${google_service_account.clickhouse.email}"
 }
 
+resource "google_storage_bucket_iam_member" "clickhouse_backup" {
+  for_each = toset(["prd", "stg"])
+  bucket = google_storage_bucket.keywordsdb_backup[each.key].name
+  role   = "roles/storage.objectUser"
+  member = "serviceAccount:${google_service_account.clickhouse.email}"
+}
+
 resource "local_file" "clickhouse_hmac_key" {
   content = jsonencode({
     access_id = google_storage_hmac_key.clickhouse_hmac_key.access_id

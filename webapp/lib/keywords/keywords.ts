@@ -32,8 +32,8 @@ interface KeywordCountsCached {
 }
 
 export async function* getKeywordsStream(
-  filters?: KeywordFilters,
-  sorting?: SortingState,
+  filters: KeywordFilters,
+  sorting: SortingState,
   page = 1,
   pageSize = 100,
   isSample: boolean = false,
@@ -105,7 +105,7 @@ export async function* getKeywordsStream(
 }
 
 export async function getKeywordsCount(
-  filters?: KeywordFilters,
+  filters: KeywordFilters,
   isSample: boolean = false,
 ): Promise<number> {
   const userData = await getUserData();
@@ -151,8 +151,8 @@ export async function getDownloadUrls({
   isSample,
 }: {
   format: "parquet" | "csv";
-  filters?: KeywordFilters;
-  sorting?: SortingState;
+  filters: KeywordFilters;
+  sorting: SortingState;
   isSample: boolean;
 }) {
   const userData = await getUserData();

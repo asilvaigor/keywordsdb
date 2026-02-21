@@ -20,7 +20,6 @@ class Context:
         self._secret_client: SecretClient = secret_client if secret_client is not None else SecretClient()
         self._secret_client.load_secrets()
 
-        self.source_storage_client: StorageClient = StorageClient(env=source_env)
+        self.storage_client: StorageClient = StorageClient()
         self.source_firestore_client: FirestoreClient = FirestoreClient(env=source_env)
-        self.dest_storage_client: StorageClient = StorageClient(env=dest_env)
         self.dest_firestore_client: FirestoreClient = FirestoreClient(env=dest_env)

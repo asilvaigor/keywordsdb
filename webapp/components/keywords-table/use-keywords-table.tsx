@@ -96,6 +96,7 @@ export function useKeywordsTable({
     isDbReady: isClickhouseReady || !isCacheMiss,
     handleDownload,
     isDownloadLoading,
+    debouncedFilters,
     error,
     pageIndex,
     pageSize,

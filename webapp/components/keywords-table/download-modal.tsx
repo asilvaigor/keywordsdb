@@ -1,7 +1,13 @@
 "use client";
 
-import { Download, FileArchive, FileSpreadsheet } from "lucide-react";
+import {
+  AlertTriangleIcon,
+  Download,
+  FileArchive,
+  FileSpreadsheet,
+} from "lucide-react";
 import { useEffect, useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,13 +19,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import type { KeywordFilters } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 type Format = "parquet" | "csv";
 
 const CSV_MAX_ROWS = 1_000_000;
-const PARQUET_ROWS_PER_FILE = 1_000_000;
+const PARQUET_ROWS_PER_FILE = 500_000;
 const CSV_ROWS_PER_FILE = 100_000;
 
 // Rough bytes-per-row estimates (tune these later)
@@ -53,11 +60,13 @@ export function DownloadModal({
   totalRows,
   handleDownload,
   isDownloadLoading,
+  filters,
 }: {
   canDownload: boolean;
   totalRows?: number;
   handleDownload: (format: Format) => void;
   isDownloadLoading: boolean;
+  filters: KeywordFilters;
 }) {
   const [open, setOpen] = useState(false);
   const [format, setFormat] = useState<Format>("parquet");
@@ -66,6 +75,7 @@ export function DownloadModal({
   const isRowsLoading = totalRows == null;
   const files = totalRows != null ? fileCount(totalRows, format) : undefined;
   const size = totalRows != null ? estimatedSize(totalRows, format) : undefined;
+  const hasFilters = Object.values(filters).some((v) => v != null);
 
   // Auto-switch away from csv if it becomes disabled
   useEffect(() => {
@@ -89,7 +99,7 @@ export function DownloadModal({
               disabled={!canDownload || isDownloadLoading}
             >
               <Download />
-              Export
+              <span className="hidden sm:block">Export</span>
             </Button>
           </span>
         </TooltipTrigger>
@@ -188,12 +198,12 @@ export function DownloadModal({
             )}
           </div>
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Files</span>
+            <span className="text-muted-foreground">Est. Files</span>
             {isRowsLoading ? (
               <Skeleton className="h-4 w-12" />
             ) : (
               <div className="flex items-center gap-1.5">
-                <span className="font-medium">{files}</span>
+                <span className="font-medium">~{files}</span>
                 <Badge variant="secondary" className="text-[10px]">
                   .{format}
                 </Badge>
@@ -210,13 +220,26 @@ export function DownloadModal({
           </div>
         </div>
 
+        {/* Too many rows warning */}
+        {totalRows && totalRows > 20_000_000 && hasFilters && (
+          <Alert className="border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50">
+            <AlertTriangleIcon />
+            <AlertTitle>WOW! That's a lot of files.</AlertTitle>
+            <AlertDescription>
+              This could take a really long time. Consider removing all the
+              filters to download the whole dataset, where the files are already
+              ready for download.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
           <Button disabled={isRowsLoading} onClick={onConfirm}>
             <Download className="mr-1.5" />
-            Download{" "}
+            Download ~
             {!isRowsLoading && files != null && files > 1
               ? `${files} files`
               : ""}

@@ -2,6 +2,7 @@ import { DuckDBConnection } from "@duckdb/node-api";
 import { Storage } from "@google-cloud/storage";
 
 export const BUCKET_NAME = `keywordsdb-${process.env.NEXT_PUBLIC_ENV}`;
+export const BACKUP_BUCKET_NAME = `keywordsdb-backup-${process.env.NEXT_PUBLIC_ENV}`;
 
 const storage = new Storage();
 

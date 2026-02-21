@@ -1,3 +1,5 @@
+from datetime import date
+
 from src.services.firestore import FirestoreClient
 from src.workers.replicator.context import Context
 
@@ -5,9 +7,19 @@ if __name__ == "__main__":
     ctx = Context(source_env="prd", dest_env="stg")
 
     ctx.logger.info("Copying sample.parquet to stg bucket...")
-    ctx.source_storage_client.copy_blob(
-        dest_client=ctx.dest_storage_client, source_path="keywords-sample/sample.parquet"
+    ctx.storage_client.copy_blob(
+        source_path="gs://keywordsdb-prd/keywords-sample/sample.parquet",
+        dest_path="gs://keywordsdb-stg/keywords-sample/sample.parquet",
     )
+    ctx.logger.info("Done")
+
+    ctx.logger.info("Copying sample.parquet to stg bucket backup...")
+    today = date.today().isoformat()
+    ctx.storage_client.copy_blob(
+        source_path="gs://keywordsdb-prd/keywords-sample/sample.parquet",
+        dest_path=f"gs://keywordsdb-backup-stg/{today}/000000000000.parquet",
+    )
+    ctx.storage_client.write_string("gs://keywordsdb-backup-stg/current", today)
     ctx.logger.info("Done")
 
     ctx.logger.info("Copying keywords cache documents to stg...")

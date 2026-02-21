@@ -37,6 +37,7 @@ export function KeywordsTable({
     pageSize,
     handleDownload,
     isDownloadLoading,
+    debouncedFilters,
   } = useKeywordsTable({ defaultPageSize: PAGE_SIZE, isSample });
 
   return (
@@ -48,6 +49,7 @@ export function KeywordsTable({
         totalRows={totalRows}
         handleDownload={handleDownload}
         isDownloadLoading={isDownloadLoading}
+        debouncedFilters={debouncedFilters}
       />
       <div className="rounded-md border relative">
         {progress != null && (

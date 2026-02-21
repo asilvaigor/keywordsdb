@@ -25,7 +25,6 @@ locals {
         "roles/bigquery.user",
         "roles/bigquery.dataOwner",
         "roles/storage.objectUser",
-        "roles/storage.bucketViewer",
         "roles/datastore.user",
       ]
     }
@@ -35,7 +34,6 @@ locals {
         "roles/bigquery.user",
         "roles/bigquery.dataOwner",
         "roles/storage.objectUser",
-        "roles/storage.bucketViewer",
       ]
     }
     replicator = {

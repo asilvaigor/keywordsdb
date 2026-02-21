@@ -9,7 +9,7 @@ from src.workers.bing.context import Context
 def export_to_gcs(client: BigQueryClient, storage_client: StorageClient) -> None:
     extract_query = f"""
         EXPORT DATA OPTIONS(
-            uri='gs://{storage_client._bucket_name}/bing-to-ingest/*.parquet',
+            uri='gs://{StorageClient.BUCKET}/bing-to-ingest/*.parquet',
             format='PARQUET',
             compression='SNAPPY',
             overwrite=true
@@ -22,8 +22,10 @@ def export_to_gcs(client: BigQueryClient, storage_client: StorageClient) -> None
     export_job = client.client.query(extract_query)
     export_job.result()
 
-    output_files = storage_client.ls("bing-to-ingest/")
-    storage_client.write_json("bing-to-ingest/in_progress.json", {f: 0 for f in output_files})
+    output_files = storage_client.ls(f"gs://{StorageClient.BUCKET}/bing-to-ingest/")
+    storage_client.write_json(
+        f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json", {f: 0 for f in output_files}
+    )
 
 
 def merge_to_main_table(client: BigQueryClient) -> None:
@@ -51,8 +53,10 @@ async def main_async() -> None:
 
     ctx.logger.info("Getting keywords list")
     try:
-        file_to_ingest = ctx.storage_client.find("bing-to-ingest/", ".parquet")
-        in_progress: dict[str, int] = ctx.storage_client.read_json("bing-to-ingest/in_progress.json")
+        file_to_ingest = ctx.storage_client.find(f"gs://{StorageClient.BUCKET}/bing-to-ingest/", ".parquet")
+        in_progress: dict[str, int] = ctx.storage_client.read_json(
+            f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json"
+        )
     except FileNotFoundError:
         ctx.logger.info("No file to ingest, merging bing volumes to main table")
         merge_to_main_table(ctx.bigquery_client)
@@ -70,7 +74,9 @@ async def main_async() -> None:
 
     ctx.logger.info(f"Inserting {len(df)} rows into BigQuery")
     ctx.bigquery_client.insert("bing-volumes-tmp", df)
-    ctx.storage_client.write_json("bing-to-ingest/in_progress.json", {**in_progress, file_to_ingest: i_max})
+    ctx.storage_client.write_json(
+        f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json", {**in_progress, file_to_ingest: i_max}
+    )
 
     if i_max >= tot_keywords:
         ctx.logger.info("Finished ingesting file, deleting it")
