@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { FieldValue } from "@google-cloud/firestore";
 import type { SortingState } from "@tanstack/react-table";
 import firestore from "@/lib/db/firestore";
 import { decreaseFreeCredits, getUserData } from "@/lib/db/users";
@@ -100,6 +101,18 @@ export async function* getKeywordsStream(
     expires_at: new Date(Date.now() + 24 * 3600 * 1000),
   };
   docRef.set(cacheData).catch(console.error);
+
+  // Add keyword term to be ingested
+  if (filters.keyword) {
+    firestore
+      .collection("keywords-to-ingest")
+      .doc("webapp")
+      .set(
+        { keywords: FieldValue.arrayUnion(filters.keyword) },
+        { merge: true },
+      )
+      .catch(console.error);
+  }
 
   console.log("Streaming query completed successfully");
 }
