@@ -5,9 +5,17 @@ import { Button } from "@/components/ui/button";
 function FinalCTA() {
   return (
     <section className="relative overflow-hidden py-20 md:py-28">
-      {/* Background glow */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-100 w-150 rounded-full bg-primary/10 blur-3xl" />
+      {/* Background pattern */}
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+        {/* Dot grid */}
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, color-mix(in oklch, var(--primary) 25%, transparent) 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
+        />
       </div>
 
       <div className="container mx-auto px-4 text-center">

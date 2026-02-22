@@ -40,7 +40,7 @@ const features = [
   },
   {
     icon: Download,
-    title: "Export to CSV",
+    title: "Export to CSV/Parquet",
     description: "Download your filtered keyword results to analyze offline.",
   },
 ];

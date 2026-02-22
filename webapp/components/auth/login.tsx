@@ -1,19 +1,20 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import VerifyEmail from "@/components/auth/verify-email";
+import { Google } from "@/components/icons/google";
+import useClickhouseReady from "@/components/keywords-table/use-clickhouse-ready";
 import Logo from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { signInWithGoogle, signInWithMagicLink } from "@/lib/auth/client";
-import Google from "@/public/google.svg";
 
 function Login() {
   const [email, setEmail] = useState<string | undefined>(undefined);
+  useClickhouseReady(true); // Start clickhouse cold start
 
   useEffect(() => {
     if (email) {
@@ -48,15 +49,7 @@ function Login() {
             className="w-full justify-start gap-2 h-11"
             type="submit"
           >
-            <div className="w-5 h-5">
-              <Image
-                src={Google}
-                alt="Google Logo"
-                aria-hidden="true"
-                height="32"
-                width="32"
-              />
-            </div>
+            <Google className="w-5 h-5" />
             Continue with Google
           </Button>
         </form>
