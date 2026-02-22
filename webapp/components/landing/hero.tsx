@@ -15,7 +15,7 @@ function Hero() {
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "radial-gradient(circle, color-mix(in oklch, var(--primary) 25%, transparent) 1px, transparent 1px)",
+              "radial-gradient(circle, color-mix(in oklch, var(--primary) 35%, transparent) 1px, transparent 1px)",
             backgroundSize: "28px 28px",
           }}
         />
