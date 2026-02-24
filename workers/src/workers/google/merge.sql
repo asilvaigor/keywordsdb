@@ -13,6 +13,7 @@ AS (
                 updated_at,
                 FARM_FINGERPRINT (
                     CONCAT (
+                        CAST(COALESCE(avg_monthly_searches, 0) AS STRING),
                         CAST(COALESCE(updated_at, DATE '1970-01-01') AS STRING),
                         CAST(COALESCE(competition_index, 0) AS STRING),
                         COALESCE(TO_HEX (volume_history), ''),
@@ -106,6 +107,7 @@ WITH
             ingested_at,
             FARM_FINGERPRINT (
                 CONCAT (
+                    CAST(COALESCE(avg_monthly_searches, 0) AS STRING),
                     CAST(COALESCE(updated_at, DATE '1970-01-01') AS STRING),
                     CAST(COALESCE(competition_index, 0) AS STRING),
                     COALESCE(TO_HEX (volume_history), ''),
