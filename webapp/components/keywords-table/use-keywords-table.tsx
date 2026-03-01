@@ -31,7 +31,7 @@ export function useKeywordsTable({
     isFiltersDebouncing,
   } = useDebouncedFilters({ resetPagination, isSample });
   const [sorting, setSorting] = useState<SortingState>([
-    { id: "avg_monthly_searches", desc: true },
+    { id: "volume_estimated_google", desc: true },
   ]);
 
   const isClickhouseReady = useClickhouseReady(!isSample);

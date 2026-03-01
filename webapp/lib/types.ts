@@ -1,9 +1,9 @@
 export type Keyword = {
   keyword: string;
-  avg_monthly_searches: number;
+  volume_estimated_google: number;
   competition_index: number;
   cpc_high: number;
-  volume_history: string;
+  volume_history_google: string;
   updated_at: string;
 };
 
@@ -31,7 +31,7 @@ export type KeywordRow =
 
 export type KeywordFilters = {
   keyword?: string;
-  avg_monthly_searches?: { min?: number; max?: number };
+  volume_estimated_google?: { min?: number; max?: number };
   competition_index?: { min?: number; max?: number };
   cpc_high?: { min?: number; max?: number };
 };

@@ -135,10 +135,10 @@ async function exportClickHouseToGCS({
   PARTITION BY rand() % ${numPartitions}
   SELECT
     kws.keyword,
-    kws.avg_monthly_searches,
+    kws.volume_estimated_google,
     kws.competition_index,
     kws.cpc_high,
-    kws.volume_history,
+    kws.volume_history_google,
     kws.updated_at
   FROM keywords kws
   ${whereClause}
@@ -173,10 +173,10 @@ async function exportDuckDBToGCS({
     COPY (
       SELECT
         kws.keyword,
-        kws.avg_monthly_searches,
+        kws.volume_estimated_google,
         kws.competition_index,
         kws.cpc_high,
-        kws.volume_history,
+        kws.volume_history_google,
         kws.updated_at,
         CAST(FLOOR(random() * ${numPartitions}) AS INTEGER) AS partition_id
       FROM keywords_sample kws

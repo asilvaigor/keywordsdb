@@ -33,10 +33,10 @@ import type { UserData } from "@/lib/types";
 
 // const ALL_COLUMNS = [
 //   { key: "keyword", label: "Keyword" },
-//   { key: "avg_monthly_searches", label: "Volume" },
+//   { key: "volume_estimated_google", label: "Volume" },
 //   { key: "competition_index", label: "Competition" },
 //   { key: "cpc_high", label: "CPC" },
-//   { key: "volume_history", label: "Volume History" },
+//   { key: "volume_history_google", label: "Volume History" },
 //   { key: "updated_at", label: "Last Updated" },
 // ] as const;
 

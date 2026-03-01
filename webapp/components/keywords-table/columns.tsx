@@ -88,7 +88,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     enableResizing: false,
   },
   {
-    accessorKey: "avg_monthly_searches",
+    accessorKey: "volume_estimated_google",
     header: ({ column }) => (
       <SortableHeader
         column={column}
@@ -97,7 +97,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       />
     ),
     cell: ({ row }) => {
-      const value = row.getValue("avg_monthly_searches") as number;
+      const value = row.getValue("volume_estimated_google") as number;
       return formatLargeNumber(value);
     },
     size: 150,
@@ -130,7 +130,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     enableResizing: false,
   },
   {
-    accessorKey: "volume_history",
+    accessorKey: "volume_history_google",
     header: () => (
       <Header
         title="Volume history"
@@ -138,7 +138,9 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       />
     ),
     cell: ({ row }) => (
-      <VolumeHistoryCell raw={row.getValue("volume_history") as string} />
+      <VolumeHistoryCell
+        raw={row.getValue("volume_history_google") as string}
+      />
     ),
     size: 150,
     enableResizing: false,

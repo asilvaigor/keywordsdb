@@ -12,10 +12,10 @@ export async function createDuckDBCacheIfNeeded(connection: DuckDBConnection) {
       CREATE TABLE IF NOT EXISTS keywords_sample AS
       SELECT
         keyword,
-        avg_monthly_searches,
+        volume_estimated_google,
         competition_index,
         cpc_high,
-        volume_history,
+        volume_history_google,
         updated_at
       FROM parquet_scan('gs://${BUCKET_NAME}/keywords-sample/sample.parquet')
     `);
@@ -39,13 +39,13 @@ export function buildWhereClause(
       keyword_filter: `%${filters.keyword.toLowerCase()}%`,
     };
   }
-  if (filters?.avg_monthly_searches?.min !== undefined) {
-    whereClause += ` AND kws.avg_monthly_searches >= ${mode === "clickhouse" ? "{min_searches:Int32}" : "$min_searches"}`;
-    params = { ...params, min_searches: filters?.avg_monthly_searches?.min };
+  if (filters?.volume_estimated_google?.min !== undefined) {
+    whereClause += ` AND kws.volume_estimated_google >= ${mode === "clickhouse" ? "{min_searches:Int32}" : "$min_searches"}`;
+    params = { ...params, min_searches: filters?.volume_estimated_google?.min };
   }
-  if (filters?.avg_monthly_searches?.max !== undefined) {
-    whereClause += ` AND kws.avg_monthly_searches <= ${mode === "clickhouse" ? "{max_searches:Int32}" : "$max_searches"}`;
-    params = { ...params, max_searches: filters?.avg_monthly_searches?.max };
+  if (filters?.volume_estimated_google?.max !== undefined) {
+    whereClause += ` AND kws.volume_estimated_google <= ${mode === "clickhouse" ? "{max_searches:Int32}" : "$max_searches"}`;
+    params = { ...params, max_searches: filters?.volume_estimated_google?.max };
   }
   if (filters?.competition_index?.min !== undefined) {
     whereClause += ` AND kws.competition_index >= ${mode === "clickhouse" ? "{min_competition:Float32}" : "$min_competition"}`;
@@ -70,7 +70,9 @@ export function buildOrderByClause(sort?: SortingState) {
   if (!sort || sort.length === 0) return "";
   sort.forEach((s) => {
     if (
-      !["avg_monthly_searches", "competition_index", "cpc_high"].includes(s.id)
+      !["volume_estimated_google", "competition_index", "cpc_high"].includes(
+        s.id,
+      )
     ) {
       throw new Error(`Invalid sort column: ${s.id}`);
     }

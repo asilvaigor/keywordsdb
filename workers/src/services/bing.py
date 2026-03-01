@@ -92,8 +92,8 @@ class BingAdsClient:
                 [
                     df,
                     pl.DataFrame(
-                        {"keyword": long_keywords, "avg_monthly_searches": 0},
-                        schema={"keyword": pl.String, "avg_monthly_searches": pl.Int64},
+                        {"keyword": long_keywords, "volume_bing": 0},
+                        schema={"keyword": pl.String, "volume_bing": pl.Int64},
                     ),
                 ]
             )
@@ -150,10 +150,10 @@ class BingAdsClient:
         for k in response.KeywordIdea:
             keyword = k["Keyword"]
             monthly_search_counts = k["MonthlySearchCounts"]
-            avg_searches = monthly_search_counts[0][-1] if monthly_search_counts is not None else 0
-            out.append({"keyword": keyword, "avg_monthly_searches": avg_searches})
+            avg_searches = sum(monthly_search_counts[0]) / 12 if monthly_search_counts is not None else 0
+            out.append({"keyword": keyword, "volume_bing": avg_searches})
 
-        df = pl.DataFrame(out, schema={"keyword": pl.String, "avg_monthly_searches": pl.Int64})
+        df = pl.DataFrame(out, schema={"keyword": pl.String, "volume_bing": pl.Int64})
         if set(keywords) != set(df["keyword"].to_list()):
             # I think there's a concurrency issue in bing ads package, the inputs get switched up and we might miss some
             # responses. It seems to happen about 5% of time, just doing a retry

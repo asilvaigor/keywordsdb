@@ -3,6 +3,7 @@ import multiprocessing
 
 from src.services.bigquery import BigQueryClient
 from src.services.storage import StorageClient
+from src.workers.bing.adult_classifier import is_adult
 from src.workers.bing.context import Context
 
 
@@ -16,8 +17,8 @@ def export_to_gcs(client: BigQueryClient, storage_client: StorageClient) -> None
         ) AS
         SELECT keyword
         FROM `{client.get_full_name("keywords")}`
-        WHERE bing_avg_monthly_searches IS NULL AND avg_monthly_searches > 10
-        ORDER BY avg_monthly_searches DESC
+        WHERE volume_bing IS NULL AND volume_google > 10
+        ORDER BY volume_google DESC
     """
     export_job = client.client.query(extract_query)
     export_job.result()
@@ -33,11 +34,10 @@ def merge_to_main_table(client: BigQueryClient) -> None:
         MERGE `{client.get_full_name("keywords")}` k
         USING `{client.get_full_name("bing-volumes-tmp")}` b
         ON k.keyword = b.keyword
-        WHEN MATCHED THEN UPDATE SET bing_avg_monthly_searches = b.avg_monthly_searches;
-
-        UPDATE `{client.get_full_name("keywords")}` k
-        SET bing_avg_monthly_searches = 0
-        WHERE k.avg_monthly_searches <= 10 AND bing_avg_monthly_searches IS NULL;
+        WHEN MATCHED THEN
+            UPDATE SET volume_bing = b.volume_bing
+        WHEN NOT MATCHED BY SOURCE AND k.volume_google <= 10 AND k.volume_bing IS NULL THEN
+            UPDATE SET volume_bing = 0
     """
     merge_job = client.client.query(merge_query)
     merge_job.result()
@@ -47,7 +47,7 @@ def merge_to_main_table(client: BigQueryClient) -> None:
 async def main_async() -> None:
     ctx = Context()
 
-    if not ctx.storage_client.exists("bing-to-ingest/in_progress.json"):
+    if not ctx.storage_client.exists(f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json"):
         ctx.logger.info("Exporting keywords to ingest to cloud storage")
         export_to_gcs(ctx.bigquery_client, ctx.storage_client)
 
@@ -71,6 +71,7 @@ async def main_async() -> None:
     keywords = keywords[i_min:i_max].to_list()
     ctx.logger.info(f"Got {len(keywords)} keywords to ingest, range=[{i_min},{i_max}], total={tot_keywords}")
     df = await ctx.ads_client.get_keyword_info(keywords)
+    df = df.with_columns(is_adult=is_adult("keyword"))
 
     ctx.logger.info(f"Inserting {len(df)} rows into BigQuery")
     ctx.bigquery_client.insert("bing-volumes-tmp", df)

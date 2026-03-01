@@ -173,9 +173,9 @@ class GoogleAdsClient:
         avg_searches = []
         competition = []
         cpc_high = []
-        cpc_low = []
-        cpc_avg = []
-        volume_history: list[bytes | None] = []
+        # cpc_low = []
+        # cpc_avg = []
+        volume_history_google: list[bytes | None] = []
 
         divisor = 1e6
         for r in results:
@@ -184,27 +184,27 @@ class GoogleAdsClient:
             avg_searches.append(metrics.avg_monthly_searches)
             competition.append(metrics.competition_index)
             cpc_high.append(metrics.high_top_of_page_bid_micros / divisor)
-            cpc_low.append(metrics.low_top_of_page_bid_micros / divisor)
-            cpc_avg.append(metrics.average_cpc_micros / divisor)
+            # cpc_low.append(metrics.low_top_of_page_bid_micros / divisor)
+            # cpc_avg.append(metrics.average_cpc_micros / divisor)
 
             if metrics.monthly_search_volumes:
                 volumes = metrics.monthly_search_volumes
                 s = f"{volumes[0].year},{volumes[0].month},{','.join(str(m.monthly_searches) for m in volumes)}"
-                volume_history.append(zlib.compress(s.encode("utf-8")))
+                volume_history_google.append(zlib.compress(s.encode("utf-8")))
             else:
-                volume_history.append(None)
+                volume_history_google.append(None)
 
         df = pl.DataFrame(
             {
                 "keyword": keywords,
-                "avg_monthly_searches": avg_searches,
+                "volume_google": avg_searches,
                 "competition_index": competition,
                 "cpc_high": cpc_high,
-                "cpc_low": cpc_low,
-                "cpc_avg": cpc_avg,
-                "volume_history": volume_history,
+                # "cpc_low": cpc_low,
+                # "cpc_avg": cpc_avg,
+                "volume_history_google": volume_history_google,
             }
         )
         if min_search_volume is not None:
-            df = df.filter(pl.col("avg_monthly_searches") >= min_search_volume)
+            df = df.filter(pl.col("volume_google") >= min_search_volume)
         return df.unique(subset=["keyword"])

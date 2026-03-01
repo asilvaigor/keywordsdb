@@ -28,7 +28,7 @@ resource "google_bigquery_table" "keywords" {
       mode = "REQUIRED"
     },
     {
-      name = "avg_monthly_searches"
+      name = "volume_google"
       type = "INTEGER"
       mode = "REQUIRED"
     },
@@ -53,20 +53,25 @@ resource "google_bigquery_table" "keywords" {
       mode = "NULLABLE"
     },
     {
-      name = "volume_history"
+      name = "volume_history_google"
       type = "BYTES"
       mode = "NULLABLE"
     },
     {
-      name = "group_id"
+      name = "volume_bing"
       type = "INTEGER"
       mode = "NULLABLE"
     },
     {
-      name = "bing_avg_monthly_searches"
+      name = "volume_estimated_google"
       type = "INTEGER"
       mode = "NULLABLE"
     },
+    {
+      name = "is_adult"
+      type = "BOOLEAN"
+      mode = "NULLABLE"
+    }
   ])
 }
 
@@ -88,7 +93,7 @@ resource "google_bigquery_table" "keywords_tmp" {
       mode = "REQUIRED"
     },
     {
-      name = "avg_monthly_searches"
+      name = "volume_google"
       type = "INTEGER"
       mode = "REQUIRED"
     },
@@ -98,7 +103,7 @@ resource "google_bigquery_table" "keywords_tmp" {
       mode = "REQUIRED"
     },
     {
-      name = "volume_history"
+      name = "volume_history_google"
       type = "BYTES"
       mode = "NULLABLE"
     },
@@ -107,16 +112,16 @@ resource "google_bigquery_table" "keywords_tmp" {
       type = "FLOAT"
       mode = "REQUIRED"
     },
-    {
-      name = "cpc_low"
-      type = "FLOAT"
-      mode = "REQUIRED"
-    },
-    {
-      name = "cpc_avg"
-      type = "FLOAT"
-      mode = "REQUIRED"
-    },
+    # {
+    #   name = "cpc_low"
+    #   type = "FLOAT"
+    #   mode = "REQUIRED"
+    # },
+    # {
+    #   name = "cpc_avg"
+    #   type = "FLOAT"
+    #   mode = "REQUIRED"
+    # },
     {
       name = "updated_at"
       type = "DATE"
@@ -148,8 +153,13 @@ resource "google_bigquery_table" "bing_volumes_tmp" {
       mode = "REQUIRED"
     },
     {
-      name = "avg_monthly_searches"
+      name = "volume_bing"
       type = "INTEGER"
+      mode = "REQUIRED"
+    },
+    {
+      name = "is_adult"
+      type = "BOOLEAN"
       mode = "REQUIRED"
     }
   ])

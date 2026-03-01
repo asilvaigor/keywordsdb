@@ -14,8 +14,8 @@ function getInt(value: string | null): number | undefined {
 export function parseSearchParams(searchParams: URLSearchParams) {
   const filters = {
     keyword: searchParams.get("keyword") || undefined,
-    avg_monthly_searches:
-      JSON.parse(searchParams.get("avg_monthly_searches") || "null") ??
+    volume_estimated_google:
+      JSON.parse(searchParams.get("volume_estimated_google") || "null") ??
       undefined,
     competition_index:
       JSON.parse(searchParams.get("competition_index") || "null") ?? undefined,
@@ -60,10 +60,10 @@ export function buildSearchParams({
   if (isSample !== undefined) {
     urlParams.append("isSample", isSample.toString());
   }
-  if (filters?.avg_monthly_searches) {
+  if (filters?.volume_estimated_google) {
     urlParams.append(
-      "avg_monthly_searches",
-      JSON.stringify(filters.avg_monthly_searches),
+      "volume_estimated_google",
+      JSON.stringify(filters.volume_estimated_google),
     );
   }
   if (filters?.competition_index) {

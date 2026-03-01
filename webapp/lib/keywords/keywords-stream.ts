@@ -30,10 +30,10 @@ export async function getKeywordsStreamSample(
   const result = await connection.runAndReadAll(
     `SELECT
       keyword,
-      avg_monthly_searches,
+      volume_estimated_google,
       competition_index,
       cpc_high,
-      volume_history,
+      volume_history_google,
       updated_at
     FROM keywords_sample kws
     ${whereClause}
@@ -46,10 +46,10 @@ export async function getKeywordsStreamSample(
     (row) =>
       ({
         keyword: row[0],
-        avg_monthly_searches: Number(row[1]),
+        volume_estimated_google: Number(row[1]),
         competition_index: row[2],
         cpc_high: row[3],
-        volume_history: row[4],
+        volume_history_google: row[4],
         updated_at: row[5]?.toString(),
       }) as Keyword,
   );
@@ -68,10 +68,10 @@ export async function* getKeywordsStreamClickhouse(
   const query = `
     SELECT
       kws.keyword,
-      kws.avg_monthly_searches,
+      kws.volume_estimated_google,
       kws.competition_index,
       kws.cpc_high,
-      kws.volume_history,
+      kws.volume_history_google,
       kws.updated_at
     FROM keywords kws
     ${whereClause}

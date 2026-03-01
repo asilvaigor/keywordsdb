@@ -1,4 +1,4 @@
-export const SAMPLE_MIN_VOLUME = 100000000;
+export const SAMPLE_MIN_VOLUME = 10000000;
 
 export function formatLargeNumber(num: number, decimals: number = 1): string {
   if (num >= 1e9) {
@@ -23,15 +23,15 @@ export function getDefaultFilters(
   if (component === "ColumnFilter") {
     return [
       {
-        id: "avg_monthly_searches",
+        id: "volume_estimated_google",
         value: JSON.stringify({ min: SAMPLE_MIN_VOLUME }),
       },
     ];
   }
   return [
     {
-      id: "avg_monthly_searches-filter",
-      column: "avg_monthly_searches",
+      id: "volume_estimated_google-filter",
+      column: "volume_estimated_google",
       operator: "gte",
       value1: SAMPLE_MIN_VOLUME.toString(),
       value2: "",

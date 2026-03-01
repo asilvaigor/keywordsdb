@@ -18,7 +18,10 @@ import { DownloadModal } from "./download-modal";
 import { getDefaultFilters, SAMPLE_MIN_VOLUME } from "./utils";
 
 type FilterOperator = "eq" | "gte" | "lte" | "between";
-type FilterColumn = "avg_monthly_searches" | "competition_index" | "cpc_high";
+type FilterColumn =
+  | "volume_estimated_google"
+  | "competition_index"
+  | "cpc_high";
 
 interface DynamicFilter {
   id: string;
@@ -33,7 +36,7 @@ interface DynamicFilter {
 }
 
 const columnOptions = [
-  { value: "avg_monthly_searches", label: "Volume" },
+  { value: "volume_estimated_google", label: "Volume" },
   { value: "competition_index", label: "Competition" },
   { value: "cpc_high", label: "CPC ($)" },
 ] as const;
@@ -99,7 +102,7 @@ export function Filters({
     }
 
     // Check is sample, min volume cannot be less than SAMPLE_MIN_VOLUME
-    if (isSample && filter.column === "avg_monthly_searches") {
+    if (isSample && filter.column === "volume_estimated_google") {
       if (filter.value1 && !Number.isNaN(val1) && val1 < SAMPLE_MIN_VOLUME) {
         errors.value1 = "Sample: Minimum volume cannot be less than 100M";
       }
@@ -280,7 +283,7 @@ export function Filters({
                   className="flex-1 min-w-0"
                   aria-label="Select column"
                   disabled={
-                    isSample && filter.column === "avg_monthly_searches"
+                    isSample && filter.column === "volume_estimated_google"
                   }
                 >
                   <SelectValue />
@@ -321,7 +324,7 @@ export function Filters({
                       value={option.value}
                       disabled={
                         isSample &&
-                        filter.column === "avg_monthly_searches" &&
+                        filter.column === "volume_estimated_google" &&
                         option.value === "lte"
                       }
                     >
@@ -381,7 +384,9 @@ export function Filters({
                 size="icon"
                 onClick={() => removeFilter(filter.id)}
                 className="text-muted-foreground hover:text-destructive"
-                disabled={isSample && filter.column === "avg_monthly_searches"}
+                disabled={
+                  isSample && filter.column === "volume_estimated_google"
+                }
                 aria-label="Remove filter"
               >
                 <X />

@@ -4,10 +4,10 @@ import type { KeywordFilters } from "@/lib/types";
 const fetchCounts = async (filters: KeywordFilters, isSample: boolean) => {
   const params = new URLSearchParams();
   if (filters.keyword) params.append("keyword", filters.keyword);
-  if (filters.avg_monthly_searches)
+  if (filters.volume_estimated_google)
     params.append(
-      "avg_monthly_searches",
-      JSON.stringify(filters.avg_monthly_searches),
+      "volume_estimated_google",
+      JSON.stringify(filters.volume_estimated_google),
     );
   if (filters.competition_index)
     params.append(
