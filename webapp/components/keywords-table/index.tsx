@@ -44,7 +44,6 @@ export function KeywordsTable({
     <div className="flex flex-col justify-center h-full">
       <Filters
         table={table}
-        isSample={isSample}
         canDownload={canDownload}
         totalRows={totalRows}
         handleDownload={handleDownload}

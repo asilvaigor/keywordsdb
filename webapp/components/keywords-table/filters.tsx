@@ -15,7 +15,6 @@ import {
 import type { KeywordFilters, KeywordRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { DownloadModal } from "./download-modal";
-import { getDefaultFilters, SAMPLE_MIN_VOLUME } from "./utils";
 
 type FilterOperator = "eq" | "gte" | "lte" | "between";
 type FilterColumn =
@@ -50,7 +49,6 @@ const operatorOptions = [
 
 export function Filters({
   table,
-  isSample,
   totalRows,
   canDownload,
   handleDownload,
@@ -58,16 +56,13 @@ export function Filters({
   debouncedFilters,
 }: {
   table: Table<KeywordRow>;
-  isSample: boolean;
   totalRows?: number;
   canDownload: boolean;
   handleDownload: (format: "parquet" | "csv") => void;
   isDownloadLoading: boolean;
   debouncedFilters: KeywordFilters;
 }) {
-  const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>(
-    getDefaultFilters(isSample, "DynamicFilter") as DynamicFilter[],
-  );
+  const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>([]);
 
   // Add validation function
   const validateFilter = (
@@ -99,16 +94,6 @@ export function Filters({
       errors.value1 = "First value must be less than or equal to second value";
       errors.value2 =
         "Second value must be greater than or equal to first value";
-    }
-
-    // Check is sample, min volume cannot be less than SAMPLE_MIN_VOLUME
-    if (isSample && filter.column === "volume_estimated_google") {
-      if (filter.value1 && !Number.isNaN(val1) && val1 < SAMPLE_MIN_VOLUME) {
-        errors.value1 = "Sample: Minimum volume cannot be less than 100M";
-      }
-      if (filter.value2 && !Number.isNaN(val2) && val2 < SAMPLE_MIN_VOLUME) {
-        errors.value2 = "Sample: Minimum volume cannot be less than 100M";
-      }
     }
 
     return errors;
@@ -249,6 +234,7 @@ export function Filters({
           onClick={addFilter}
           disabled={dynamicFilters.length >= columnOptions.length}
           className="flex items-center gap-2"
+          aria-label="Add filter"
         >
           <Plus />
           <span className="hidden sm:block">Add filter</span>
@@ -282,9 +268,6 @@ export function Filters({
                 <SelectTrigger
                   className="flex-1 min-w-0"
                   aria-label="Select column"
-                  disabled={
-                    isSample && filter.column === "volume_estimated_google"
-                  }
                 >
                   <SelectValue />
                 </SelectTrigger>
@@ -319,15 +302,7 @@ export function Filters({
                 </SelectTrigger>
                 <SelectContent>
                   {operatorOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      disabled={
-                        isSample &&
-                        filter.column === "volume_estimated_google" &&
-                        option.value === "lte"
-                      }
-                    >
+                    <SelectItem key={option.value} value={option.value}>
                       {option.label}
                     </SelectItem>
                   ))}
@@ -384,9 +359,6 @@ export function Filters({
                 size="icon"
                 onClick={() => removeFilter(filter.id)}
                 className="text-muted-foreground hover:text-destructive"
-                disabled={
-                  isSample && filter.column === "volume_estimated_google"
-                }
                 aria-label="Remove filter"
               >
                 <X />

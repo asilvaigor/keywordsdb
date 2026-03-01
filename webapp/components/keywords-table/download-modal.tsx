@@ -97,6 +97,7 @@ export function DownloadModal({
               onClick={() => setOpen(true)}
               className="flex items-center gap-2 w-full"
               disabled={!canDownload || isDownloadLoading}
+              aria-label="Export"
             >
               <Download />
               <span className="hidden sm:block">Export</span>

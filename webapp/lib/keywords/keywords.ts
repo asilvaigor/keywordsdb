@@ -47,7 +47,7 @@ export async function* getKeywordsStream(
     throw new Error("Unauthorized");
   }
 
-  const cacheKey = `keywords-${JSON.stringify(filters)}-${JSON.stringify(sorting)}-${page}-${pageSize}`;
+  const cacheKey = `keywords${isSample ? "-sample" : ""}-${JSON.stringify(filters)}-${JSON.stringify(sorting)}-${page}-${pageSize}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keywords-cache").doc(hash);
   const doc = (await docRef.get()).data() as KeywordsCached | undefined;
@@ -129,7 +129,7 @@ export async function getKeywordsCount(
     throw new Error("Unauthorized");
   }
 
-  const cacheKey = `keyword-counts-${JSON.stringify(filters)}`;
+  const cacheKey = `keyword-counts${isSample ? "-sample" : ""}-${JSON.stringify(filters)}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keyword-counts-cache").doc(hash);
   const doc = (await docRef.get()).data() as KeywordCountsCached | undefined;

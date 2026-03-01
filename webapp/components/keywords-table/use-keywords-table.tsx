@@ -29,7 +29,7 @@ export function useKeywordsTable({
     setColumnFilters,
     debouncedFilters,
     isFiltersDebouncing,
-  } = useDebouncedFilters({ resetPagination, isSample });
+  } = useDebouncedFilters({ resetPagination });
   const [sorting, setSorting] = useState<SortingState>([
     { id: "volume_estimated_google", desc: true },
   ]);
