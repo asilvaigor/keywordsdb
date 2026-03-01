@@ -55,7 +55,6 @@ class GoogleAdsClient:
             request.language = "languageConstants/1000"  # English
             request.keyword_plan_network = self._client.enums.KeywordPlanNetworkEnum.GOOGLE_SEARCH_AND_PARTNERS
             request.keyword_seed.keywords.extend(keywords)
-            request.geo_target_constants.append("geoTargetConstants/2840")  # United States
             request.include_adult_keywords = True
 
             results: list[pl.DataFrame] = []

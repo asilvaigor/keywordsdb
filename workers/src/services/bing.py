@@ -150,7 +150,7 @@ class BingAdsClient:
         for k in response.KeywordIdea:
             keyword = k["Keyword"]
             monthly_search_counts = k["MonthlySearchCounts"]
-            avg_searches = sum(monthly_search_counts[0]) / 12 if monthly_search_counts is not None else 0
+            avg_searches = monthly_search_counts[0][-1] if monthly_search_counts is not None else 0
             out.append({"keyword": keyword, "avg_monthly_searches": avg_searches})
 
         df = pl.DataFrame(out, schema={"keyword": pl.String, "avg_monthly_searches": pl.Int64})
