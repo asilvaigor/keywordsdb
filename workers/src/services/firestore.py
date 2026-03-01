@@ -58,20 +58,39 @@ class FirestoreClient:
     def insert_keywords_to_ingest(self, keywords: Generator[str]) -> None:
         """
         Insert keywords into the keywords-to-ingest collection in Firestore, in chunks of a fixed size.
+        Uses Firestore batch writes (max 500 ops per batch) to reduce network round trips.
 
         Args:
             keywords: List of keywords to insert.
         """
-        chunk_size = 2000
         collection = self.client.collection(FirestoreClient.keywords_to_ingest)
-        batch = []
+
+        write_batch = self.client.batch()
+        batch_op_count = 0
+        keyword_chunk: list[str] = []
+
+        def flush_chunk() -> None:
+            nonlocal write_batch, batch_op_count
+            if not keyword_chunk:
+                return
+            doc_ref = collection.document()
+            write_batch.set(doc_ref, {"keywords": keyword_chunk})
+            batch_op_count += 1
+            if batch_op_count >= 500:
+                write_batch.commit()
+                write_batch = self.client.batch()
+                batch_op_count = 0
+
         for keyword in keywords:
-            batch.append(keyword)
-            if len(batch) >= chunk_size:
-                collection.add({"keywords": batch})
-                batch = []
-        if batch:
-            collection.add({"keywords": batch})
+            keyword_chunk.append(keyword)
+            if len(keyword_chunk) >= 2000:
+                flush_chunk()
+                keyword_chunk = []
+
+        flush_chunk()
+
+        if batch_op_count > 0:
+            write_batch.commit()
 
     def delete_keywords_to_ingest(self, filepath: str) -> None:
         """
