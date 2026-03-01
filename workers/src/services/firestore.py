@@ -85,9 +85,9 @@ class FirestoreClient:
 
     def get_cache_doc_id(self, counts: bool, sample: bool) -> str:
         cache_key_sample = (
-            'keywords-{"volume_estimated_google":{"min":10000000}}-[{"id":"volume_estimated_google","desc":true}]-1-100'
+            'keywords-{"volume_estimated_google":{"min":1000000}}-[{"id":"volume_estimated_google","desc":true}]-1-100'
         )
-        cache_key_counts_sample = 'keyword-counts-{"volume_estimated_google":{"min":10000000}}'
+        cache_key_counts_sample = 'keyword-counts-{"volume_estimated_google":{"min":1000000}}'
         cache_key = 'keywords-{}-[{"id":"volume_estimated_google","desc":true}]-1-100'
         cache_key_counts = "keyword-counts-{}"
 

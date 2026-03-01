@@ -12,7 +12,7 @@ const features = [
   {
     icon: Search,
     title: "Smart Keyword Search",
-    description: "Search across 300M keywords instantly with string matching.",
+    description: "Search across 290M keywords instantly with string matching.",
   },
   {
     icon: SlidersHorizontal,

@@ -9,7 +9,7 @@ const faqs = [
   {
     question: "Where does the keyword data come from?",
     answer:
-      "All keyword data comes directly from the Google Ads API — the same data advertisers use to plan their campaigns. This includes real search volume, CPC bids, and competition scores for 300M+ English keywords.",
+      "All keyword data comes directly from the Google Ads API — the same data advertisers use to plan their campaigns. This includes real search volume, CPC bids, and competition scores for 290M+ English keywords.",
   },
   {
     question: "How often is the data updated?",
@@ -39,7 +39,7 @@ const faqs = [
   {
     question: "What keywords are included in the database?",
     answer:
-      "Our database covers 300M+ English-language keywords from Google Search, spanning every niche and industry. We're continuously expanding coverage to include more languages and regions.",
+      "Our database covers 290M+ English-language keywords from Google Search, spanning every niche and industry. We're continuously expanding coverage to include more languages and regions.",
   },
 ];
 

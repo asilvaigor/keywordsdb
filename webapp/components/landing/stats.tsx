@@ -1,5 +1,5 @@
 const stats = [
-  { value: "300M+", label: "Keywords indexed" },
+  { value: "290M+", label: "Keywords indexed" },
   { value: "15", label: "Data points per keyword" },
   { value: "Real-time", label: "Google Search data" },
   { value: "Weekly", label: "Data updates" },

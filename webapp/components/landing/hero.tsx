@@ -15,25 +15,25 @@ function Hero() {
           className="absolute inset-0"
           style={{
             backgroundImage:
-              "radial-gradient(circle, color-mix(in oklch, var(--primary) 35%, transparent) 1px, transparent 1px)",
+              "radial-gradient(circle, var(--secondary) 1px, transparent 1px)",
             backgroundSize: "28px 28px",
           }}
         />
         {/* Fade out bottom */}
-        <div
+        {/* <div
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 120% 50% at 50% 0%, transparent 50%, var(--background) 100%)",
+              "linear-gradient(to bottom, transparent 0%, var(--background) 100%)",
           }}
-        />
+        /> */}
       </div>
 
       <div className="container mx-auto px-4 text-center">
         {/* Badge */}
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground">
           <Sparkles className="h-3.5 w-3.5" />
-          <span>Over 300 Million Keywords from Google</span>
+          <span>Over 290 Million Keywords from Google</span>
         </div>
 
         {/* Headline */}
@@ -45,7 +45,7 @@ function Hero() {
 
         {/* Subheadline */}
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-          Search, filter, and sort 300M+ Google keywords by volume, CPC, and
+          Search, filter, and sort 290M+ Google keywords by volume, CPC, and
           competition. Find your next opportunity in seconds.
         </p>
 
@@ -53,7 +53,7 @@ function Hero() {
         <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button
             size="lg"
-            className="h-13 px-10 text-base font-semibold shadow-lg shadow-primary/30"
+            className="h-13 px-10 text-base font-semibold"
             asChild
           >
             <Link href="/login">
@@ -66,7 +66,7 @@ function Hero() {
         {/* Trust badges */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Database className="w-3.5 h-3.5" /> 300M+ keywords
+            <Database className="w-3.5 h-3.5" /> 290M+ keywords
           </span>
           <span className="flex items-center gap-1">
             <Google className="w-3.5 h-3.5" variant="mono" /> Real Google Search
@@ -80,11 +80,13 @@ function Hero() {
         {/* Product demo */}
         <div className="relative max-w-fit mx-auto mt-16">
           {/* Scribbled arrow annotation */}
-          <div className="absolute -top-12 right-4 z-10">
+          <div className="absolute -top-14 right-4 z-10">
             <p className="text-primary -rotate-5 font-(family-name:--font-fuzzy-bubbles)">
               Sample demo
+              <br />
+              2k keywords
             </p>
-            <div className="absolute -right-5 top-3 w-5 text-primary">
+            <div className="absolute -right-5 top-5 w-5 text-primary">
               <CurvedArrow />
             </div>
           </div>

@@ -1,4 +1,4 @@
-export const SAMPLE_MIN_VOLUME = 10000000;
+export const SAMPLE_MIN_VOLUME = 1000000;
 
 export function formatLargeNumber(num: number, decimals: number = 1): string {
   if (num >= 1e9) {

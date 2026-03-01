@@ -152,9 +152,9 @@ export function PricingCards({
             <Card
               key={plan.name}
               className={cn("relative flex flex-col overflow-visible", {
-                "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10 scale-[1.02]":
+                "border-primary ring-2 ring-primary/20 scale-[1.02]":
                   plan.highlight && columns === 3,
-                "border-primary ring-2 ring-primary/20 shadow-lg shadow-primary/10":
+                "border-primary ring-2 ring-primary/20":
                   plan.highlight && columns === 2,
               })}
             >

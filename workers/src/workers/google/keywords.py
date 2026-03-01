@@ -137,7 +137,7 @@ def commit(
                 VALUES (
                     tmp.keyword,
                     tmp.volume_google,
-                    LEAST(tmp.volume_google, 10000000),  -- cap estimated volume at 10M
+                    LEAST(tmp.volume_google, 1000000),  -- cap estimated volume at 1M
                     tmp.competition_index,
                     tmp.cpc_high,
                     tmp.volume_history_google,
@@ -292,7 +292,7 @@ def commit(
         df = _get_top_k_rows(clickhouse_client, 100)
         count = _count(clickhouse_client)
         firestore_client.put_keywords_cache(df, count, False)
-        df = _get_sample(clickhouse_client, min_volume_estimated_google=10_000_000)
+        df = _get_sample(clickhouse_client, min_volume_estimated_google=1_000_000)
         firestore_client.put_keywords_cache(df, len(df), True)
         storage_client.write_df(df, f"gs://{StorageClient.BUCKET}/keywords-sample/sample.parquet")
 

@@ -93,7 +93,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       <SortableHeader
         column={column}
         title="Volume"
-        tooltip="Average number of times users searched for this keyword per month over the past 12 months"
+        tooltip="Estimated Google volume - Average number of times users searched for this keyword per month over the past 12 months"
       />
     ),
     cell: ({ row }) => {
