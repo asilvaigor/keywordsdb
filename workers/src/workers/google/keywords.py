@@ -61,7 +61,7 @@ def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str]:
         query = """
             SELECT keyword
             FROM keywords
-            WHERE volume_estimated_google > 2000 AND updated_at < '2026-02-01'
+            WHERE updated_at < '2026-02-01'
             ORDER BY volume_estimated_google DESC, updated_at ASC
             LIMIT %(batch_size)s OFFSET %(offset)s
         """
