@@ -93,7 +93,7 @@ class GoogleAdsClient:
         except GoogleAdsException as e:
             e_str = str(e.failure)
 
-            if "UNAUTHENTICATED" in e_str:
+            if "UNAUTHENTICATED" in e_str or "AUTHENTICATION_ERROR" in e_str:
                 self._logger.warning("Google Ads API: Authentication expired, refreshing credentials")
                 self._refresh_client()
                 return await self._get_keyword_batch_info(keywords, min_search_volume)
