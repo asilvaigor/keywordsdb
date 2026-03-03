@@ -76,7 +76,7 @@ class FirestoreClient:
             doc_ref = collection.document()
             write_batch.set(doc_ref, {"keywords": keyword_chunk})
             batch_op_count += 1
-            if batch_op_count >= 500:
+            if batch_op_count >= 10:  # Keep this at 10 otherwise it times out
                 write_batch.commit()
                 write_batch = self.client.batch()
                 batch_op_count = 0
