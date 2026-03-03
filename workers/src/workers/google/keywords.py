@@ -61,7 +61,7 @@ def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str]:
         query = """
             SELECT keyword
             FROM keywords
-            WHERE updated_at < '2026-02-01'
+            WHERE updated_at < '2026-03-03'
             ORDER BY volume_estimated_google DESC, updated_at ASC
             LIMIT %(batch_size)s OFFSET %(offset)s
         """
@@ -292,7 +292,7 @@ def commit(
         df = _get_top_k_rows(clickhouse_client, 100)
         count = _count(clickhouse_client)
         firestore_client.put_keywords_cache(df, count, False)
-        df = _get_sample(clickhouse_client, min_volume_estimated_google=1_000_000)
+        df = _get_sample(clickhouse_client)
         firestore_client.put_keywords_cache(df, len(df), True)
         storage_client.write_df(df, f"gs://{StorageClient.BUCKET}/keywords-sample/sample.parquet")
 
@@ -355,7 +355,7 @@ def _count(client: ClickhouseClient) -> int:
     return df[0, 0]
 
 
-def _get_sample(client: ClickhouseClient, min_volume_estimated_google: int) -> pl.DataFrame:
+def _get_sample(client: ClickhouseClient) -> pl.DataFrame:
     df = client.execute_query(
         """
             SELECT
@@ -367,10 +367,10 @@ def _get_sample(client: ClickhouseClient, min_volume_estimated_google: int) -> p
                 is_adult,
                 updated_at
             FROM keywords
-            WHERE volume_estimated_google > %(min_volume_estimated_google)s AND (is_adult = FALSE OR is_adult IS NULL)
+            WHERE is_adult = FALSE OR is_adult IS NULL
             ORDER BY volume_estimated_google DESC
-        """,
-        params={"min_volume_estimated_google": min_volume_estimated_google},
+            LIMIT 1000
+        """
     )
     assert df is not None
     return df
