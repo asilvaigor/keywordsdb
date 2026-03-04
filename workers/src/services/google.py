@@ -45,7 +45,37 @@ class GoogleAdsClient:
         tasks = [self._get_keyword_batch_info(batch, min_search_volume) for batch in batches]
         results: list[pl.DataFrame | None] = await asyncio.gather(*tasks)
 
-        df = pl.concat([r for r in results if r is not None]).unique(subset=["keyword"])
+        schema = {
+            "keyword": pl.Utf8,
+            "volume_google": pl.Int64,
+            "competition_index": pl.Int64,
+            "cpc_high": pl.Float64,
+            "volume_history_google": pl.Binary,
+        }
+        df = (
+            pl.concat([r for r in results if r is not None]).unique(subset=["keyword"])
+            if any([r is not None for r in results])
+            else pl.DataFrame(schema=schema)
+        )
+
+        keywords_not_found = set(keywords) - set(df["keyword"].to_list())
+        if keywords_not_found:
+            df = pl.concat(
+                [
+                    df,
+                    pl.DataFrame(
+                        {
+                            "keyword": list(keywords_not_found),
+                            "volume_google": 0,
+                            "competition_index": 0,
+                            "cpc_high": 0.0,
+                            "volume_history_google": None,
+                        },
+                        schema=schema,
+                    ),
+                ]
+            )
+
         return df
 
     async def _get_keyword_batch_info(self, keywords: list[str], min_search_volume: int | None) -> pl.DataFrame | None:

@@ -151,6 +151,13 @@ def commit(
         merge_job.result()
         client.client.delete_table(tmp_tablename)
 
+        # delete_query = f"""
+        #     DELETE FROM `{client.get_full_name(TABLENAME)}`
+        #     WHERE volume_google = 0
+        # """
+        # delete_job = client.client.query(delete_query)
+        # delete_job.result()
+
     def calculate_estimated_volume() -> None:
         """Calculate estimated google volume. Google keyword planner volumes are bucketed and in case of typos gives
         extremely overestimated volumes.
@@ -322,6 +329,7 @@ def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix
             updated_at,
             ingested_at
         FROM `{client.get_full_name(TABLENAME)}`
+        WHERE volume_google > 0
     """
     export_job = client.client.query(extract_query)
     export_job.result()
