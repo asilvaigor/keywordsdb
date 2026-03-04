@@ -342,6 +342,7 @@ def _get_top_k_rows(client: ClickhouseClient, k: int) -> pl.DataFrame:
             SELECT
                 keyword,
                 volume_estimated_google,
+                volume_google,
                 competition_index,
                 cpc_high,
                 volume_history_google,
@@ -369,6 +370,8 @@ def _get_sample(client: ClickhouseClient) -> pl.DataFrame:
             SELECT
                 keyword,
                 volume_estimated_google,
+                volume_google,
+                volume_bing,
                 competition_index,
                 cpc_high,
                 volume_history_google,

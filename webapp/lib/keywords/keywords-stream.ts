@@ -31,6 +31,7 @@ export async function getKeywordsStreamSample(
     `SELECT
       keyword,
       volume_estimated_google,
+      volume_google,
       competition_index,
       cpc_high,
       volume_history_google,
@@ -47,10 +48,11 @@ export async function getKeywordsStreamSample(
       ({
         keyword: row[0],
         volume_estimated_google: Number(row[1]),
-        competition_index: row[2],
-        cpc_high: row[3],
-        volume_history_google: row[4],
-        updated_at: row[5]?.toString(),
+        volume_google: Number(row[2]),
+        competition_index: Number(row[3]),
+        cpc_high: Number(row[4]),
+        volume_history_google: row[5],
+        updated_at: row[6]?.toString(),
       }) as Keyword,
   );
   return sample;
@@ -69,6 +71,7 @@ export async function* getKeywordsStreamClickhouse(
     SELECT
       kws.keyword,
       kws.volume_estimated_google,
+      kws.volume_google,
       kws.competition_index,
       kws.cpc_high,
       kws.volume_history_google,

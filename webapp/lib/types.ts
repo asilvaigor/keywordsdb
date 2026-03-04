@@ -1,6 +1,7 @@
 export type Keyword = {
   keyword: string;
   volume_estimated_google: number;
+  volume_google: number;
   competition_index: number;
   cpc_high: number;
   volume_history_google: string;

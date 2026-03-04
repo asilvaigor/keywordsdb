@@ -103,7 +103,7 @@ class FirestoreClient:
         doc_ref.delete()
 
     def get_cache_doc_id(self, counts: bool, sample: bool) -> str:
-        cache_key = f'keywords{"-sample" if sample else ""}-[{{"id":"volume_estimated_google","desc":true}}]-1-100'
+        cache_key = f'keywords{"-sample" if sample else ""}-{{}}-[{{"id":"volume_estimated_google","desc":true}}]-1-100'
         cache_key_counts = f"keyword-counts{'-sample' if sample else ''}-{{}}"
         key = cache_key_counts if counts else cache_key
         return hashlib.sha256(key.encode("utf-8")).hexdigest()

@@ -140,6 +140,10 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     cell: ({ row }) => (
       <VolumeHistoryCell
         raw={row.getValue("volume_history_google") as string}
+        ratio={
+          ((row.getValue("volume_estimated_google") as number) /
+            row.original.volume_google) as number
+        }
       />
     ),
     size: 150,

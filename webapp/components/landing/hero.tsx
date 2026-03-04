@@ -84,9 +84,9 @@ function Hero() {
             <p className="text-primary -rotate-5 font-(family-name:--font-fuzzy-bubbles)">
               Sample demo
               <br />
-              2k keywords
+              1000 keywords
             </p>
-            <div className="absolute -right-5 top-5 w-5 text-primary">
+            <div className="absolute -right-5 top-6 w-5 text-primary">
               <CurvedArrow />
             </div>
           </div>

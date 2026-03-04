@@ -35,7 +35,7 @@ const MONTH_NAMES = [
 
 const parseCache = new Map<string, VolumePoint[]>();
 
-export function parseVolumeHistory(raw: string): VolumePoint[] {
+export function parseVolumeHistory(raw: string, ratio: number): VolumePoint[] {
   if (!raw) return [];
 
   const cached = parseCache.get(raw);
@@ -50,7 +50,9 @@ export function parseVolumeHistory(raw: string): VolumePoint[] {
 
     const startYear = parseInt(parts[0], 10);
     const startMonth = parseInt(parts[1], 10); // 1-indexed
-    const values = parts.slice(2).map((v) => parseInt(v, 10));
+    const values = parts
+      .slice(2)
+      .map((v) => Math.round(parseInt(v, 10) * ratio));
 
     const points: VolumePoint[] = values.map((value, i) => {
       const totalMonths = startMonth - 1 + i;
@@ -182,7 +184,7 @@ function VolumeHistoryModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-4xl">
+      <DialogContent className="sm:max-w-4xl" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle>Monthly Search Volume</DialogTitle>
         </DialogHeader>
@@ -269,9 +271,15 @@ function VolumeHistoryModal({
   );
 }
 
-export function VolumeHistoryCell({ raw }: { raw: string }) {
+export function VolumeHistoryCell({
+  raw,
+  ratio,
+}: {
+  raw: string;
+  ratio: number;
+}) {
   const [open, setOpen] = useState(false);
-  const points = useMemo(() => parseVolumeHistory(raw), [raw]);
+  const points = useMemo(() => parseVolumeHistory(raw, ratio), [raw, ratio]);
 
   if (points.length === 0) {
     return <span className="text-muted-foreground text-xs">—</span>;

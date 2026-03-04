@@ -13,6 +13,8 @@ export async function createDuckDBCacheIfNeeded(connection: DuckDBConnection) {
       SELECT
         keyword,
         volume_estimated_google,
+        volume_google,
+        volume_bing,
         competition_index,
         cpc_high,
         volume_history_google,

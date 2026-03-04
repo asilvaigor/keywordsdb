@@ -174,6 +174,7 @@ async function exportDuckDBToGCS({
       SELECT
         kws.keyword,
         kws.volume_estimated_google,
+        kws.volume_google,
         kws.competition_index,
         kws.cpc_high,
         kws.volume_history_google,
