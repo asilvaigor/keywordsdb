@@ -12,7 +12,10 @@ function Dashboard({ userData }: { userData: UserData }) {
 
   return (
     <div className="flex-1 w-full max-w-fit px-6">
-      <KeywordsTable canDownload={userData.subscriptionType === "max"} />
+      <KeywordsTable
+        canDownload={userData.subscriptionType === "max"}
+        email={userData.email}
+      />
     </div>
   );
 }

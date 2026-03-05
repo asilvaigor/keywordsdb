@@ -51,6 +51,7 @@ export function Filters({
   table,
   totalRows,
   canDownload,
+  email,
   handleDownload,
   isDownloadLoading,
   debouncedFilters,
@@ -58,6 +59,7 @@ export function Filters({
   table: Table<KeywordRow>;
   totalRows?: number;
   canDownload: boolean;
+  email?: string;
   handleDownload: (format: "parquet" | "csv") => void;
   isDownloadLoading: boolean;
   debouncedFilters: KeywordFilters;
@@ -243,6 +245,7 @@ export function Filters({
         {/* Download button */}
         <DownloadModal
           canDownload={canDownload}
+          email={email}
           totalRows={totalRows}
           handleDownload={handleDownload}
           isDownloadLoading={isDownloadLoading}

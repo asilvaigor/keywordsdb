@@ -185,7 +185,7 @@ function DashboardHeader({ userData }: { userData: UserData }) {
               ) : (
                 <CreditCard className="h-4 w-4" />
               )}
-              Billing
+              Manage subscription
             </DropdownMenuItem>
           )}
 

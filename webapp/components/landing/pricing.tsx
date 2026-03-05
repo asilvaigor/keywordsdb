@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { checkout } from "@/lib/stripe/checkout";
 import { cn } from "@/lib/utils";
 
-const plans = [
+export const plans = [
   {
     name: "Free",
     monthly: { price: "$0" },
@@ -63,7 +63,11 @@ const plans = [
     highlight: false,
     badge: null,
     checkoutOption: "max" as const,
-    features: ["Everything in Pro", "CSV/Parquet export"],
+    features: [
+      "Everything in Pro",
+      "CSV/Parquet export",
+      "Access to Bing volumes",
+    ],
   },
 ];
 

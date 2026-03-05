@@ -98,7 +98,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("volume_estimated_google") as number;
-      return formatLargeNumber(value);
+      return formatLargeNumber(value, 1, 1e4);
     },
     size: 150,
     enableResizing: false,

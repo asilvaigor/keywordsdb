@@ -21,9 +21,11 @@ const PAGE_SIZE = 10;
 export function KeywordsTable({
   isSample = false,
   canDownload = false,
+  email,
 }: {
   isSample?: boolean;
   canDownload?: boolean;
+  email?: string;
 }) {
   const {
     table,
@@ -45,6 +47,7 @@ export function KeywordsTable({
       <Filters
         table={table}
         canDownload={canDownload}
+        email={email}
         totalRows={totalRows}
         handleDownload={handleDownload}
         isDownloadLoading={isDownloadLoading}

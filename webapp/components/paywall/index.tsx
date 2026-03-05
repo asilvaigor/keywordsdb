@@ -5,7 +5,7 @@ import KeyLock from "@/components/icons/key-lock";
 import { FAQAccordion } from "@/components/landing/faq";
 import { PricingCards } from "@/components/landing/pricing";
 
-const trustFeatures = [
+export const trustFeatures = [
   {
     icon: Shield,
     label: "Secure payments via Stripe",

@@ -11,7 +11,7 @@ export default async function DashboardPage() {
     redirect("/paywall");
   }
   return (
-    <div className="flex flex-col items-center h-screen">
+    <div className="flex flex-col items-center h-dvh">
       <Header userData={userData} />
       <Dashboard userData={userData} />
     </div>
