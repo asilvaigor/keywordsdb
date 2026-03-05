@@ -35,6 +35,7 @@ export async function getKeywordsStreamSample(
       competition_index,
       cpc_high,
       volume_history_google,
+      is_adult,
       updated_at
     FROM keywords_sample kws
     ${whereClause}
@@ -52,7 +53,8 @@ export async function getKeywordsStreamSample(
         competition_index: Number(row[3]),
         cpc_high: Number(row[4]),
         volume_history_google: row[5],
-        updated_at: row[6]?.toString(),
+        is_adult: Boolean(row[6]),
+        updated_at: row[7]?.toString(),
       }) as Keyword,
   );
   return sample;
@@ -75,6 +77,7 @@ export async function* getKeywordsStreamClickhouse(
       kws.competition_index,
       kws.cpc_high,
       kws.volume_history_google,
+      kws.is_adult,
       kws.updated_at
     FROM keywords kws
     ${whereClause}

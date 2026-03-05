@@ -2,6 +2,7 @@
 
 import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -22,7 +23,7 @@ function Header({ title, tooltip }: { title: string; tooltip: string }) {
         </div>
       </TooltipTrigger>
       <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
-        <Info className="h-4 w-4 shrink-0 mt-0.5" />
+        <Info className="h-4 w-4 shrink-0" />
         <p>{tooltip}</p>
       </TooltipContent>
     </Tooltip>
@@ -84,8 +85,9 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
         {row.getValue("keyword")}
       </div>
     ),
-    size: 270,
+    size: 200,
     enableResizing: false,
+    enableHiding: false,
   },
   {
     accessorKey: "volume_estimated_google",
@@ -100,7 +102,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       const value = row.getValue("volume_estimated_google") as number;
       return formatLargeNumber(value, 1, 1e4);
     },
-    size: 150,
+    size: 100,
     enableResizing: false,
   },
   {
@@ -127,6 +129,23 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => (row.getValue("cpc_high") as number).toFixed(2),
     size: 100,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "is_adult",
+    header: () => (
+      <Header
+        title="Adult"
+        tooltip="Whether this keyword is NSFW/adult content"
+      />
+    ),
+    cell: ({ row }) =>
+      (row.getValue("is_adult") as boolean) ? (
+        <Badge variant="destructive">Yes</Badge>
+      ) : (
+        <Badge variant="outline">No</Badge>
+      ),
+    size: 60,
     enableResizing: false,
   },
   {

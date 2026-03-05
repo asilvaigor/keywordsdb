@@ -8,7 +8,9 @@ export function useDebouncedFilters({
 }: {
   resetPagination: () => void;
 }) {
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
+    { id: "is_adult", value: false },
+  ]);
 
   const {
     debouncedValue: debouncedFilters,
@@ -17,8 +19,14 @@ export function useDebouncedFilters({
 
   const debouncedFiltersT: KeywordFilters = debouncedFilters.reduce(
     (acc, filter) => {
-      const v = filter.value as string;
-      acc[filter.id] = filter.id === "keyword" ? v : JSON.parse(v);
+      const v = filter.value;
+      if (filter.id === "keyword") {
+        acc[filter.id] = v as string;
+      } else if (filter.id === "is_adult") {
+        acc[filter.id] = Boolean(v);
+      } else {
+        acc[filter.id] = JSON.parse(v as string);
+      }
       return acc;
     },
     {} as Record<string, unknown>,

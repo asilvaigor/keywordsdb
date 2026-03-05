@@ -1,10 +1,18 @@
 "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
 
 import type { Table } from "@tanstack/react-table";
-import { Plus, X } from "lucide-react";
+import { Plus, Settings, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -12,9 +20,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import type { KeywordFilters, KeywordRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { DownloadModal } from "./download-modal";
+
+const columnLabels: Record<string, string> = {
+  volume_estimated_google: "Volume",
+  competition_index: "Competition",
+  cpc_high: "CPC ($)",
+  is_adult: "Adult",
+  volume_history_google: "Volume History",
+  updated_at: "Last Updated",
+};
 
 type FilterOperator = "eq" | "gte" | "lte" | "between";
 type FilterColumn =
@@ -51,6 +69,7 @@ export function Filters({
   table,
   totalRows,
   canDownload,
+  isSample,
   email,
   handleDownload,
   isDownloadLoading,
@@ -59,12 +78,18 @@ export function Filters({
   table: Table<KeywordRow>;
   totalRows?: number;
   canDownload: boolean;
+  isSample: boolean;
   email?: string;
   handleDownload: (format: "parquet" | "csv") => void;
   isDownloadLoading: boolean;
   debouncedFilters: KeywordFilters;
 }) {
   const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+
+  const adultFilterValue = table.getColumn("is_adult")?.getFilterValue() as
+    | boolean
+    | undefined;
 
   // Add validation function
   const validateFilter = (
@@ -251,7 +276,111 @@ export function Filters({
           isDownloadLoading={isDownloadLoading}
           filters={debouncedFilters}
         />
+
+        {/* Options button */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Options"
+        >
+          <Settings />
+        </Button>
       </div>
+
+      {/* Options modal */}
+      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+        <DialogContent
+          className="sm:max-w-xs gap-0 p-0 overflow-hidden"
+          aria-describedby={undefined}
+        >
+          <DialogHeader className="px-5 pt-5 pb-4 border-b">
+            <DialogTitle>Options</DialogTitle>
+          </DialogHeader>
+
+          <div className="px-5 py-4 space-y-5">
+            {/* Adult content filter */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Filters
+              </p>
+              <div className="flex items-center justify-between gap-4">
+                <div className="shrink-0">
+                  <Label className="text-sm font-medium">Adult content</Label>
+                  {isSample && (
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Not available in demo
+                    </p>
+                  )}
+                </div>
+                <Select
+                  value={
+                    adultFilterValue == null
+                      ? "undefined"
+                      : adultFilterValue
+                        ? "true"
+                        : "false"
+                  }
+                  onValueChange={(val) => {
+                    const col = table.getColumn("is_adult");
+                    if (val === "undefined") {
+                      col?.setFilterValue(undefined);
+                    } else {
+                      col?.setFilterValue(val === "true");
+                    }
+                  }}
+                  disabled={isSample}
+                >
+                  <SelectTrigger
+                    className="w-36"
+                    aria-label="Adult content filter"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false">Exclude</SelectItem>
+                    <SelectItem value="undefined">Include</SelectItem>
+                    <SelectItem value="true">Show only adult</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Column visibility */}
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Columns
+              </p>
+              <div className="-mx-2">
+                {table
+                  .getAllColumns()
+                  .filter((col) => col.getCanHide())
+                  .map((col) => (
+                    <label
+                      key={col.id}
+                      htmlFor={`col-${col.id}`}
+                      className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted/60 cursor-pointer transition-colors"
+                    >
+                      <span className="text-sm">
+                        {columnLabels[col.id] ?? col.id}
+                      </span>
+                      <Checkbox
+                        id={`col-${col.id}`}
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(checked) =>
+                          col.toggleVisibility(!!checked)
+                        }
+                        className="rounded-sm"
+                      />
+                    </label>
+                  ))}
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Dynamic filters */}
       {dynamicFilters.length > 0 && (

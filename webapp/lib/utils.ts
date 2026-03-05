@@ -20,6 +20,12 @@ export function parseSearchParams(searchParams: URLSearchParams) {
     competition_index:
       JSON.parse(searchParams.get("competition_index") || "null") ?? undefined,
     cpc_high: JSON.parse(searchParams.get("cpc_high") || "null") ?? undefined,
+    is_adult:
+      searchParams.get("is_adult") === "true"
+        ? true
+        : searchParams.get("is_adult") === "false"
+          ? false
+          : undefined,
   };
   const sortParams = searchParams.getAll("sortBy");
   const sorting: SortingState = sortParams.map((param) => {
@@ -77,6 +83,9 @@ export function buildSearchParams({
   }
   if (filters?.keyword) {
     urlParams.append("keyword", filters.keyword);
+  }
+  if (filters?.is_adult != null) {
+    urlParams.append("is_adult", filters.is_adult.toString());
   }
   if (sorting && sorting.length > 0) {
     for (const sort of sorting) {

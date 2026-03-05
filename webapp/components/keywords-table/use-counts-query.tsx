@@ -1,24 +1,10 @@
 import useSWR from "swr";
 import type { KeywordFilters } from "@/lib/types";
+import { buildSearchParams } from "@/lib/utils";
 
 const fetchCounts = async (filters: KeywordFilters, isSample: boolean) => {
-  const params = new URLSearchParams();
-  if (filters.keyword) params.append("keyword", filters.keyword);
-  if (filters.volume_estimated_google)
-    params.append(
-      "volume_estimated_google",
-      JSON.stringify(filters.volume_estimated_google),
-    );
-  if (filters.competition_index)
-    params.append(
-      "competition_index",
-      JSON.stringify(filters.competition_index),
-    );
-  if (filters.cpc_high)
-    params.append("cpc_high", JSON.stringify(filters.cpc_high));
-  params.append("isSample", String(isSample));
-
-  const response = await fetch(`/api/keywords/count?${params.toString()}`);
+  const urlParams = buildSearchParams({ filters, isSample });
+  const response = await fetch(`/api/keywords/count?${urlParams.toString()}`);
   if (!response.ok) {
     throw new Error("Failed to fetch counts");
   }
@@ -27,16 +13,16 @@ const fetchCounts = async (filters: KeywordFilters, isSample: boolean) => {
 };
 
 export function useCountsQuery({
-  debouncedFilters,
+  filters,
   isFiltersDebouncing,
   isSample,
 }: {
-  debouncedFilters: KeywordFilters;
+  filters: KeywordFilters;
   isFiltersDebouncing: boolean;
   isSample: boolean;
 }) {
   const { data: totalRows, isLoading: isTotalRowsLoadingQuery } = useSWR(
-    [debouncedFilters, isSample],
+    [filters, isSample],
     async ([filters, isSample]) => fetchCounts(filters, isSample),
     {
       revalidateOnFocus: false,

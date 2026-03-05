@@ -198,8 +198,8 @@ function VolumeHistoryModal({
             aria-label="Monthly search volume history chart"
           >
             {/* Grid lines */}
-            {yTicks.map((t, i) => (
-              <g key={`tick-${t.y}-${i}`}>
+            {yTicks.map((t) => (
+              <g key={`tick-${t.y}`}>
                 <line
                   x1={padLeft}
                   x2={width - padRight}
@@ -231,10 +231,10 @@ function VolumeHistoryModal({
 
             {/* Dots */}
             {chartPoints.map((p, i) => (
-              <Tooltip key={`tooltip-${p.x}-${p.y}-${i}`}>
+              <Tooltip key={`tooltip-${p.x}`}>
                 <TooltipTrigger asChild>
                   <circle
-                    key={`dot-${p.x}-${p.y}-${i}`}
+                    key={`dot-${p.x}`}
                     cx={p.x}
                     cy={p.y}
                     r={2.5}
@@ -252,7 +252,7 @@ function VolumeHistoryModal({
               return (
                 i % 2 === 0 && (
                   <text
-                    key={`x-label-${p.x}-${i}`}
+                    key={`x-label-${p.x}`}
                     x={p.x}
                     y={height - padBottom + 18}
                     textAnchor="middle"

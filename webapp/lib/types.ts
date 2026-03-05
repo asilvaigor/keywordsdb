@@ -5,6 +5,7 @@ export type Keyword = {
   competition_index: number;
   cpc_high: number;
   volume_history_google: string;
+  is_adult: boolean;
   updated_at: string;
 };
 
@@ -35,6 +36,7 @@ export type KeywordFilters = {
   volume_estimated_google?: { min?: number; max?: number };
   competition_index?: { min?: number; max?: number };
   cpc_high?: { min?: number; max?: number };
+  is_adult?: boolean;
 };
 
 export type UserData = {

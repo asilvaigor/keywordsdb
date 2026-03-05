@@ -18,6 +18,7 @@ export async function createDuckDBCacheIfNeeded(connection: DuckDBConnection) {
         competition_index,
         cpc_high,
         volume_history_google,
+        is_adult,
         updated_at
       FROM parquet_scan('gs://${BUCKET_NAME}/keywords-sample/sample.parquet')
     `);
@@ -29,10 +30,10 @@ export function buildWhereClause(
   filters?: KeywordFilters,
 ): {
   whereClause: string;
-  params: Record<string, string | number>;
+  params: Record<string, string | number | boolean>;
 } {
   let whereClause = "WHERE 1=1";
-  let params: Record<string, string | number> = {};
+  let params: Record<string, string | number | boolean> = {};
 
   if (filters?.keyword) {
     whereClause += ` AND kws.keyword LIKE ${mode === "clickhouse" ? "{keyword_filter:String}" : "$keyword_filter"}`;
@@ -64,6 +65,10 @@ export function buildWhereClause(
   if (filters?.cpc_high?.max !== undefined) {
     whereClause += ` AND kws.cpc_high <= ${mode === "clickhouse" ? "{max_cpc:Float32}" : "$max_cpc"}`;
     params = { ...params, max_cpc: filters?.cpc_high?.max };
+  }
+  if (filters?.is_adult != null) {
+    whereClause += ` AND kws.is_adult = ${mode === "clickhouse" ? "{is_adult:UInt8}" : "$is_adult"}`;
+    params = { ...params, is_adult: filters?.is_adult };
   }
   return { whereClause, params };
 }

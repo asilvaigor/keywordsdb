@@ -5,6 +5,7 @@ import {
   getSortedRowModel,
   type SortingState,
   useReactTable,
+  type VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
 import { columns } from "./columns";
@@ -33,11 +34,15 @@ export function useKeywordsTable({
   const [sorting, setSorting] = useState<SortingState>([
     { id: "volume_estimated_google", desc: true },
   ]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    is_adult: false,
+    updated_at: false,
+  });
 
   const isClickhouseReady = useClickhouseReady(!isSample);
   const { isLoading: isTotalRowsLoading, totalRows: totalRowsQuery } =
     useCountsQuery({
-      debouncedFilters,
+      filters: debouncedFilters,
       isFiltersDebouncing,
       isSample,
     });
@@ -77,10 +82,12 @@ export function useKeywordsTable({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onPaginationChange: setPagination,
+    onColumnVisibilityChange: setColumnVisibility,
     state: {
       sorting,
       columnFilters,
       pagination: { pageIndex, pageSize },
+      columnVisibility,
     },
     manualPagination: true,
     manualFiltering: true,
