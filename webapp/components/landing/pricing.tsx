@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Loader2, Sparkles } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -219,15 +219,8 @@ export function PricingCards({
                     disabled={isPending}
                     onClick={() => handleCheckout(plan)}
                   >
-                    {loadingPlan === plan.name ? (
+                    {loadingPlan === plan.name && (
                       <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                    ) : (
-                      plan.highlight && (
-                        <Sparkles
-                          className="mr-1.5 h-4 w-4"
-                          data-icon="inline-start"
-                        />
-                      )
                     )}
                     Subscribe
                   </Button>
@@ -238,15 +231,7 @@ export function PricingCards({
                     size="lg"
                     asChild
                   >
-                    <Link href="/login">
-                      {plan.highlight && (
-                        <Sparkles
-                          className="mr-1.5 h-4 w-4"
-                          data-icon="inline-start"
-                        />
-                      )}
-                      Start Free Trial
-                    </Link>
+                    <Link href="/login">Start Free Trial</Link>
                   </Button>
                 )}
               </CardFooter>
