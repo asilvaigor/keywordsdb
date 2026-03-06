@@ -87,10 +87,6 @@ export function Filters({
   const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  const adultFilterValue = table.getColumn("is_adult")?.getFilterValue() as
-    | boolean
-    | undefined;
-
   // Add validation function
   const validateFilter = (
     filter: DynamicFilter,
@@ -315,19 +311,11 @@ export function Filters({
                 </div>
                 <Select
                   value={
-                    adultFilterValue == null
-                      ? "undefined"
-                      : adultFilterValue
-                        ? "true"
-                        : "false"
+                    table.getColumn("is_adult")?.getFilterValue() as string
                   }
                   onValueChange={(val) => {
                     const col = table.getColumn("is_adult");
-                    if (val === "undefined") {
-                      col?.setFilterValue(undefined);
-                    } else {
-                      col?.setFilterValue(val === "true");
-                    }
+                    col?.setFilterValue(val);
                   }}
                   disabled={isSample}
                 >
