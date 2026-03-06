@@ -8,6 +8,7 @@ This repository contains a keyword research platform that provides Google search
 
 - Landing page: SEO-focused content. A demo interactive table with sample keyword data. Free trial with 10 free queries is available after email sign-up.
 - Dashboard: Authenticated area with a keyword research tool. Users can search for keywords and view metrics in a table with pagination and sorting. They can do custom filters on volume, cpc, competition etc.
+- After 10 free queries, user is hit with a paywall and must subscribe to continue.
 
 ## Architecture
 
@@ -17,7 +18,7 @@ Next.js 16 application with React 19 serving the public website and authenticate
 **Tech Stack:**
 - **Framework**: Next.js 16 with App Router, React 19, TypeScript
 - **Styling**: Tailwind CSS 4, shadcn/ui components, Radix UI primitives
-- **Authentication**: better-auth with Google OAuth and magic link email sign-in
+- **Authentication**: better-auth with Google OAuth and magic link email sign-in via Resend
 - **Database**: ClickHouse for keyword queries, Firestore for caching and user/auth data
 - **Data Fetching**: SWR for client-side data fetching with streaming support
 - **Analytics**: PostHog
@@ -27,7 +28,7 @@ Next.js 16 application with React 19 serving the public website and authenticate
 **Key Patterns:**
 - Server components by default, use `"use client"` only when necessary
 - Custom hooks prefixed with `use-` for table state management (`use-keywords-query`, `use-pagination`, etc.)
-- Streaming responses from API routes for real-time progress updates
+- Streaming responses from keywords API routes for real-time progress updates
 - Custom Firestore adapter for better-auth integration
 - Dark theme by default with next-themes provider
 
@@ -49,15 +50,13 @@ Python workers for ingesting keyword data from Google Ads and Bing Ads APIs.
 - **Language**: Python 3.14+
 - **Package Manager**: uv
 - **Data Processing**: Polars with PyArrow
-- **APIs**: Google Ads API, Bing Ads API
-- **Cloud Services**: BigQuery, Cloud Storage, Firestore, Secret Manager
 - **Database**: BigQuery as a write database, ClickHouse as a read database. Cloud storage for intermediate data files.
 - **Logging**: structlog
 - **Linting**: Ruff
 
 **File Organization:**
 - `/src/workers/*` - Worker implementations (bing, google)
-- `/src/services/*` - Shared services (ads, bigquery, clickhouse, storage, etc.)
+- `/src/services/*` - Shared services (logger, ads, bigquery, clickhouse, storage, etc.)
 
 **Worker Jobs**
 - Scheduled via Cloud Scheduler
@@ -68,42 +67,16 @@ Python workers for ingesting keyword data from Google Ads and Bing Ads APIs.
 - Structured logging for observability
 
 ### Infrastructure (`/tf`)
-Terraform configuration for GCP resources.
+Terraform configuration for GCP, GitHub and CloudFlare resources.
 
-**Providers:**
+### External Services
+
 - Google Cloud Platform (primary)
 - GitHub (for CI/CD integration)
 - Cloudflare (for CDN/DNS)
-
-**Key Resources:**
-- Cloud Run (webapp hosting)
-- Cloud Build (CI/CD)
-- ClickHouse Cloud (keyword database)
-- Firestore (user/auth data)
-- Cloud Storage (data files)
-- Cloud Scheduler (worker jobs)
-- BigQuery (data analytics)
-- Secret Manager (credentials)
-
-## Development Workflow
-
-```bash
-# Webapp
-cd webapp
-bun install
-bun dev          # Start dev server
-bun lint         # Run Biome checks
-bun format       # Format and fix issues
-
-# Workers
-cd workers
-uv venv          # Create virtual environment
-uv sync          # Install dependencies
-# Run notebooks for testing
-
-# Infrastructure
-cd tf
-gcloud auth application-default login
-gh auth login
-terraform apply
-```
+- Clickhouse Cloud (for managed ClickHouse instance)
+- Resend (for login emails)
+- PostHog (for analytics)
+- Stripe (for payments)
+- Google Ads API (for keyword data)
+- Bing Ads API (for keyword data)
