@@ -26,7 +26,7 @@ resource "google_cloud_run_v2_service" "webapp" {
   template {
     max_instance_request_concurrency = 100
     service_account                  = google_service_account.cloudrun_webapp.email
-    timeout                          = "90s"
+    timeout                          = "180s"  // Has to be fairly high because of clickhouse cold start
     scaling {
       max_instance_count = 4
     }
