@@ -35,19 +35,25 @@ interface KeywordCountsCached {
 export async function* getKeywordsStream(
   filters: KeywordFilters,
   sorting: SortingState,
+  columns: string[],
   page = 1,
   pageSize = 100,
   isSample: boolean = false,
 ): AsyncGenerator<KeywordsStreamResponse, void, unknown> {
   const userData = await getUserData();
+  const isMaxPlan = userData?.subscriptionType === "max";
   if (
     !isSample &&
-    (!userData || (!userData.subscriptionActive && userData.freeCredits <= 0))
+    (!userData ||
+      (!userData.subscriptionActive && userData.freeCredits <= 0) ||
+      (!isMaxPlan && columns.includes("volume_bing")) || // only max plan users can access Bing data
+      (!isMaxPlan && filters.volume_bing != null) || // only max plan users can access Bing data
+      (!isMaxPlan && sorting.some((s) => s.id === "volume_bing"))) // only max plan users can access Bing data
   ) {
     throw new Error("Unauthorized");
   }
 
-  const cacheKey = `keywords${isSample ? "-sample" : ""}-${JSON.stringify(filters)}-${JSON.stringify(sorting)}-${page}-${pageSize}`;
+  const cacheKey = `keywords${isSample ? "-sample" : ""}-${JSON.stringify(filters)}-${JSON.stringify(sorting)}-${columns.join(",")}-${page}-${pageSize}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keywords-cache").doc(hash);
   const doc = (await docRef.get()).data() as KeywordsCached | undefined;
@@ -61,12 +67,13 @@ export async function* getKeywordsStream(
   let allResults: Keyword[] = [];
   if (isSample) {
     console.log("Streaming keywords from sample");
-    allResults = await getKeywordsStreamSample(
+    allResults = await getKeywordsStreamSample({
       filters,
       sorting,
+      columns,
       page,
       pageSize,
-    );
+    });
     yield allResults;
   } else {
     console.log("Streaming keywords from clickhouse");
@@ -79,12 +86,13 @@ export async function* getKeywordsStream(
     const cacheMiss: CacheMiss = { isCacheMiss: true };
     yield cacheMiss;
 
-    for await (const chunk of getKeywordsStreamClickhouse(
+    for await (const chunk of getKeywordsStreamClickhouse({
       filters,
       sorting,
+      columns,
       page,
       pageSize,
-    )) {
+    })) {
       if ("isProgress" in chunk) {
         yield chunk as Progress;
       } else {
@@ -122,9 +130,12 @@ export async function getKeywordsCount(
   isSample: boolean = false,
 ): Promise<number> {
   const userData = await getUserData();
+  const isMaxPlan = userData?.subscriptionType === "max";
   if (
     !isSample &&
-    (!userData || (!userData.subscriptionActive && userData.freeCredits <= 0))
+    (!userData ||
+      (!userData.subscriptionActive && userData.freeCredits <= 0) ||
+      (!isMaxPlan && filters.volume_bing != null)) // only max plan users can access Bing data
   ) {
     throw new Error("Unauthorized");
   }
@@ -169,11 +180,10 @@ export async function getDownloadUrls({
   isSample: boolean;
 }) {
   const userData = await getUserData();
+  const isMaxPlan = userData?.subscriptionType === "max";
   if (
     !isSample &&
-    (!userData ||
-      !userData.subscriptionActive ||
-      userData.subscriptionType !== "max") // only max plan users can download
+    (!userData || !userData.subscriptionActive || !isMaxPlan) // only max plan users can download
   ) {
     throw new Error("Unauthorized");
   }

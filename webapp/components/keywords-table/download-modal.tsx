@@ -197,7 +197,7 @@ export function DownloadModal({
               )}
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Est. Files</span>
+              <span className="text-muted-foreground">Estimated Files</span>
               {isRowsLoading ? (
                 <Skeleton className="h-4 w-12" />
               ) : (
@@ -210,7 +210,7 @@ export function DownloadModal({
               )}
             </div>
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Est. size</span>
+              <span className="text-muted-foreground">Estimated size</span>
               {isRowsLoading ? (
                 <Skeleton className="h-4 w-16" />
               ) : (

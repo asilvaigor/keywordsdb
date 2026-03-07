@@ -71,13 +71,61 @@ function SortableHeader({
   );
 }
 
+export const columnLabels: Record<
+  keyof Keyword,
+  { title: string; description: string }
+> = {
+  keyword: {
+    title: "Keyword",
+    description: "The search term or phrase that users enter into Google",
+  },
+  volume_estimated_google: {
+    title: "Volume",
+    description:
+      "Estimated Google volume - Average number of times users searched for this keyword per month over the past 12 months",
+  },
+  volume_google: {
+    title: "Volume (Google)",
+    description:
+      "Reported Google volume - Volume reported by Google Keyword Planner. It often overestimates the actual search volume in the case of typos and keywords with other similar intent keywords (e.g. 'you tube' vs 'youtube') since Google Ads groups them together",
+  },
+  volume_bing: {
+    title: "Volume (Bing)",
+    description: "Reported Bing volume - Volume reported by Bing Ads API",
+  },
+  competition_index: {
+    title: "Competition",
+    description:
+      "Competition level for this keyword in Google Ads, ranging from 0-100. Higher values indicate more advertisers bidding on this keyword",
+  },
+  cpc_high: {
+    title: "CPC ($)",
+    description:
+      "Cost Per Click - the maximum amount advertisers on Google pay for a click on their ad for this keyword",
+  },
+  is_adult: {
+    title: "Adult",
+    description: "Whether this keyword is NSFW/adult content",
+  },
+  volume_history_google: {
+    title: "Volume history",
+    description:
+      "Historical search volume trend showing how search interest has changed over time",
+  },
+  updated_at: {
+    title: "Last updated",
+    description:
+      "The date when this keyword data was last refreshed from Google",
+  },
+};
+
 const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
   {
     accessorKey: "keyword",
     header: () => (
       <Header
-        title="Keyword"
-        tooltip="The search term or phrase that users enter into Google"
+        title={columnLabels.keyword.title}
+        tooltip={columnLabels.keyword.description}
       />
     ),
     cell: ({ row }) => (
@@ -94,15 +142,47 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        title="Volume"
-        tooltip="Estimated Google volume - Average number of times users searched for this keyword per month over the past 12 months"
+        title={columnLabels.volume_estimated_google.title}
+        tooltip={columnLabels.volume_estimated_google.description}
       />
     ),
     cell: ({ row }) => {
       const value = row.getValue("volume_estimated_google") as number;
       return formatLargeNumber(value, 1, 1e4);
     },
-    size: 100,
+    size: 95,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "volume_google",
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        title={columnLabels.volume_google.title}
+        tooltip={columnLabels.volume_google.description}
+      />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue("volume_google") as number;
+      return formatLargeNumber(value, 1, 1e4);
+    },
+    size: 152,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "volume_bing",
+    header: ({ column }) => (
+      <SortableHeader
+        column={column}
+        title={columnLabels.volume_bing.title}
+        tooltip={columnLabels.volume_bing.description}
+      />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue("volume_bing") as number;
+      return formatLargeNumber(value, 1, 1e4);
+    },
+    size: 132,
     enableResizing: false,
   },
   {
@@ -110,12 +190,12 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        title="Competition"
-        tooltip="Competition level for this keyword in Google Ads, ranging from 0-100. Higher values indicate more advertisers bidding on this keyword"
+        title={columnLabels.competition_index.title}
+        tooltip={columnLabels.competition_index.description}
       />
     ),
     cell: ({ row }) => row.getValue("competition_index") as number,
-    size: 130,
+    size: 128,
     enableResizing: false,
   },
   {
@@ -123,20 +203,20 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     header: ({ column }) => (
       <SortableHeader
         column={column}
-        title="CPC ($)"
-        tooltip="Cost Per Click - the average amount advertisers pay for a click on their ad for this keyword"
+        title={columnLabels.cpc_high.title}
+        tooltip={columnLabels.cpc_high.description}
       />
     ),
     cell: ({ row }) => (row.getValue("cpc_high") as number).toFixed(2),
-    size: 100,
+    size: 97,
     enableResizing: false,
   },
   {
     accessorKey: "is_adult",
     header: () => (
       <Header
-        title="Adult"
-        tooltip="Whether this keyword is NSFW/adult content"
+        title={columnLabels.is_adult.title}
+        tooltip={columnLabels.is_adult.description}
       />
     ),
     cell: ({ row }) =>
@@ -152,8 +232,8 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     accessorKey: "volume_history_google",
     header: () => (
       <Header
-        title="Volume history"
-        tooltip="Historical search volume trend showing how search interest has changed over time"
+        title={columnLabels.volume_history_google.title}
+        tooltip={columnLabels.volume_history_google.description}
       />
     ),
     cell: ({ row }) => (
@@ -161,7 +241,8 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
         raw={row.getValue("volume_history_google") as string}
         ratio={
           ((row.getValue("volume_estimated_google") as number) /
-            row.original.volume_google) as number
+            // biome-ignore lint/style/noNonNullAssertion: logic in query ensures that if volume_estimated_google is present, volume_google is also present
+            row.original.volume_google!) as number
         }
       />
     ),
@@ -172,8 +253,8 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     accessorKey: "updated_at",
     header: () => (
       <Header
-        title="Last updated"
-        tooltip="The date when this keyword data was last refreshed from Google"
+        title={columnLabels.updated_at.title}
+        tooltip={columnLabels.updated_at.description}
       />
     ),
     cell: ({ row }) => row.getValue("updated_at") as string,

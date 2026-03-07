@@ -66,7 +66,7 @@ export const plans = [
     features: [
       "Everything in Pro",
       "CSV/Parquet export",
-      "Access to Bing volumes",
+      "Access to Bing data",
     ],
   },
 ];

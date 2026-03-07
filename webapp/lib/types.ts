@@ -1,12 +1,13 @@
 export type Keyword = {
   keyword: string;
-  volume_estimated_google: number;
-  volume_google: number;
-  competition_index: number;
-  cpc_high: number;
-  volume_history_google: string;
-  is_adult: boolean;
-  updated_at: string;
+  volume_estimated_google?: number;
+  volume_google?: number;
+  volume_bing?: number;
+  competition_index?: number;
+  cpc_high?: number;
+  volume_history_google?: string;
+  is_adult?: boolean;
+  updated_at?: string;
 };
 
 export type CacheMiss = {
@@ -34,6 +35,8 @@ export type KeywordRow =
 export type KeywordFilters = {
   keyword?: string;
   volume_estimated_google?: { min?: number; max?: number };
+  volume_google?: { min?: number; max?: number };
+  volume_bing?: { min?: number; max?: number };
   competition_index?: { min?: number; max?: number };
   cpc_high?: { min?: number; max?: number };
   is_adult?: boolean;

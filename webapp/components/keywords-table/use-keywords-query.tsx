@@ -1,4 +1,4 @@
-import type { SortingState } from "@tanstack/react-table";
+import type { SortingState, VisibilityState } from "@tanstack/react-table";
 import { useMemo, useRef, useState } from "react";
 import useSWRSubscription from "swr/subscription";
 import type {
@@ -17,6 +17,7 @@ class KeywordsStreamer extends EventTarget {
   startStreaming(params: {
     page: number;
     filters: KeywordFilters;
+    columns: string[];
     sorting: SortingState;
     isSample: boolean;
   }) {
@@ -74,6 +75,7 @@ const keywordsStreamer = new KeywordsStreamer();
 export function useKeywordsQuery({
   sorting,
   filters,
+  columnVisibility,
   apiPageIndex,
   pageIndex,
   pageSize,
@@ -82,6 +84,7 @@ export function useKeywordsQuery({
 }: {
   sorting: SortingState;
   filters: KeywordFilters;
+  columnVisibility: VisibilityState;
   apiPageIndex: number;
   pageIndex: number;
   pageSize: number;
@@ -97,11 +100,18 @@ export function useKeywordsQuery({
     const key = JSON.stringify({
       page: apiPageIndex,
       filters: filters,
+      columns: Object.entries(columnVisibility)
+        .filter(([columnId, isVisible]) =>
+          columnId === "volume_google"
+            ? isVisible || columnVisibility.volume_history_google // we need volume_google to render volume_history_google
+            : isVisible,
+        )
+        .map(([columnId]) => columnId),
       sorting,
       isSample,
     });
     return key;
-  }, [apiPageIndex, filters, sorting, isSample]);
+  }, [apiPageIndex, filters, columnVisibility, sorting, isSample]);
 
   const { data: keywords = [], error } = useSWRSubscription(
     streamKey,

@@ -10,33 +10,34 @@ import type {
 import { getDuckDBConnection } from "../db/storage";
 import {
   buildOrderByClause,
+  buildSelectClause,
   buildWhereClause,
   createDuckDBCacheIfNeeded,
 } from "./utils";
 
-export async function getKeywordsStreamSample(
-  filters: KeywordFilters,
-  sorting: SortingState,
+export async function getKeywordsStreamSample({
+  filters,
+  sorting,
+  columns,
   page = 1,
   pageSize = 100,
-): Promise<Keyword[]> {
+}: {
+  filters: KeywordFilters;
+  sorting: SortingState;
+  columns: string[];
+  page: number;
+  pageSize: number;
+}): Promise<Keyword[]> {
   const connection = await getDuckDBConnection();
   await createDuckDBCacheIfNeeded(connection);
 
   const { whereClause, params } = buildWhereClause("duckdb", filters);
+  const selectClause = buildSelectClause(columns);
   const orderByClause = buildOrderByClause(sorting);
   const offset = (page - 1) * pageSize;
 
   const result = await connection.runAndReadAll(
-    `SELECT
-      keyword,
-      volume_estimated_google,
-      volume_google,
-      competition_index,
-      cpc_high,
-      volume_history_google,
-      is_adult,
-      updated_at
+    `SELECT ${selectClause}
     FROM keywords_sample kws
     ${whereClause}
     ${orderByClause}
@@ -44,41 +45,65 @@ export async function getKeywordsStreamSample(
     { ...params, pageSize, offset },
   );
   const rows = result.getRows();
+  const colIndices = columns.reduce(
+    (acc, col, index) => {
+      acc[col] = index + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
   const sample = rows.map(
     (row) =>
       ({
         keyword: row[0],
-        volume_estimated_google: Number(row[1]),
-        volume_google: Number(row[2]),
-        competition_index: Number(row[3]),
-        cpc_high: Number(row[4]),
-        volume_history_google: row[5],
-        is_adult: Boolean(row[6]),
-        updated_at: row[7]?.toString(),
+        volume_estimated_google: colIndices.volume_estimated_google
+          ? Number(row[colIndices.volume_estimated_google])
+          : undefined,
+        volume_google: colIndices.volume_google
+          ? Number(row[colIndices.volume_google])
+          : undefined,
+        volume_bing: colIndices.volume_bing
+          ? Number(row[colIndices.volume_bing])
+          : undefined,
+        competition_index: colIndices.competition_index
+          ? Number(row[colIndices.competition_index])
+          : undefined,
+        cpc_high: colIndices.cpc_high
+          ? Number(row[colIndices.cpc_high])
+          : undefined,
+        volume_history_google: colIndices.volume_history_google
+          ? row[colIndices.volume_history_google]
+          : undefined,
+        is_adult: colIndices.is_adult
+          ? Boolean(row[colIndices.is_adult])
+          : undefined,
+        updated_at: colIndices.updated_at
+          ? row[colIndices.updated_at]?.toString()
+          : undefined,
       }) as Keyword,
   );
   return sample;
 }
 
-export async function* getKeywordsStreamClickhouse(
-  filters: KeywordFilters,
-  sorting: SortingState,
+export async function* getKeywordsStreamClickhouse({
+  filters,
+  sorting,
+  columns,
   page = 1,
   pageSize = 100,
-): AsyncGenerator<KeywordsStreamResponse, Keyword[], unknown> {
+}: {
+  filters: KeywordFilters;
+  sorting: SortingState;
+  columns: string[];
+  page: number;
+  pageSize: number;
+}): AsyncGenerator<KeywordsStreamResponse, Keyword[], unknown> {
   const { whereClause, params } = buildWhereClause("clickhouse", filters);
+  const selectClause = buildSelectClause(columns);
   const orderByClause = buildOrderByClause(sorting);
 
   const query = `
-    SELECT
-      kws.keyword,
-      kws.volume_estimated_google,
-      kws.volume_google,
-      kws.competition_index,
-      kws.cpc_high,
-      kws.volume_history_google,
-      kws.is_adult,
-      kws.updated_at
+    SELECT ${selectClause}
     FROM keywords kws
     ${whereClause}
     ${orderByClause}

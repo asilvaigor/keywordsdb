@@ -1,18 +1,10 @@
 "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
 
 import type { Table } from "@tanstack/react-table";
-import { Plus, Settings, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -20,23 +12,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import type { KeywordFilters, KeywordRow } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { columnLabels } from "./columns";
 import { DownloadModal } from "./download-modal";
-
-const columnLabels: Record<string, string> = {
-  volume_estimated_google: "Volume",
-  competition_index: "Competition",
-  cpc_high: "CPC ($)",
-  is_adult: "Adult",
-  volume_history_google: "Volume History",
-  updated_at: "Last Updated",
-};
+import OptionsModal from "./options-modal";
 
 type FilterOperator = "eq" | "gte" | "lte" | "between";
 type FilterColumn =
   | "volume_estimated_google"
+  | "volume_google"
+  | "volume_bing"
   | "competition_index"
   | "cpc_high";
 
@@ -52,10 +38,15 @@ interface DynamicFilter {
   };
 }
 
-const columnOptions = [
-  { value: "volume_estimated_google", label: "Volume" },
-  { value: "competition_index", label: "Competition" },
-  { value: "cpc_high", label: "CPC ($)" },
+const filterColumns = [
+  {
+    value: "volume_estimated_google",
+    label: columnLabels.volume_estimated_google.title,
+  },
+  { value: "volume_google", label: columnLabels.volume_google.title },
+  { value: "volume_bing", label: columnLabels.volume_bing.title },
+  { value: "competition_index", label: columnLabels.competition_index.title },
+  { value: "cpc_high", label: columnLabels.cpc_high.title },
 ] as const;
 
 const operatorOptions = [
@@ -68,7 +59,7 @@ const operatorOptions = [
 export function Filters({
   table,
   totalRows,
-  canDownload,
+  isMaxPlan,
   isSample,
   email,
   handleDownload,
@@ -77,7 +68,7 @@ export function Filters({
 }: {
   table: Table<KeywordRow>;
   totalRows?: number;
-  canDownload: boolean;
+  isMaxPlan: boolean;
   isSample: boolean;
   email?: string;
   handleDownload: (format: "parquet" | "csv") => void;
@@ -85,7 +76,6 @@ export function Filters({
   debouncedFilters: KeywordFilters;
 }) {
   const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>([]);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Add validation function
   const validateFilter = (
@@ -123,7 +113,7 @@ export function Filters({
   };
 
   const addFilter = () => {
-    const availableColumn = columnOptions.find(
+    const availableColumn = filterColumns.find(
       (opt) => !dynamicFilters.some((f) => f.column === opt.value),
     );
     if (!availableColumn) return;
@@ -255,7 +245,7 @@ export function Filters({
         <Button
           variant="outline"
           onClick={addFilter}
-          disabled={dynamicFilters.length >= columnOptions.length}
+          disabled={dynamicFilters.length >= filterColumns.length}
           className="flex items-center gap-2"
           aria-label="Add filter"
         >
@@ -265,7 +255,7 @@ export function Filters({
 
         {/* Download button */}
         <DownloadModal
-          canDownload={canDownload}
+          canDownload={isSample || isMaxPlan}
           email={email}
           totalRows={totalRows}
           handleDownload={handleDownload}
@@ -274,101 +264,13 @@ export function Filters({
         />
 
         {/* Options button */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Options"
-        >
-          <Settings />
-        </Button>
+        <OptionsModal
+          table={table}
+          isSample={isSample}
+          canAccessBingData={isSample || isMaxPlan}
+          email={email}
+        />
       </div>
-
-      {/* Options modal */}
-      <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent
-          className="sm:max-w-xs gap-0 p-0 overflow-hidden"
-          aria-describedby={undefined}
-        >
-          <DialogHeader className="px-5 pt-5 pb-4 border-b">
-            <DialogTitle>Options</DialogTitle>
-          </DialogHeader>
-
-          <div className="px-5 py-4 space-y-5">
-            {/* Adult content filter */}
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Filters
-              </p>
-              <div className="flex items-center justify-between gap-4">
-                <div className="shrink-0">
-                  <Label className="text-sm font-medium">Adult content</Label>
-                  {isSample && (
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Not available in demo
-                    </p>
-                  )}
-                </div>
-                <Select
-                  value={
-                    table.getColumn("is_adult")?.getFilterValue() as string
-                  }
-                  onValueChange={(val) => {
-                    const col = table.getColumn("is_adult");
-                    col?.setFilterValue(val);
-                  }}
-                  disabled={isSample}
-                >
-                  <SelectTrigger
-                    className="w-36"
-                    aria-label="Adult content filter"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="false">Exclude</SelectItem>
-                    <SelectItem value="undefined">Include</SelectItem>
-                    <SelectItem value="true">Show only adult</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <Separator />
-
-            {/* Column visibility */}
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Columns
-              </p>
-              <div className="-mx-2">
-                {table
-                  .getAllColumns()
-                  .filter((col) => col.getCanHide())
-                  .map((col) => (
-                    <label
-                      key={col.id}
-                      htmlFor={`col-${col.id}`}
-                      className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted/60 cursor-pointer transition-colors"
-                    >
-                      <span className="text-sm">
-                        {columnLabels[col.id] ?? col.id}
-                      </span>
-                      <Checkbox
-                        id={`col-${col.id}`}
-                        checked={col.getIsVisible()}
-                        onCheckedChange={(checked) =>
-                          col.toggleVisibility(!!checked)
-                        }
-                        className="rounded-sm"
-                      />
-                    </label>
-                  ))}
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       {/* Dynamic filters */}
       {dynamicFilters.length > 0 && (
@@ -392,18 +294,22 @@ export function Filters({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {columnOptions.map((option) => (
-                    <SelectItem
-                      key={option.value}
-                      value={option.value}
-                      disabled={
-                        option.value !== filter.column &&
-                        dynamicFilters.some((f) => f.column === option.value)
-                      }
-                    >
-                      {option.label}
-                    </SelectItem>
-                  ))}
+                  {filterColumns
+                    .filter((option) =>
+                      table.getColumn(option.value)?.getIsVisible(),
+                    )
+                    .map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={option.value}
+                        disabled={
+                          option.value !== filter.column &&
+                          dynamicFilters.some((f) => f.column === option.value)
+                        }
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
                 </SelectContent>
               </Select>
 

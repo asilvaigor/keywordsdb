@@ -4,7 +4,7 @@ import { parseSearchParams } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const { filters, sorting, page, pageSize, isSample } =
+  const { filters, sorting, columns, page, pageSize, isSample } =
     parseSearchParams(searchParams);
 
   const encoder = new TextEncoder();
@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
         for await (const batch of getKeywordsStream(
           filters,
           sorting,
+          columns,
           page,
           pageSize,
           isSample,

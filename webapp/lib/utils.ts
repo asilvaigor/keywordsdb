@@ -17,6 +17,10 @@ export function parseSearchParams(searchParams: URLSearchParams) {
     volume_estimated_google:
       JSON.parse(searchParams.get("volume_estimated_google") || "null") ??
       undefined,
+    volume_google:
+      JSON.parse(searchParams.get("volume_google") || "null") ?? undefined,
+    volume_bing:
+      JSON.parse(searchParams.get("volume_bing") || "null") ?? undefined,
     competition_index:
       JSON.parse(searchParams.get("competition_index") || "null") ?? undefined,
     cpc_high: JSON.parse(searchParams.get("cpc_high") || "null") ?? undefined,
@@ -36,22 +40,25 @@ export function parseSearchParams(searchParams: URLSearchParams) {
       desc: isDescending,
     };
   });
+  const columns = searchParams.getAll("columns");
   const page = getInt(searchParams.get("page"));
   const pageSize = getInt(searchParams.get("pageSize"));
   const isSample = searchParams.get("isSample") === "true";
 
-  return { filters, sorting, page, pageSize, isSample };
+  return { filters, sorting, columns, page, pageSize, isSample };
 }
 
 export function buildSearchParams({
   filters,
   sorting,
+  columns,
   page,
   pageSize,
   isSample,
 }: {
   filters?: KeywordFilters;
   sorting?: SortingState;
+  columns?: string[];
   page?: number;
   pageSize?: number;
   isSample?: boolean;
@@ -72,6 +79,12 @@ export function buildSearchParams({
       JSON.stringify(filters.volume_estimated_google),
     );
   }
+  if (filters?.volume_google) {
+    urlParams.append("volume_google", JSON.stringify(filters.volume_google));
+  }
+  if (filters?.volume_bing) {
+    urlParams.append("volume_bing", JSON.stringify(filters.volume_bing));
+  }
   if (filters?.competition_index) {
     urlParams.append(
       "competition_index",
@@ -90,6 +103,11 @@ export function buildSearchParams({
   if (sorting && sorting.length > 0) {
     for (const sort of sorting) {
       urlParams.append("sortBy", `${sort.desc ? "-" : "+"}${sort.id}`);
+    }
+  }
+  if (columns && columns.length > 0) {
+    for (const column of columns) {
+      urlParams.append("columns", column);
     }
   }
   return urlParams;

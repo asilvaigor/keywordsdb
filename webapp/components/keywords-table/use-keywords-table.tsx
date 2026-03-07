@@ -35,7 +35,13 @@ export function useKeywordsTable({
     { id: "volume_estimated_google", desc: true },
   ]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({
+    volume_estimated_google: true,
+    volume_google: false,
+    volume_bing: false,
+    competition_index: true,
+    cpc_high: true,
     is_adult: false,
+    volume_history_google: true,
     updated_at: false,
   });
 
@@ -50,6 +56,7 @@ export function useKeywordsTable({
     useKeywordsQuery({
       sorting,
       filters: debouncedFilters,
+      columnVisibility,
       apiPageIndex,
       pageIndex,
       pageSize,

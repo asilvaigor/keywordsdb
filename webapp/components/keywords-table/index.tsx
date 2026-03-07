@@ -20,11 +20,11 @@ const PAGE_SIZE = 10;
 
 export function KeywordsTable({
   isSample = false,
-  canDownload = false,
+  isMaxPlan = false,
   email,
 }: {
   isSample?: boolean;
-  canDownload?: boolean;
+  isMaxPlan?: boolean;
   email?: string;
 }) {
   const {
@@ -47,7 +47,7 @@ export function KeywordsTable({
       <Filters
         table={table}
         isSample={isSample}
-        canDownload={canDownload}
+        isMaxPlan={isMaxPlan}
         email={email}
         totalRows={totalRows}
         handleDownload={handleDownload}

@@ -25,6 +25,25 @@ export async function createDuckDBCacheIfNeeded(connection: DuckDBConnection) {
   }
 }
 
+export function buildSelectClause(columns: string[]) {
+  const validColumns = [
+    "volume_estimated_google",
+    "volume_google",
+    "volume_bing",
+    "competition_index",
+    "cpc_high",
+    "volume_history_google",
+    "is_adult",
+    "updated_at",
+  ];
+  columns.forEach((col) => {
+    if (!validColumns.includes(col)) {
+      throw new Error(`Invalid column: ${col}`);
+    }
+  });
+  return `kws.keyword,${columns.map((c) => `kws.${c}`).join(", ")}`;
+}
+
 export function buildWhereClause(
   mode: "duckdb" | "clickhouse",
   filters?: KeywordFilters,
@@ -49,6 +68,22 @@ export function buildWhereClause(
   if (filters?.volume_estimated_google?.max !== undefined) {
     whereClause += ` AND kws.volume_estimated_google <= ${mode === "clickhouse" ? "{max_searches:Int32}" : "$max_searches"}`;
     params = { ...params, max_searches: filters?.volume_estimated_google?.max };
+  }
+  if (filters?.volume_google?.min !== undefined) {
+    whereClause += ` AND kws.volume_google >= ${mode === "clickhouse" ? "{min_searches_google:Int32}" : "$min_searches_google"}`;
+    params = { ...params, min_searches_google: filters?.volume_google?.min };
+  }
+  if (filters?.volume_google?.max !== undefined) {
+    whereClause += ` AND kws.volume_google <= ${mode === "clickhouse" ? "{max_searches_google:Int32}" : "$max_searches_google"}`;
+    params = { ...params, max_searches_google: filters?.volume_google?.max };
+  }
+  if (filters?.volume_bing?.min !== undefined) {
+    whereClause += ` AND kws.volume_bing >= ${mode === "clickhouse" ? "{min_searches_bing:Int32}" : "$min_searches_bing"}`;
+    params = { ...params, min_searches_bing: filters?.volume_bing?.min };
+  }
+  if (filters?.volume_bing?.max !== undefined) {
+    whereClause += ` AND kws.volume_bing <= ${mode === "clickhouse" ? "{max_searches_bing:Int32}" : "$max_searches_bing"}`;
+    params = { ...params, max_searches_bing: filters?.volume_bing?.max };
   }
   if (filters?.competition_index?.min !== undefined) {
     whereClause += ` AND kws.competition_index >= ${mode === "clickhouse" ? "{min_competition:Float32}" : "$min_competition"}`;
@@ -77,9 +112,13 @@ export function buildOrderByClause(sort?: SortingState) {
   if (!sort || sort.length === 0) return "";
   sort.forEach((s) => {
     if (
-      !["volume_estimated_google", "competition_index", "cpc_high"].includes(
-        s.id,
-      )
+      ![
+        "volume_estimated_google",
+        "volume_google",
+        "volume_bing",
+        "competition_index",
+        "cpc_high",
+      ].includes(s.id)
     ) {
       throw new Error(`Invalid sort column: ${s.id}`);
     }
