@@ -12,6 +12,12 @@ function Footer() {
         </div>
         <div className="flex items-center gap-6">
           <Link
+            href="/blog"
+            className="transition-colors hover:text-foreground"
+          >
+            Blog
+          </Link>
+          <Link
             href="/privacy"
             className="transition-colors hover:text-foreground"
           >

@@ -12,6 +12,7 @@ COPY app app
 COPY components components
 COPY lib lib
 COPY public public
+COPY content content
 COPY next.config.ts components.json tsconfig.json postcss.config.mjs instrumentation-client.ts ./
 
 ARG ENV
