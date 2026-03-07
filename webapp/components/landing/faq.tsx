@@ -7,6 +7,11 @@ import {
 
 const faqs = [
   {
+    question: "What is KeywordsDB?",
+    answer:
+      "KeywordsDB is a powerful keyword research tool that gives you direct access to 290M+ keywords from Google Search. It is the ideal tool for SEO optimization, content strategy, PPC campaigns, and market research. With KeywordsDB, you can search, filter, and sort keywords by volume, CPC, and competition to find hidden opportunities and grow your organic traffic.",
+  },
+  {
     question: "Where does the keyword data come from?",
     answer:
       "All keyword data comes directly from the Google Ads API — the same data advertisers use to plan their campaigns. This includes real search volume, CPC bids, and competition scores for 290M+ English keywords.",

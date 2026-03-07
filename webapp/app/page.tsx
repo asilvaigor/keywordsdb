@@ -1,7 +1,7 @@
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import Benefits from "@/components/landing/benefits";
 import FAQ from "@/components/landing/faq";
-import Features from "@/components/landing/features";
 import FinalCTA from "@/components/landing/final-cta";
 import Hero from "@/components/landing/hero";
 import Pricing from "@/components/landing/pricing";
@@ -15,7 +15,7 @@ function Home() {
       <main className="flex-1">
         <Hero />
         <Stats />
-        <Features />
+        <Benefits />
         <Video />
         <Pricing />
         <FAQ />

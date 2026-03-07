@@ -219,7 +219,7 @@ const Header = ({ userData }: { userData?: UserData }) => {
         {isLanding && (
           <nav className="hidden items-center gap-1 md:flex">
             <Button variant="ghost" asChild>
-              <a href="#features">Features</a>
+              <a href="#benefits">Benefits</a>
             </Button>
             <Button variant="ghost" asChild>
               <a href="#pricing">Pricing</a>
