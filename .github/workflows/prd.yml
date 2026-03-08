@@ -37,6 +37,8 @@ jobs:
     needs: [lint-js]
     steps:
       - uses: actions/checkout@v4
+        with:
+          lfs: true
       - uses: ./.github/actions/build
         with:
           env: prd

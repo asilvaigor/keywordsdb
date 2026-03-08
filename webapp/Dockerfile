@@ -12,7 +12,8 @@ COPY app app
 COPY components components
 COPY lib lib
 COPY public public
-COPY next.config.ts components.json tsconfig.json postcss.config.mjs instrumentation-client.ts ./
+COPY content content
+COPY next.config.ts components.json tsconfig.json postcss.config.mjs instrumentation-client.ts mdx-components.tsx ./
 
 ARG ENV
 ENV NEXT_PUBLIC_ENV=$ENV
