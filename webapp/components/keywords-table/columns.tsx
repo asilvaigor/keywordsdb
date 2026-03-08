@@ -2,8 +2,10 @@
 
 import type { CellContext, Column, ColumnDef } from "@tanstack/react-table";
 import { ArrowDown, ArrowUp, Info } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { HybridTooltip } from "@/components/ui/hybrid-tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -13,6 +15,26 @@ import {
 import type { Keyword, KeywordRow } from "@/lib/types";
 import { formatLargeNumber } from "./utils";
 import { VolumeHistoryCell } from "./volume-history";
+
+function TruncatedCell({ text }: { text: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [isTruncated, setIsTruncated] = useState(false);
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: when page changes, check if the new text is truncated
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    setIsTruncated(el.scrollWidth > el.offsetWidth);
+  }, [text]);
+
+  return (
+    <HybridTooltip key={text} content={text} disabled={!isTruncated}>
+      <div ref={ref} className="truncate">
+        {text}
+      </div>
+    </HybridTooltip>
+  );
+}
 
 function Header({ title, tooltip }: { title: string; tooltip: string }) {
   return (
@@ -128,11 +150,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
         tooltip={columnLabels.keyword.description}
       />
     ),
-    cell: ({ row }) => (
-      <div className="truncate" title={row.getValue("keyword")}>
-        {row.getValue("keyword")}
-      </div>
-    ),
+    cell: ({ row }) => <TruncatedCell text={row.getValue("keyword")} />,
     size: 200,
     enableResizing: false,
     enableHiding: false,

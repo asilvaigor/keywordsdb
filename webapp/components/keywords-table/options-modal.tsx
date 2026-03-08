@@ -27,6 +27,7 @@ import {
 import { billingPortal } from "@/lib/stripe/billing-portal";
 import type { KeywordRow } from "@/lib/types";
 import { Button } from "../ui/button";
+import { HybridTooltip } from "../ui/hybrid-tooltip";
 import { columnLabels } from "./columns";
 
 const visibilityColumns: Record<string, string> = Object.entries(columnLabels)
@@ -135,19 +136,22 @@ function OptionsModal({
                         <span className="text-sm">
                           {visibilityColumns[col.id]}
                         </span>
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <span className="text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-default">
-                              <Info className="h-3.5 w-3.5" />
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent className="flex flex-row items-start gap-2 max-w-xs">
-                            {
+                        {/** biome-ignore lint/a11y/noStaticElementInteractions: tooltip trigger */}
+                        <span
+                          onClick={(e) => e.preventDefault()}
+                          onKeyDown={(e) => e.preventDefault()}
+                        >
+                          <HybridTooltip
+                            content={
                               columnLabels[col.id as keyof typeof columnLabels]
                                 .description
                             }
-                          </TooltipContent>
-                        </Tooltip>
+                          >
+                            <span className="text-muted-foreground/60 hover:text-muted-foreground transition-colors cursor-default">
+                              <Info className="h-3.5 w-3.5" />
+                            </span>
+                          </HybridTooltip>
+                        </span>
                       </div>
                       <Checkbox
                         id={`col-${col.id}`}
