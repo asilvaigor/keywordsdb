@@ -45,19 +45,43 @@ export function useMDXComponents(components: MDXComponents): MDXComponents {
     ...components,
     KeywordsTable: NotProseKeywordsTable,
     CTAButton,
+    blockquote: ({ children, ...props }) => (
+      <blockquote
+        className="border-s-border [&>p:first-of-type]:before:content-none [&>p:last-of-type]:after:content-none"
+        {...props}
+      >
+        {children}
+      </blockquote>
+    ),
     table: ({ children, ...props }) => (
-      <div className="overflow-x-auto my-6">
+      <div className="overflow-x-auto my-4">
         <table {...props}>{stripWhitespace(children)}</table>
       </div>
     ),
     thead: ({ children, ...props }) => (
-      <thead {...props}>{stripWhitespace(children)}</thead>
+      <thead className="border-border border-b-2" {...props}>
+        {stripWhitespace(children)}
+      </thead>
     ),
     tbody: ({ children, ...props }) => (
-      <tbody {...props}>{stripWhitespace(children)}</tbody>
+      <tbody className="border-border" {...props}>
+        {stripWhitespace(children)}
+      </tbody>
     ),
     tr: ({ children, ...props }) => (
-      <tr {...props}>{stripWhitespace(children)}</tr>
+      <tr className="border-border" {...props}>
+        {stripWhitespace(children)}
+      </tr>
+    ),
+    th: ({ children, ...props }) => (
+      <th className="border-border" {...props}>
+        {stripWhitespace(children)}
+      </th>
+    ),
+    td: ({ children, ...props }) => (
+      <td className="border-border" {...props}>
+        {stripWhitespace(children)}
+      </td>
     ),
   };
 }

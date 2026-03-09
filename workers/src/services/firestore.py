@@ -106,7 +106,7 @@ class FirestoreClient:
         cache_key = (
             f'keywords{"-sample" if sample else ""}-{{"is_adult":false}}-'
             '[{{"id":"volume_estimated_google","desc":true}}]-'
-            "volume_estimated_google,competition_index,cpc_high,volume_history_google-1-100"
+            "volume_estimated_google,volume_google,competition_index,cpc_high,volume_history_google-1-100"
         )
         cache_key_counts = f"keyword-counts{'-sample' if sample else ''}-{{}}"
         key = cache_key_counts if counts else cache_key
