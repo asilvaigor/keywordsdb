@@ -6,6 +6,7 @@ import polars as pl
 from google.cloud.exceptions import NotFound
 
 from src.services.bigquery import BigQueryClient
+from src.services.bing import GOOGLE_BING_VOLUME_RATIO
 from src.services.clickhouse import ClickhouseClient
 from src.services.firestore import FirestoreClient
 from src.services.logger import get_logger
@@ -180,7 +181,7 @@ def commit(
         """
         logger.info("Calculating estimated google volumes")
         update_query = f"""
-            DECLARE mu FLOAT64 DEFAULT LOG(30);
+            DECLARE mu FLOAT64 DEFAULT LOG({GOOGLE_BING_VOLUME_RATIO});
             DECLARE sigma FLOAT64 DEFAULT 0.6;
             DECLARE special_char_penalty FLOAT64 DEFAULT 10;
 
@@ -208,18 +209,28 @@ def commit(
             ));
 
             UPDATE `{client.get_full_name("keywords")}`
-            SET volume_estimated_google = CAST(ROUND(EXP(
-                (LOG(GREATEST(volume_bing, 1)) + mu)
-                - sigma * (
-                    (1.0 / SQRT(2.0 * ACOS(-1.0))) * EXP(
-                        -POW((LOG(volume_google) - LOG(GREATEST(volume_bing, 1)) - mu) / sigma, 2) / 2.0
+            SET volume_estimated_google = CASE
+
+                WHEN volume_google = -1 THEN CAST(ROUND(EXP(
+                    LOG(GREATEST(volume_bing, 1)) + mu
+                    - special_char_penalty * count_special_chars(keyword)
+                )) AS INT64)
+
+                ELSE CAST(ROUND(EXP(
+                    LOG(GREATEST(volume_bing, 1)) + mu
+                    - sigma * (
+                        (1.0 / SQRT(2.0 * ACOS(-1.0))) * EXP(
+                            -POW((LOG(GREATEST(volume_google, 1)) - LOG(GREATEST(volume_bing, 1)) - mu) / sigma, 2)
+                            / 2.0
+                        )
+                        / NULLIF(0.5 * (1.0 + erf_approx(
+                            (LOG(GREATEST(volume_google, 1)) - LOG(GREATEST(volume_bing, 1)) - mu) / (sigma * SQRT(2.0))
+                        )), 0)
                     )
-                    / NULLIF(0.5 * (1.0 + erf_approx(
-                        (LOG(volume_google) - LOG(GREATEST(volume_bing, 1)) - mu) / (sigma * SQRT(2.0))
-                    )), 0)
-                )
-                - special_char_penalty * count_special_chars(keyword)
-            )) AS INT64)
+                    - special_char_penalty * count_special_chars(keyword)
+                )) AS INT64)
+
+                END
             WHERE volume_bing IS NOT NULL;
         """
         update_job = client.client.query(update_query)
