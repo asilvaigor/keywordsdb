@@ -1,6 +1,8 @@
 import asyncio
 import logging
 import os
+import zlib
+from datetime import date, timedelta
 from typing import Any
 from urllib.error import URLError
 
@@ -9,6 +11,8 @@ from asynciolimiter import Limiter
 from bingads import AuthorizationData, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
 from structlog.stdlib import BoundLogger
+
+GOOGLE_BING_VOLUME_RATIO = 8
 
 
 class BingAdsClient:
@@ -65,7 +69,12 @@ class BingAdsClient:
         self._logger = logger
         logging.getLogger("suds").setLevel(logging.ERROR)
 
-    async def get_keyword_info(self, keywords: list[str]) -> pl.DataFrame:
+    async def get_keyword_info(self, keywords: list[str], include_related: bool = False) -> pl.DataFrame:
+        """
+        Args:
+            keywords: List of keywords to fetch data for.
+            include_related: If True, also return related keywords suggested by the API beyond the input list.
+        """
         if not self._oauth.oauth_tokens.refresh_token:
             raise ValueError("Refresh token is not set. Please authenticate first.")
         if len(keywords) == 0:
@@ -80,7 +89,7 @@ class BingAdsClient:
                 long_keywords.append(keyword)
 
         batches: list[list[str]] = [valid_keywords[i : i + 500] for i in range(0, len(valid_keywords), 500)]
-        tasks = [self._get_keyword_batch_info(batch) for batch in batches]
+        tasks = [self._get_keyword_batch_info(batch, include_related=include_related) for batch in batches]
         results: list[pl.DataFrame] = await asyncio.gather(*tasks)
 
         df = pl.concat(results).unique(subset=["keyword"])
@@ -99,7 +108,7 @@ class BingAdsClient:
             )
         return df
 
-    async def _get_keyword_batch_info(self, keywords: list[str]) -> pl.DataFrame:
+    async def _get_keyword_batch_info(self, keywords: list[str], include_related: bool = False) -> pl.DataFrame:
         if len(keywords) > 500:
             raise ValueError("Maximum 500 keywords are allowed per request.")
         if any(len(keyword) > 100 for keyword in keywords):
@@ -114,6 +123,7 @@ class BingAdsClient:
                 response = await asyncio.wait_for(
                     asyncio.to_thread(
                         self._adinsight_service.GetKeywordIdeas,
+                        ExpandIdeas=include_related,
                         IdeaAttributes=ideas_attributes,
                         SearchParameters=search_parameters,
                     ),
@@ -121,29 +131,29 @@ class BingAdsClient:
                 )
             except TimeoutError:
                 self._logger.warning("GetKeywordIdeas timed out after 10 minutes, retrying...")
-                return await self._get_keyword_batch_info(keywords)
+                return await self._get_keyword_batch_info(keywords, include_related)
             except URLError as e:
                 if e.errno == 32:
                     self._logger.warning("Error broken pipe, retrying...")
-                    return await self._get_keyword_batch_info(keywords)
+                    return await self._get_keyword_batch_info(keywords, include_related)
                 elif "handshake operation timed out" in str(e):
                     self._logger.warning("Error handshake operation timed out, retrying...")
-                    return await self._get_keyword_batch_info(keywords)
+                    return await self._get_keyword_batch_info(keywords, include_related)
                 raise
             except ConnectionResetError:
                 self._logger.warning("Error connection reset, retrying...")
-                return await self._get_keyword_batch_info(keywords)
+                return await self._get_keyword_batch_info(keywords, include_related)
             except AttributeError as e:
                 if "NoneType" in str(e):
                     # Bug on this line
                     # https://github.com/suds-community/suds/blob/master/suds/bindings/document.py#L102
                     self._logger.warning("Error NoneType, retrying...")
-                    return await self._get_keyword_batch_info(keywords)
+                    return await self._get_keyword_batch_info(keywords, include_related)
                 raise
             except Exception as e:
                 if e.args and isinstance(e.args[0], tuple) and e.args[0][0] >= 500:
                     self._logger.warning(f"Error {e.args[0][0]}, retrying...")
-                    return await self._get_keyword_batch_info(keywords)
+                    return await self._get_keyword_batch_info(keywords, include_related)
                 raise
 
         out = []
@@ -151,14 +161,45 @@ class BingAdsClient:
             keyword = k["Keyword"]
             monthly_search_counts = k["MonthlySearchCounts"]
             avg_searches = sum(monthly_search_counts[0]) / 12 if monthly_search_counts is not None else 0
-            out.append({"keyword": keyword, "volume_bing": avg_searches})
+            if include_related:
+                cpc_high = k["SuggestedBid"]
+                competition_baseline = 0 if k["Competition"] == "Low" else 33 if k["Competition"] == "Medium" else 66
+                competition_index = round(competition_baseline + min(cpc_high * 10, 33))
 
-        df = pl.DataFrame(out, schema={"keyword": pl.String, "volume_bing": pl.Int64})
-        if set(keywords) != set(df["keyword"].to_list()):
+                if monthly_search_counts is not None:
+                    today = date.today() - timedelta(days=10)  # bing says up to 3 weeks delay in data
+                    s = f"{today.year},{today.month},"
+                    s += f"{','.join(str(m * GOOGLE_BING_VOLUME_RATIO) for m in monthly_search_counts[0])}"
+                    volume_history_google = zlib.compress(s.encode("utf-8"))
+                else:
+                    volume_history_google = None
+
+                out.append(
+                    {
+                        "keyword": keyword,
+                        "volume_bing": avg_searches,
+                        "competition_index": competition_index,
+                        "cpc_high": cpc_high,
+                        "volume_history_google": volume_history_google,
+                    }
+                )
+            else:
+                out.append({"keyword": keyword, "volume_bing": avg_searches})
+
+        schema = {"keyword": pl.String, "volume_bing": pl.Int64}
+        if include_related:
+            schema = {
+                **schema,
+                "competition_index": pl.Int64,
+                "cpc_high": pl.Float64,
+                "volume_history_google": pl.Binary,
+            }
+        df = pl.DataFrame(out, schema=schema)
+        if not include_related and set(keywords) != set(df["keyword"].to_list()):
             # I think there's a concurrency issue in bing ads package, the inputs get switched up and we might miss some
             # responses. It seems to happen about 5% of time, just doing a retry
             self._logger.debug("Input keywords do not match output keywords. Retrying...")
-            return await self._get_keyword_batch_info(keywords)
+            return await self._get_keyword_batch_info(keywords, include_related)
 
         return df
 
@@ -217,6 +258,6 @@ class BingAdsClient:
         )
 
         ideas_attributes = self._adinsight_service.factory.create("ArrayOfKeywordIdeaAttribute")
-        ideas_attributes.KeywordIdeaAttribute.append(["Keyword", "MonthlySearchCounts"])
+        ideas_attributes.KeywordIdeaAttribute.append(["Keyword", "MonthlySearchCounts", "Competition", "SuggestedBid"])
 
         return search_parameters, ideas_attributes

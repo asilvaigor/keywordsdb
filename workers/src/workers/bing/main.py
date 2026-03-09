@@ -4,6 +4,7 @@ import multiprocessing
 from src.services.bigquery import BigQueryClient
 from src.services.storage import StorageClient
 from src.workers.bing.adult_classifier import is_adult
+from src.workers.bing.banned_keywords import update_banned_keywords
 from src.workers.bing.context import Context
 
 
@@ -60,6 +61,8 @@ async def main_async() -> None:
     except FileNotFoundError:
         ctx.logger.info("No file to ingest, merging bing volumes to main table")
         merge_to_main_table(ctx.bigquery_client)
+        ctx.logger.info("Success")
+        await update_banned_keywords(ctx)
         ctx.logger.info("Success")
         exit(1)
 
