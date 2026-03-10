@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import Script from "next/script";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -52,8 +53,42 @@ export default async function BlogPostPage({
   if (!post) notFound();
 
   const { default: PostContent } = await import(`@/content/blog/${slug}.mdx`);
+  const featuredSnippetJsonLd = (() => {
+    if (post.featuredSnippetItems && post.featuredSnippetItems.length > 0) {
+      return JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        name: post.title,
+        itemListOrder: "https://schema.org/ItemListOrderDescending",
+        numberOfItems: post.featuredSnippetItems.length,
+        itemListElement: post.featuredSnippetItems.map((item) => ({
+          "@type": "ListItem",
+          position: item.position,
+          name: item.name,
+          description: item.value,
+        })),
+      });
+    }
+    if (post.featuredSnippetDescription) {
+      return JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: post.title,
+        description: post.featuredSnippetDescription,
+        url: `/blog/${slug}`,
+      });
+    }
+    return null;
+  })();
   return (
     <div className="flex flex-col">
+      {featuredSnippetJsonLd && (
+        <Script
+          type="application/ld+json"
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: controlled server-side data
+          dangerouslySetInnerHTML={{ __html: featuredSnippetJsonLd }}
+        />
+      )}
       <Header />
       <main className="flex-1">
         <article className="container mx-auto max-w-3xl px-4 py-12">
@@ -112,6 +147,7 @@ export default async function BlogPostPage({
                   ? post.coverImageHeight
                   : post.ogImageHeight
               }
+              preload
             />
             {post.coverImageCitation && (
               <p className="mt-2 text-sm text-muted-foreground text-center">

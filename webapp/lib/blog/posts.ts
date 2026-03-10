@@ -2,6 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 
+export type FeaturedSnippetItem = {
+  position: number;
+  name: string;
+  value: string;
+};
+
 export type BlogPost = {
   slug: string;
   title: string;
@@ -17,6 +23,8 @@ export type BlogPost = {
   description: string;
   date: string;
   readingTime: string;
+  featuredSnippetItems?: FeaturedSnippetItem[];
+  featuredSnippetDescription?: string;
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");

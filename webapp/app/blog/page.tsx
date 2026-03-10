@@ -63,7 +63,7 @@ function FeaturedCard({ post }: { post: BlogPost }) {
           width={post.coverImageWidth ?? post.ogImageWidth}
           height={post.coverImageHeight ?? post.ogImageHeight}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-          priority
+          preload
         />
         <div className="absolute inset-0 bg-linear-to-r from-transparent to-card/20 lg:block hidden" />
       </div>
