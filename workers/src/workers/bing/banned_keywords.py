@@ -7,7 +7,18 @@ from src.workers.bing.context import Context
 
 
 def get_google_banned_seeds() -> list[str]:
-    return ["biden", "bolsonaro", "democrat", "lula", "maduro", "rape", "republican", "trump"]
+    return [
+        "biden",
+        "bolsonaro",
+        "democrat",
+        "donald trump",
+        "joe biden",
+        "lula",
+        "maduro",
+        "rape",
+        "republican",
+        "trump",
+    ]
 
 
 def insert_banned(client: BigQueryClient, df: pl.DataFrame, query_keywords: list[str]) -> None:
