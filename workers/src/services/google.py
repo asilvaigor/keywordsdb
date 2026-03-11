@@ -57,25 +57,6 @@ class GoogleAdsClient:
             if any([r is not None for r in results])
             else pl.DataFrame(schema=schema)
         )
-
-        keywords_not_found = set(keywords) - set(df["keyword"].to_list())
-        if keywords_not_found:
-            df = pl.concat(
-                [
-                    df,
-                    pl.DataFrame(
-                        {
-                            "keyword": list(keywords_not_found),
-                            "volume_google": 0,
-                            "competition_index": 0,
-                            "cpc_high": 0.0,
-                            "volume_history_google": None,
-                        },
-                        schema=schema,
-                    ),
-                ]
-            )
-
         return df
 
     async def _get_keyword_batch_info(self, keywords: list[str], min_search_volume: int | None) -> pl.DataFrame | None:

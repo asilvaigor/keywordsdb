@@ -138,7 +138,7 @@ def commit(
                 VALUES (
                     tmp.keyword,
                     tmp.volume_google,
-                    LEAST(tmp.volume_google, 1000000),  -- cap estimated volume at 1M
+                    LEAST(tmp.volume_google, 100000),  -- cap estimated volume at 100k
                     tmp.competition_index,
                     tmp.cpc_high,
                     tmp.volume_history_google,
