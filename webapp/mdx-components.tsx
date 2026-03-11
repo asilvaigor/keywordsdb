@@ -30,12 +30,10 @@ function stripWhitespace(children: React.ReactNode) {
   );
 }
 
-function NotProseKeywordsTable(
-  props: React.ComponentProps<typeof KeywordsTable>,
-) {
+function SampleKeywordsTable() {
   return (
     <div className="not-prose">
-      <KeywordsTable {...props} />
+      <KeywordsTable isSample isMaxPlan />
     </div>
   );
 }
@@ -43,7 +41,7 @@ function NotProseKeywordsTable(
 export function useMDXComponents(components: MDXComponents): MDXComponents {
   return {
     ...components,
-    KeywordsTable: NotProseKeywordsTable,
+    SampleKeywordsTable: SampleKeywordsTable,
     CTAButton,
     blockquote: ({ children, ...props }) => (
       <blockquote
