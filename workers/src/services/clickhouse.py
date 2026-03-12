@@ -20,7 +20,16 @@ class ClickhouseClient:
         Execute a ClickHouse query.
         """
         client = self._get_client()
-        result = client.query(query, parameters=params)
+        result = client.query(
+            query,
+            parameters=params,
+            settings={
+                # For clickhouse < 26, these settings are required to use the full text index
+                "enable_full_text_index": True,
+                "query_plan_direct_read_from_text_index": True,
+                "use_skip_indexes_on_data_read": True,
+            },
+        )
         if result.row_count == 0:
             return None
         return pl.from_records(result.result_rows, schema=result.column_names, orient="row")

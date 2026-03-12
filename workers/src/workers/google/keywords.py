@@ -255,11 +255,18 @@ def commit(
                     volume_history_google String,
                     is_adult UInt8,
                     updated_at Date,
-                    ingested_at Date
+                    ingested_at Date,
+
+                    INDEX volume_google_idx volume_google TYPE minmax GRANULARITY 1,
+                    INDEX volume_bing_idx volume_bing TYPE minmax GRANULARITY 1,
+                    INDEX ingested_at_idx ingested_at TYPE minmax GRANULARITY 1,
+                    INDEX competition_index_idx(competition_index) TYPE set(100) GRANULARITY 1,
+                    INDEX cpc_high_idx(cpc_high) TYPE minmax GRANULARITY 1,
+                    INDEX keyword_text_idx(keyword) TYPE text(tokenizer = 'ngrams')
                 )
                 ENGINE MergeTree
                 PRIMARY KEY (volume_estimated_google)
-                ORDER BY (volume_estimated_google, competition_index);
+                ORDER BY (volume_estimated_google, keyword);
             """,
             """
                 INSERT INTO keywords_new
@@ -280,13 +287,6 @@ def commit(
                     %(gcs_secret_access_key)s
                 );
             """,
-            "ALTER TABLE keywords_new ADD INDEX volume_google_idx volume_google TYPE minmax GRANULARITY 1;",
-            "ALTER TABLE keywords_new ADD INDEX volume_bing_idx volume_bing TYPE minmax GRANULARITY 1;",
-            "ALTER TABLE keywords_new ADD INDEX ingested_at_idx ingested_at TYPE minmax GRANULARITY 1;",
-            "ALTER TABLE keywords_new ADD INDEX competition_index_idx(competition_index) TYPE minmax GRANULARITY 1;",
-            "ALTER TABLE keywords_new ADD INDEX cpc_high_idx(cpc_high) TYPE minmax GRANULARITY 1;",
-            "ALTER TABLE keywords_new "
-            "ADD INDEX keyword_token_idx(keyword) TYPE ngrambf_v1(4, 1024, 1, 0) GRANULARITY 1;",
             "RENAME TABLE keywords TO keywords_old;",
             "RENAME TABLE keywords_new TO keywords;",
             "DROP TABLE keywords_old;",
