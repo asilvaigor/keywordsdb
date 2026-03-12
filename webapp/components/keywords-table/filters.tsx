@@ -232,6 +232,7 @@ export function Filters({
       <div className="flex flex-row gap-2">
         {/* Search filter */}
         <Input
+          id="keyword-filter"
           placeholder="Search keywords..."
           value={(table.getColumn("keyword")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>

@@ -46,6 +46,7 @@ export default function RootLayout({
     <html
       lang="en"
       className={cn("dark", outfit.variable, fuzzyBubbles.variable)}
+      data-scroll-behavior="smooth"
       suppressHydrationWarning
     >
       <body>

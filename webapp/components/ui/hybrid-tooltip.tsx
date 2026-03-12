@@ -27,33 +27,26 @@ export function HybridTooltip({
     setIsTouch(window.matchMedia("(pointer: coarse)").matches);
   }, []);
 
-  if (isTouch) {
-    return (
-      <Tooltip
-        open={!disabled && open}
-        onOpenChange={(next) => {
-          if (!disabled) setOpen(next);
-        }}
-      >
-        <TooltipTrigger
-          asChild
-          onClick={() => {
-            if (!disabled) setOpen((v) => !v);
-          }}
-        >
-          {children}
-        </TooltipTrigger>
-        <TooltipContent className={className}>{content}</TooltipContent>
-      </Tooltip>
-    );
-  }
-
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>{children}</TooltipTrigger>
-      {!disabled && (
-        <TooltipContent className={className}>{content}</TooltipContent>
-      )}
+    <Tooltip
+      open={!disabled && open}
+      onOpenChange={(next) => {
+        if (!disabled) setOpen(next);
+      }}
+    >
+      <TooltipTrigger
+        asChild
+        onClick={
+          isTouch
+            ? () => {
+                if (!disabled) setOpen((v) => !v);
+              }
+            : undefined
+        }
+      >
+        {children}
+      </TooltipTrigger>
+      <TooltipContent className={className}>{content}</TooltipContent>
     </Tooltip>
   );
 }
