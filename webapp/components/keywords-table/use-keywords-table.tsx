@@ -70,7 +70,7 @@ export function useKeywordsTable({
   });
 
   const totalRows =
-    totalRowsQuery == null
+    isTotalRowsLoading || totalRowsQuery == null
       ? !isLoading && keywords.length < pageSize
         ? keywords.length
         : undefined

@@ -19,6 +19,21 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
   );
 }
 
+function Table2({ className, ...props }: React.ComponentProps<"table">) {
+  return (
+    <div
+      data-slot="table-container"
+      className={cn("relative w-full overflow-x-auto", className)}
+    >
+      <table
+        data-slot="table"
+        className="w-full caption-bottom text-sm"
+        {...props}
+      />
+    </div>
+  );
+}
+
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   return (
     <thead
@@ -106,6 +121,7 @@ function TableCaption({
 
 export {
   Table,
+  Table2,
   TableHeader,
   TableBody,
   TableFooter,

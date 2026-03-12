@@ -4,13 +4,14 @@
 import { flexRender } from "@tanstack/react-table";
 import { AlertOctagon, LoaderCircle, Search } from "lucide-react";
 import {
-  Table,
+  Table2,
   TableBody,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { columns } from "./columns";
 import { Filters } from "./filters";
 import { Pagination } from "./pagination";
@@ -74,7 +75,7 @@ export function KeywordsTable({
             </div>
           </div>
         )}
-        <Table>
+        <Table2 className={cn(isDbReady ? "" : "overflow-x-hidden")}>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -149,7 +150,7 @@ export function KeywordsTable({
               ))
             )}
           </TableBody>
-        </Table>
+        </Table2>
       </div>
       <Pagination
         table={table}
