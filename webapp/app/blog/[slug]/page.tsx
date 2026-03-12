@@ -156,7 +156,7 @@ export default async function BlogPostPage({
             )}
           </div>
 
-          <div className="prose prose-invert prose-yellow max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none">
+          <div className="prose prose-invert prose-yellow max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline prose-a:hover:underline prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none">
             <PostContent />
           </div>
         </article>
