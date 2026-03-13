@@ -2,8 +2,29 @@ import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
+const title = "Terms of Service | KeywordsDB";
+const description =
+  "Read our comprehensive Terms of Service to understand the rules, guidelines and responsabilities governing the use of KeywordsDB.";
+
 export const metadata: Metadata = {
-  title: "Terms of Service | KeywordsDB",
+  title: title,
+  description: description,
+  metadataBase: "https://keywordsdb.com",
+  alternates: { canonical: "/tos" },
+  openGraph: {
+    title: title,
+    description: description,
+    type: "website",
+    url: "/tos",
+    locale: "en_US",
+    siteName: "keywordsdb",
+    images: {
+      url: "/og-image.png",
+      width: 2115,
+      height: 1189,
+      alt: title,
+    },
+  },
 };
 
 export default function TOS() {

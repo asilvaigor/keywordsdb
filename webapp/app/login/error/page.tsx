@@ -4,6 +4,7 @@ import AuthError from "@/components/auth/auth-error";
 
 export const metadata: Metadata = {
   title: "Login error - keywordsdb.com",
+  alternates: { canonical: "/login/error" },
 };
 
 function LoginError() {

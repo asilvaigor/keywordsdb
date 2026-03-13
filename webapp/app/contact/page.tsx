@@ -3,8 +3,29 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { ContactUsIcon } from "@/components/icons/contact-us";
 
+const title = "Contact Us | KeywordsDB";
+const description =
+  "Whether you have a question about your keyword data, a feature request, or just want to say hello, we're here to help.";
+
 export const metadata: Metadata = {
-  title: "Contact Us | KeywordsDB",
+  title: title,
+  description: description,
+  metadataBase: "https://keywordsdb.com",
+  alternates: { canonical: "/contact" },
+  openGraph: {
+    title: title,
+    description: description,
+    type: "website",
+    url: "/contact",
+    locale: "en_US",
+    siteName: "keywordsdb",
+    images: {
+      url: "/og-image.png",
+      width: 2115,
+      height: 1189,
+      alt: title,
+    },
+  },
 };
 
 export default function Contact() {
@@ -63,7 +84,7 @@ export default function Contact() {
               support@keywordsdb.com
             </a>
             <p className="mt-4 text-xs text-muted-foreground">
-              We aim to respond within 24–48 hours.
+              We aim to respond within 24-48 hours.
             </p>
           </div>
         </div>

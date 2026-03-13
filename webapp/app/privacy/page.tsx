@@ -2,8 +2,29 @@ import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
+const title = "Privacy | KeywordsDB";
+const description =
+  "Learn about our commitment to protecting your privacy and how we handle your personal information at KeywordsDB.";
+
 export const metadata: Metadata = {
-  title: "Privacy | KeywordsDB",
+  title: title,
+  description: description,
+  metadataBase: "https://keywordsdb.com",
+  alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: title,
+    description: description,
+    type: "website",
+    url: "/privacy",
+    locale: "en_US",
+    siteName: "keywordsdb",
+    images: {
+      url: "/og-image.png",
+      width: 2115,
+      height: 1189,
+      alt: title,
+    },
+  },
 };
 
 export default function Privacy() {

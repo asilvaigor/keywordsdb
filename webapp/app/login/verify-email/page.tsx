@@ -5,6 +5,7 @@ import { getUserData } from "@/lib/db/users";
 
 export const metadata: Metadata = {
   title: "Verify Email - keywordsdb.com",
+  alternates: { canonical: "/login/verify-email" },
 };
 
 async function VerifyEmailPage() {

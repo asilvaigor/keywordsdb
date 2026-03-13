@@ -3,8 +3,29 @@ import { redirect } from "next/navigation";
 import Login from "@/components/auth/login";
 import { getUserData } from "@/lib/db/users";
 
+const title = "Login - keywordsdb.com";
+const description =
+  "Access the KeywordsDB dashboard to unlock the full potential of our free keyword research tool and take your SEO strategy to the next level.";
+
 export const metadata: Metadata = {
-  title: "Login - keywordsdb.com",
+  title: title,
+  description: description,
+  metadataBase: "https://keywordsdb.com",
+  alternates: { canonical: "/login" },
+  openGraph: {
+    title: title,
+    description: description,
+    type: "website",
+    url: "/login",
+    locale: "en_US",
+    siteName: "keywordsdb",
+    images: {
+      url: "/og-image.png",
+      width: 2115,
+      height: 1189,
+      alt: title,
+    },
+  },
 };
 
 async function LoginPage() {
