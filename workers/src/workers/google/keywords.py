@@ -330,7 +330,10 @@ def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix
         ) AS
         SELECT
             keyword,
-            volume_google,
+            CASE
+                WHEN volume_google < 0 THEN NULL
+                ELSE volume_google
+            END AS volume_google,
             volume_bing,
             volume_estimated_google,
             competition_index,
@@ -340,7 +343,7 @@ def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix
             updated_at,
             ingested_at
         FROM `{client.get_full_name(TABLENAME)}`
-        WHERE volume_google > 0
+        WHERE volume_google != 0
     """
     export_job = client.client.query(extract_query)
     export_job.result()
