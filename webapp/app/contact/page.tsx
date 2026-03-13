@@ -5,6 +5,7 @@ import { ContactUsIcon } from "@/components/icons/contact-us";
 
 export const metadata: Metadata = {
   title: "Contact Us | KeywordsDB",
+  alternates: { canonical: "/contact" },
 };
 
 export default function Contact() {
@@ -63,7 +64,7 @@ export default function Contact() {
               support@keywordsdb.com
             </a>
             <p className="mt-4 text-xs text-muted-foreground">
-              We aim to respond within 24–48 hours.
+              We aim to respond within 24-48 hours.
             </p>
           </div>
         </div>

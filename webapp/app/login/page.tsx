@@ -5,6 +5,7 @@ import { getUserData } from "@/lib/db/users";
 
 export const metadata: Metadata = {
   title: "Login - keywordsdb.com",
+  alternates: { canonical: "/login" },
 };
 
 async function LoginPage() {

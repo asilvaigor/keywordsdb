@@ -4,6 +4,7 @@ import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Terms of Service | KeywordsDB",
+  alternates: { canonical: "/tos" },
 };
 
 export default function TOS() {

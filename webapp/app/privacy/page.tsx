@@ -4,6 +4,7 @@ import Header from "@/components/header";
 
 export const metadata: Metadata = {
   title: "Privacy | KeywordsDB",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function Privacy() {

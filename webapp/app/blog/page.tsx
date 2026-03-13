@@ -8,7 +8,7 @@ import { type BlogPost, getAllPosts } from "@/lib/blog/posts";
 
 const title = "Blog | KeywordsDB";
 const description =
-  "Keyword research tips, SEO strategies, and product updates from the KeywordsDB team.";
+  "Keyword research tips, SEO strategies, case studies, and product updates from the KeywordsDB team to help you find better keywords faster.";
 
 export const metadata: Metadata = {
   title,
@@ -165,7 +165,8 @@ export default function BlogPage() {
         <div className="container mx-auto max-w-5xl px-4 py-10">
           <h1 className="text-3xl font-bold tracking-tight">Blog</h1>
           <p className="mt-2 text-lg text-muted-foreground">
-            Keyword research tips, SEO strategies, and product updates.
+            Keyword research tips, SEO strategies, case studies, and product
+            updates to help you find better keywords faster.
           </p>
         </div>
 
