@@ -51,6 +51,11 @@ if __name__ == "__main__":
         # Run each ingestion in a separate process to avoid memory leaks
         p = multiprocessing.Process(target=main)
         p.start()
-        p.join()
+
+        p.join(timeout=3600)  # 1 hour max
+        if p.is_alive():
+            p.terminate()
+            p.join()
+
         if p.exitcode != 0:
             break
