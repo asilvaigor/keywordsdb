@@ -182,6 +182,9 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("volume_google") as number;
+      if (value === -1) {
+        return <Badge variant="outline">Not available</Badge>;
+      }
       return formatLargeNumber(value, 1, 1e4);
     },
     size: 152,
