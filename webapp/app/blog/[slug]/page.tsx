@@ -3,11 +3,12 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Script from "next/script";
+import PostCard from "@/components/blog/post-card";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getAllPosts, getPost } from "@/lib/blog/posts";
+import { type BlogPost, getAllPosts, getPost } from "@/lib/blog/posts";
+import { cn } from "@/lib/utils";
 
 export async function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -83,7 +84,7 @@ export default async function BlogPostPage({
   return (
     <div className="flex flex-col">
       {featuredSnippetJsonLd && (
-        <Script
+        <script // nextjs Script does not work with googlebot
           type="application/ld+json"
           // biome-ignore lint/security/noDangerouslySetInnerHtml: controlled server-side data
           dangerouslySetInnerHTML={{ __html: featuredSnippetJsonLd }}
@@ -159,6 +160,49 @@ export default async function BlogPostPage({
           <div className="prose prose-invert prose-yellow max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline prose-a:hover:underline prose-strong:text-foreground prose-code:text-foreground prose-code:before:content-none prose-code:after:content-none">
             <PostContent />
           </div>
+
+          {post.relatedBlogPosts &&
+            post.relatedBlogPosts.length > 0 &&
+            (() => {
+              const relatedPosts = post.relatedBlogPosts
+                .slice(0, 3)
+                .map((s) => getPost(s))
+                .filter((p): p is BlogPost => p !== undefined);
+              if (relatedPosts.length === 0) return null;
+              return (
+                <section className="mt-16">
+                  <h2
+                    className={cn(
+                      "text-2xl font-semibold",
+                      relatedPosts.length >= 3 ? "mb-3" : "mb-6",
+                    )}
+                  >
+                    Related Articles
+                  </h2>
+                  <div
+                    className={cn(
+                      "grid",
+                      {
+                        "grid-cols-1 sm:max-w-sm": relatedPosts.length === 1,
+                      },
+                      {
+                        "gap-6 grid-cols-1 sm:grid-cols-2":
+                          relatedPosts.length === 2,
+                        "gap-3 grid-cols-1": relatedPosts.length === 3,
+                      },
+                    )}
+                  >
+                    {relatedPosts.map((p) => (
+                      <PostCard
+                        key={p.slug}
+                        post={p}
+                        variant={relatedPosts.length < 3 ? "grid" : "list"}
+                      />
+                    ))}
+                  </div>
+                </section>
+              );
+            })()}
         </article>
       </main>
       <Footer />

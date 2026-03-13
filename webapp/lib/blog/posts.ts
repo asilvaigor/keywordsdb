@@ -25,6 +25,7 @@ export type BlogPost = {
   readingTime: string;
   featuredSnippetItems?: FeaturedSnippetItem[];
   featuredSnippetDescription?: string;
+  relatedBlogPosts?: string[];
 };
 
 const CONTENT_DIR = path.join(process.cwd(), "content/blog");
