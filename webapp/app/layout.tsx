@@ -50,7 +50,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body>
-        <TooltipProvider>
+        <TooltipProvider delayDuration={200}>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
