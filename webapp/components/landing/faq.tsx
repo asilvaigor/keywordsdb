@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Accordion,
   AccordionContent,
@@ -14,17 +15,28 @@ const faqs = [
   {
     question: "Where does the keyword data come from?",
     answer:
-      "All keyword data comes directly from the Google Ads API — the same data advertisers use to plan their campaigns. This includes real search volume, CPC bids, and competition scores for 290M+ English keywords.",
+      "All keyword data comes directly from the Google Ads API — the same data advertisers use to plan their campaigns. The database is updated every few days with fresh data from Google Ads.",
   },
   {
-    question: "How often is the data updated?",
-    answer:
-      "Our keyword database is updated every few days with fresh data from Google Ads. With that being said, higher volume keywords are updated more often then lower volume ones, but every keyword is updated at least a few times a year. Each keyword entry shows its last updated date so you always know how recent the data is.",
+    question: "Can I trust the data?",
+    answer: (
+      <span>
+        We made a dedicated blog post about this! Check it out at{" "}
+        <Link
+          href="/blog/can-you-trust-data-from-keyword-research-tools"
+          target="_blank"
+          className="text-primary"
+        >
+          our blog
+        </Link>
+        .
+      </span>
+    ),
   },
   {
-    question: "What happens after my 10 free searches?",
+    question: "How is this different from other keyword tools?",
     answer:
-      "After your 10 free searches, you can choose a paid plan to continue with unlimited searches. Your free searches don't expire, so you can take your time deciding.",
+      "Most keyword tools charge $99+/month and bury the data behind complex dashboards, with limited filter options. KeywordsDB gives you direct access to the raw Google Search data in a fast, searchable table — at a fraction of the cost.",
   },
   {
     question: "Do I need a credit card to start?",
@@ -35,16 +47,6 @@ const faqs = [
     question: "Can I cancel anytime?",
     answer:
       "Absolutely. Both monthly and yearly plans can be cancelled at any time with no questions asked. You'll continue to have access until the end of your billing period.",
-  },
-  {
-    question: "How is this different from other keyword tools?",
-    answer:
-      "Most keyword tools charge $99+/month and bury the data behind complex dashboards, with limited filter options. KeywordsDB gives you direct access to the raw Google Search data in a fast, searchable table — at a fraction of the cost.",
-  },
-  {
-    question: "What keywords are included in the database?",
-    answer:
-      "Our database covers 290M+ English-language keywords from Google Search, spanning every niche and industry. We're continuously expanding coverage to include more languages and regions.",
   },
 ];
 

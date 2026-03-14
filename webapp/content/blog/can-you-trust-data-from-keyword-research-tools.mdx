@@ -1,0 +1,81 @@
+---
+title: "Can you trust data from keyword research tools?"
+description: "A quick study on data from different keyword research tools, showing how much they can diverge and giving insights on how to interpret their data."
+ogImage: "/blog/london-underground.webp"
+ogImageWidth: 1376
+ogImageHeight: 768
+ogImageAlt: "Adaptation from The Lure of the Underground - Alfred Leete"
+coverImageCitation: "Adaptation from The Lure of the Underground - Alfred Leete"
+date: "2026-03-14"
+readingTime: "7 min read"
+relatedBlogPosts: ["ahrefs-alternative", "semrush-alternative", "keyword-planner-alternative"]
+---
+
+Today I ran into something interesting while comparing different keyword research tools. If I search for "keyword research" on [Semrush Keyword Magic Tool](https://semrush.com/analytics/keywordmagic), it shows a volume of 1.8 million average monthly searches.
+
+One quick note before we get into it: every volume mentioned in this post is for the United States only.
+
+![Screenshot of Semrush Keyword Magic Tool query](/blog/semrush-keyword-research.webp)
+
+That looks plausible at first, but when I compare it to [KeywordsDB](https://keywordsdb.com), we have a volume of 11.2 thousand for that same keyword. Something clearly doesn't add up.
+
+![Screenshot of KeywordsDB query](/blog/keywordsdb-keyword-research.webp)
+
+Then I checked [Ahrefs](https://ahrefs.com), and they report a volume between 100 thousand and 1 million. That's a huge divergence from both Semrush and KeywordsDB.
+
+![Screenshot of Ahrefs query](/blog/ahrefs-keyword-research.webp)
+
+Let's try to understand what's going on. How can there be such a big divergence between these tools? The first place I looked was [Google Keyword Planner](https://business.google.com/en-all/ad-tools/keyword-planner/). It's the main source of data for all of these tools. It is also known for having a lot of quality issues. You can read more about that in [this post](/blog/keyword-planner-alternative), but it is still the rawest data we can get, straight from the source.
+
+![Screenshot of Keyword Planner query](/blog/keyword-planner-keyword-research.webp)
+
+It also gives a volume between 100 thousand and 1 million. If we dig a little deeper, we find that it's actually 301 thousand. But what about the historical data? We can check that using the [Google Ads Keyword Ideas API](https://developers.google.com/google-ads/api/docs/keyword-planning/generate-keyword-ideas).
+
+![Screenshot of Keyword Planner history](/blog/keywordsdb-keyword-research-history.webp)
+
+The results here are very strange. The volume spikes in September 2025 to 1.8 million, then falls back to around 2,400 in January 2026 and 3,600 in February 2026. What the hell is going on here?
+
+So I went one step further and pulled data from the [Microsoft AdInsight API](https://learn.microsoft.com/en-us/advertising/ad-insight-service/ad-insight-service-reference), which contains data from Bing searches. We should expect Bing volume to be much lower than Google's, but it is still data directly from the source. That makes it useful as a sanity check. It was an absolute pain to get access to this data and I won't get into that here, but the volume reported there is 554. It also spikes in August and September 2025, with volumes of 1,050 and 1,020, and then stabilizes in 2026 at around 530.
+
+Again, this is very inconsistent with what we see on Google. It would imply there are 543 times more searches on Google than Bing for this keyword. Given that there are around [17 billion Google searches per day](https://www.demandsage.com/google-search-statistics/#:~:text=Nearly%2016.4%20billion%20searches%20take,billion%20people%20use%20Google%20globally.) and [1 billion Bing searches per day](https://marketingltb.com/blog/statistics/bing-statistics/#:~:text=Bing%20processes%20roughly%201.1%20billion,about%206%25%20YoY%20in%202024.), we'd expect the ratio to be somewhere in that ballpark, not hundreds of times larger. That makes the Google-side numbers very hard to believe as-is.
+
+I have one final data source up my sleeve: Google Trends. It doesn't give precise volume data, but it does let us compare this keyword against another keyword with a similar volume and a more stable trend, like "video editor online". Ahrefs reports a volume of more than 10,000, Semrush reports 9,900, and Google Keyword Planner reports 12,000. There is much more consensus around that one.
+
+![Screenshot of Google Trends: "keyword research" vs "video editor online"](/blog/google-trends.webp)
+
+Google Trends suggests there is about 2x more volume for "keyword research". The summer spike is also much less dramatic, which is a good sign that this estimate is probably closer to reality. That would put the average monthly volume for "keyword research" somewhere around 20,000.
+
+Here's the full picture in one place:
+
+| Source | Reported number for "keyword research" |
+| --- | --- |
+| Semrush | 1.8 million |
+| Ahrefs | Between 100 thousand and 1 million |
+| KeywordsDB | 11.2 thousand |
+| Google Keyword Planner | 301 thousand |
+| Google Ads historical data | 1.8 million in September 2025, then around 2,400 to 3,600 in early 2026 |
+| Microsoft AdInsight API (Bing) | 554, with a spike to 1,050 and 1,020 in August and September 2025 |
+| Google Trends comparison | Roughly 2x "video editor online," suggesting around 20,000 |
+
+## So, who's right?
+
+I don't know. I don't think anybody knows for sure. Datasets this large will always contain dirty data, weird outliers, and estimation errors.
+
+What I do think is this: the 1.8 million number is almost certainly wrong. A drop from 1.8 million to around 3,000 in a matter of months, with no obvious real-world explanation, is a massive red flag. Semrush appears to be inheriting that problem. Ahrefs is more conservative, but still leaves a very wide range.
+
+If I had to pick the estimate that looks most believable, I'd go with KeywordsDB. Not because it's my tool, but because it lines up better with Google Trends and with a rough extrapolation from Bing data. That still doesn't make it perfect. It just makes it look less wrong.
+
+## How to use keyword research tools
+
+Tools like KeywordsDB, Ahrefs, and Semrush aggregate multiple data sources and do their best to produce a useful estimate. Sometimes those estimates will be close. Sometimes they'll be way off. The important thing is to treat them as directional signals, not absolute truth.
+
+If a keyword volume looks suspicious, cross-check it. Look at historical trends. Compare it against adjacent keywords. Pull in Google Trends. Sanity-check it against other platforms when you can. The tools are useful, but blind trust is a mistake.
+
+## Try KeywordsDB for Free
+
+If you want to compare the numbers yourself, try it in KeywordsDB and see how it feels on real queries.
+
+You get 10 free searches when you sign up, with no credit card required. That's enough to run a few real searches, apply filters, and decide whether the workflow fits what you're doing.
+
+<CTAButton href="/login">Start Exploring Keywords</CTAButton>
+

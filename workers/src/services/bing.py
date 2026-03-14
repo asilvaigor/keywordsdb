@@ -12,7 +12,7 @@ from bingads import AuthorizationData, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
 from structlog.stdlib import BoundLogger
 
-GOOGLE_BING_VOLUME_RATIO = 8
+GOOGLE_BING_VOLUME_RATIO = 17
 
 
 class BingAdsClient:
