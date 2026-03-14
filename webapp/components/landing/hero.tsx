@@ -1,4 +1,9 @@
-import { ArrowRight, CreditCard, Database, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ChartNoAxesCombined,
+  CreditCard,
+  Database,
+} from "lucide-react";
 import Link from "next/link";
 import { CurvedArrow } from "@/components/icons/curved-arrow";
 import { Button } from "@/components/ui/button";
@@ -32,21 +37,19 @@ function Hero() {
       <div className="container mx-auto px-4 text-center">
         {/* Badge */}
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5" />
+          <ChartNoAxesCombined className="h-3.5 w-3.5" />
           <span>Over 290 Million Keywords from Google</span>
         </div>
 
         {/* Headline */}
         <h1 className="mx-auto max-w-4xl text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-          Every keyword.
-          <br />
-          <span className="">One search away.</span>
+          Explore Google's search data
         </h1>
 
         {/* Subheadline */}
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-          Search, filter, and sort 290M+ Google keywords by volume, CPC, and
-          competition. Find your next opportunity in seconds.
+          Full access to 290M+ keywords for data-driven research. Search, filter
+          and sort them by volume, CPC, and competition.
         </p>
 
         {/* CTA */}
