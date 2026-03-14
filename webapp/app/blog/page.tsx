@@ -32,8 +32,8 @@ export const metadata: Metadata = {
 export default function BlogPage() {
   const posts = getAllPosts();
   const [featured, ...rest] = posts;
-  const grid = rest.slice(0, 3);
-  const list = rest.slice(3);
+  const grid = rest.slice(0, 2);
+  const list = rest.slice(2);
 
   return (
     <div className="flex flex-col">
@@ -64,9 +64,9 @@ export default function BlogPage() {
 
           {/* 3-column grid */}
           {grid.length > 0 && (
-            <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
               {grid.map((p) => (
-                <PostCard key={p.slug} post={p} />
+                <PostCard key={p.slug} post={p} variant="grid" />
               ))}
             </div>
           )}

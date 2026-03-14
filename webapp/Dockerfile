@@ -1,9 +1,7 @@
 # Build stage
-FROM node:24.13-slim AS builder
+FROM oven/bun:1-slim AS builder
 
 WORKDIR /app
-
-RUN npm install --global bun
 
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile
@@ -23,16 +21,20 @@ ENV HOME=/app
 RUN bun run build
 
 # Install DuckDB extensions
-RUN node -e "\
+RUN bun -e "\
         import { DuckDBConnection } from '@duckdb/node-api'; \
         const db = await DuckDBConnection.create(); \
         await db.run('INSTALL httpfs'); \
-"
+        "
 
 # Runner stage
 FROM node:24.13-slim AS runner
 
 WORKDIR /app
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static

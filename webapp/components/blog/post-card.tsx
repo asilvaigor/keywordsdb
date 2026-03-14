@@ -4,20 +4,9 @@ import Link from "next/link";
 import type { BlogPost } from "@/lib/blog/posts";
 import { cn } from "@/lib/utils";
 
-function PostMeta({
-  post,
-  stacked = false,
-}: {
-  post: BlogPost;
-  stacked?: boolean;
-}) {
+function PostMeta({ post }: { post: BlogPost }) {
   return (
-    <div
-      className={cn(
-        "flex text-xs text-muted-foreground",
-        stacked ? "flex-col gap-1.5" : "flex-row items-center gap-4",
-      )}
-    >
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-xs text-muted-foreground">
       <span className="inline-flex items-center gap-1.5">
         <Calendar className="h-3 w-3" />
         {new Date(post.date).toLocaleDateString("en-US", {
@@ -64,7 +53,7 @@ function PostCard({
           height={post.coverImageHeight ?? post.ogImageHeight}
           className={cn(
             "h-full w-full object-cover transition-transform duration-500 group-hover:scale-105",
-            variant === "list" && "max-h-30",
+            variant === "list" && "sm:max-h-30",
           )}
           preload={variant === "featured"}
         />
@@ -109,15 +98,15 @@ function PostCard({
         </p>
         <div
           className={cn(
-            "flex items-end justify-between",
+            "flex items-end justify-between gap-4",
             variant === "featured" ? "pt-2" : "pt-1",
           )}
         >
-          <PostMeta post={post} stacked={variant === "grid"} />
+          <PostMeta post={post} />
           <span
             className={cn(
-              "inline-flex items-center gap-1.5 font-medium text-primary transition-transform group-hover:translate-x-1",
-              variant === "list" ? "text-xs" : "text-sm",
+              "inline-flex shrink-0 items-center gap-1.5 font-medium text-primary transition-transform group-hover:translate-x-1",
+              variant === "list" ? "text-sm sm:text-xs" : "text-sm",
             )}
           >
             Read more
