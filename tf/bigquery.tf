@@ -30,7 +30,7 @@ resource "google_bigquery_table" "keywords" {
     {
       name = "volume_google"
       type = "INTEGER"
-      mode = "REQUIRED"
+      mode = "NULLABLE" // can be null for banned keywords, they will have only volume_bing
     },
     {
       name = "competition_index"

@@ -211,7 +211,7 @@ def commit(
             UPDATE `{client.get_full_name("keywords")}`
             SET volume_estimated_google = CASE
 
-                WHEN volume_google = -1 THEN CAST(ROUND(EXP(
+                WHEN volume_google IS NULL THEN CAST(ROUND(EXP(
                     LOG(GREATEST(volume_bing, 1)) + mu
                     - special_char_penalty * count_special_chars(keyword)
                 )) AS INT64)
@@ -330,10 +330,7 @@ def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix
         ) AS
         SELECT
             keyword,
-            CASE
-                WHEN volume_google < 0 THEN NULL
-                ELSE volume_google
-            END AS volume_google,
+            volume_google,
             volume_bing,
             volume_estimated_google,
             competition_index,
@@ -343,7 +340,7 @@ def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix
             updated_at,
             ingested_at
         FROM `{client.get_full_name(TABLENAME)}`
-        WHERE volume_google != 0
+        WHERE volume_google IS NULL OR volume_google > 0
     """
     export_job = client.client.query(extract_query)
     export_job.result()

@@ -62,23 +62,23 @@ def merge_to_main_table(client: BigQueryClient) -> None:
             UPDATE SET
                 volume_bing = b.volume_bing,
                 competition_index = CASE
-                    WHEN k.volume_google = -1 THEN b.competition_index
+                    WHEN k.volume_google IS NULL THEN b.competition_index
                     ELSE k.competition_index
                 END,
                 volume_history_google = CASE
-                    WHEN k.volume_google = -1 THEN b.volume_history_google
+                    WHEN k.volume_google IS NULL THEN b.volume_history_google
                     ELSE k.volume_history_google
                 END,
                 cpc_high = CASE
-                    WHEN k.volume_google = -1 THEN b.cpc_high
+                    WHEN k.volume_google IS NULL THEN b.cpc_high
                     ELSE k.cpc_high
                 END,
                 updated_at = CASE
-                    WHEN k.volume_google = -1 THEN b.updated_at
+                    WHEN k.volume_google IS NULL THEN b.updated_at
                     ELSE k.updated_at
                 END,
                 ingested_at = CASE
-                    WHEN k.volume_google = -1 THEN b.ingested_at
+                    WHEN k.volume_google IS NULL THEN b.ingested_at
                     ELSE k.ingested_at
                 END
         WHEN NOT MATCHED THEN
@@ -93,7 +93,7 @@ def merge_to_main_table(client: BigQueryClient) -> None:
                 ingested_at
             ) VALUES (
                 b.keyword,
-                -1,
+                NULL,
                 b.volume_bing,
                 b.competition_index,
                 b.volume_history_google,
