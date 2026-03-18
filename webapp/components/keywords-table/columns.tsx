@@ -36,6 +36,14 @@ function TruncatedCell({ text }: { text: string }) {
   );
 }
 
+function LargeNumberCell({ value }: { value: number }) {
+  return (
+    <HybridTooltip content={value.toLocaleString()} disabled={value <= 1e4}>
+      <span>{formatLargeNumber(value, 1, 1e4)}</span>
+    </HybridTooltip>
+  );
+}
+
 function Header({ title, tooltip }: { title: string; tooltip: string }) {
   return (
     <Tooltip>
@@ -166,7 +174,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("volume_estimated_google") as number;
-      return formatLargeNumber(value, 1, 1e4);
+      return <LargeNumberCell value={value} />;
     },
     size: 95,
     enableResizing: false,
@@ -185,7 +193,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       if (value == null) {
         return <Badge variant="outline">Not available</Badge>;
       }
-      return formatLargeNumber(value, 1, 1e4);
+      return <LargeNumberCell value={value} />;
     },
     size: 152,
     enableResizing: false,
@@ -201,7 +209,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("volume_bing") as number;
-      return formatLargeNumber(value, 1, 1e4);
+      return <LargeNumberCell value={value} />;
     },
     size: 132,
     enableResizing: false,

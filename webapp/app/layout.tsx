@@ -14,7 +14,7 @@ const fuzzyBubbles = Fuzzy_Bubbles({
 
 const title = "Free Keyword Research Tool | KeywordsDB";
 const description =
-  "Filter Google keywords by search volume, CPC and competition data. Find SaaS ideas and trends for free to improve your SEO and online marketing.";
+  "Get full access to 290M+ keywords for data-driven research. Search, filter and sort them by volume, CPC, and competition.";
 
 export const metadata: Metadata = {
   title: title,
