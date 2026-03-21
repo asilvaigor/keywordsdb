@@ -127,9 +127,9 @@ export default function DensityChecker() {
   return (
     <section
       className={cn(
-        "container max-w-2xl mx-auto px-4 transition-all duration-500",
+        "container max-w-2xl mx-auto px-6 sm:px-4 transition-all duration-500",
         hasResults
-          ? "py-8"
+          ? "py-12 sm:py-8"
           : "flex flex-col justify-center min-h-[calc(100dvh-3.5rem)]",
       )}
     >
@@ -140,10 +140,12 @@ export default function DensityChecker() {
         </h1>
       ) : (
         <div className="mb-8 text-center">
-          <p className="text-sm font-semibold tracking-widest uppercase text-primary mb-3">
+          <p className="text-sm font-semibold tracking-widest uppercase text-primary mb-4 sm:mb-3">
             Free SEO Tool
           </p>
-          <h1 className="text-4xl font-bold mb-3">Keyword Density Checker</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-8 sm:mb-3">
+            Keyword Density Checker
+          </h1>
           <p className="text-muted-foreground max-w-2xl mx-auto">
             Analyze any webpage to discover the most frequently used words and
             terms. Great for on-page SEO audits and content optimization.
@@ -157,7 +159,7 @@ export default function DensityChecker() {
           <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Enter a URL to analyze (e.g. keywordsdb.com)"
+            placeholder="Enter a URL (e.g. keywordsdb.com)"
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             className="h-10 pl-9 text-sm"
@@ -176,7 +178,7 @@ export default function DensityChecker() {
 
       {/* Error */}
       {error && (
-        <div className="mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+        <div className="mt-6 sm:mt-4 rounded-lg border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
@@ -185,12 +187,12 @@ export default function DensityChecker() {
       {data && (
         <div
           className={cn(
-            "mt-6 animate-fade-in-up transition-opacity duration-200",
+            "mt-10 sm:mt-6 animate-fade-in-up transition-opacity duration-200",
             isPending ? "opacity-50 pointer-events-none" : "",
           )}
         >
           {/* Stats + n-gram tabs row */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-12 mb-4 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 sm:gap-12 mb-6 sm:mb-4 min-w-0">
             <div className="flex items-center gap-3 text-sm text-muted-foreground min-w-0">
               {data.title && (
                 <span className="flex items-center gap-1.5 min-w-0">
@@ -292,7 +294,7 @@ export default function DensityChecker() {
             </p>
           )}
 
-          <p className="text-xs text-muted-foreground text-center mt-4">
+          <p className="text-xs text-muted-foreground text-center mt-6 sm:mt-4">
             Showing top {filteredResults.length} results. Common stop words
             (the, is, and, etc.) are excluded. Only terms appearing 2+ times are
             shown.

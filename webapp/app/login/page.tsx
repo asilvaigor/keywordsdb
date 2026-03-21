@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "/login",
     locale: "en_US",
-    siteName: "keywordsdb",
+    siteName: "KeywordsDB",
     images: {
       url: "/og-image.png",
       width: 2115,

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "/privacy",
     locale: "en_US",
-    siteName: "keywordsdb",
+    siteName: "KeywordsDB",
     images: {
       url: "/og-image.png",
       width: 2115,

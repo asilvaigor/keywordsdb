@@ -33,7 +33,7 @@ export async function generateMetadata({
       publishedTime: post.date,
       url: `/blog/${slug}`,
       locale: "en_US",
-      siteName: "keywordsdb",
+      siteName: "KeywordsDB",
       images: {
         url: post.ogImage,
         width: post.ogImageWidth,

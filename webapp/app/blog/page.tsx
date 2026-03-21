@@ -19,7 +19,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "https://keywordsdb.com/blog",
     locale: "en_US",
-    siteName: "keywordsdb",
+    siteName: "KeywordsDB",
     images: {
       url: "https://keywordsdb.com/og-image.png",
       width: 2115,

@@ -49,9 +49,7 @@ function Footer() {
             <h4 className="font-medium text-foreground">Content</h4>
             <div className="flex flex-col gap-2">
               <FooterLink href="/blog">Blog</FooterLink>
-              <FooterLink href="/density-checker">
-                Keyword Density Checker
-              </FooterLink>
+              <FooterLink href="/density-checker">Density Checker</FooterLink>
             </div>
           </div>
 

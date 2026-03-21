@@ -190,7 +190,7 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("volume_google") as number | null | undefined;
-      if (value == null) {
+      if (value == null || value === 0) {
         return <Badge variant="outline">Not available</Badge>;
       }
       return <LargeNumberCell value={value} />;
@@ -209,6 +209,9 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
     ),
     cell: ({ row }) => {
       const value = row.getValue("volume_bing") as number;
+      if (value == null || value === -1) {
+        return <Badge variant="outline">Not available</Badge>;
+      }
       return <LargeNumberCell value={value} />;
     },
     size: 132,
@@ -269,9 +272,11 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       <VolumeHistoryCell
         raw={row.getValue("volume_history_google") as string}
         ratio={
-          ((row.getValue("volume_estimated_google") as number) /
-            // biome-ignore lint/style/noNonNullAssertion: logic in query ensures that if volume_estimated_google is present, volume_google is also present
-            row.original.volume_google!) as number
+          (row.original.volume_google == null ||
+          row.original.volume_google === 0
+            ? 1
+            : (row.getValue("volume_estimated_google") as number) /
+              row.original.volume_google) as number
         }
       />
     ),
