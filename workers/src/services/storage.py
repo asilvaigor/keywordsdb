@@ -36,13 +36,6 @@ class StorageClient:
         blob = bucket.blob(path)
         return blob.exists()
 
-    def ls(self, prefix: str) -> list[str]:
-        """List all files in the bucket with the given prefix."""
-        bucket_name, prefix = self._split_bucket_path(prefix)
-        bucket = self.client.bucket(bucket_name)
-        blobs: list[Blob] = bucket.list_blobs(prefix=prefix)
-        return [f"gs://{bucket_name}/{blob.name}" for blob in blobs]
-
     def find(self, prefix: str, suffix: str) -> str:
         """Finds a file in the bucket that start with the given prefix and ends with the given suffix."""
         bucket_name, prefix = self._split_bucket_path(prefix)

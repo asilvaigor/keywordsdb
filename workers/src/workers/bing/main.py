@@ -1,48 +1,40 @@
 import asyncio
 import multiprocessing
 
-from src.services.bigquery import BigQueryClient
+from src.services.clickhouse import ClickhouseClient
 from src.services.storage import StorageClient
 from src.workers.bing.adult_classifier import is_adult
 from src.workers.bing.banned_keywords import update_banned_keywords
 from src.workers.bing.context import Context
 
 
-def export_to_gcs(client: BigQueryClient, storage_client: StorageClient) -> None:
+def export_to_gcs(client: ClickhouseClient, storage_client: StorageClient) -> None:
+    count_query = "SELECT count(*) FROM keywords WHERE volume_bing = -1 AND volume_google > 10"
+    count = client.execute_query(count_query)
+    assert count
+    num_partitions = (count[0, 0] // 500_000) + 1
+
     extract_query = f"""
-        EXPORT DATA OPTIONS(
-            uri='gs://{StorageClient.BUCKET}/bing-to-ingest/*.parquet',
-            format='PARQUET',
-            compression='SNAPPY',
-            overwrite=true
-        ) AS
-        SELECT keyword
-        FROM `{client.get_full_name("keywords")}`
-        WHERE volume_bing IS NULL AND volume_google > 10
-        ORDER BY volume_google DESC
-    """
-    export_job = client.client.query(extract_query)
-    export_job.result()
-
-    output_files = storage_client.ls(f"gs://{StorageClient.BUCKET}/bing-to-ingest/")
-    storage_client.write_json(
-        f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json", {f: 0 for f in output_files}
+    INSERT INTO FUNCTION
+    s3(
+        'https://storage.googleapis.com/${StorageClient.BUCKET}/bing-to-ingest/{{_partition_id}}.parquet',
+        '${storage_client.get_hmac_keys()[0]}',
+        '${storage_client.get_hmac_keys()[1]}',
+        '$Parquet'
     )
-
-
-def merge_to_main_table(client: BigQueryClient) -> None:
-    merge_query = f"""
-        MERGE `{client.get_full_name("keywords")}` k
-        USING `{client.get_full_name("bing-volumes-tmp")}` b
-        ON k.keyword = b.keyword
-        WHEN MATCHED THEN
-            UPDATE SET volume_bing = b.volume_bing
-        WHEN NOT MATCHED BY SOURCE AND k.volume_google <= 10 AND k.volume_bing IS NULL THEN
-            UPDATE SET volume_bing = 0
+    PARTITION BY rand() % ${num_partitions}
+    SELECT
+        keyword,
+    FROM keywords
+    WHERE volume_bing = -1 AND volume_google > 10
+    ORDER BY volume_google DESC
     """
-    merge_job = client.client.query(merge_query)
-    merge_job.result()
-    client.delete_table("bing-volumes-tmp")
+    client.execute_query(extract_query)
+
+    storage_client.write_json(
+        f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json",
+        {f"gs://{StorageClient.BUCKET}/bing-to-ingest/{p}.parquet": 0 for p in range(num_partitions)},
+    )
 
 
 async def main_async() -> None:
@@ -50,7 +42,7 @@ async def main_async() -> None:
 
     if not ctx.storage_client.exists(f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json"):
         ctx.logger.info("Exporting keywords to ingest to cloud storage")
-        export_to_gcs(ctx.bigquery_client, ctx.storage_client)
+        export_to_gcs(ctx.clickhouse_client, ctx.storage_client)
 
     ctx.logger.info("Getting keywords list")
     try:
@@ -59,9 +51,7 @@ async def main_async() -> None:
             f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json"
         )
     except FileNotFoundError:
-        ctx.logger.info("No file to ingest, merging bing volumes to main table")
-        merge_to_main_table(ctx.bigquery_client)
-        ctx.logger.info("Success")
+        ctx.logger.info("No file to ingest, updating banned keywords")
         await update_banned_keywords(ctx)
         ctx.logger.info("Success")
         exit(1)
@@ -77,7 +67,7 @@ async def main_async() -> None:
     df = df.with_columns(is_adult=is_adult("keyword"))
 
     ctx.logger.info(f"Inserting {len(df)} rows into BigQuery")
-    ctx.bigquery_client.insert("bing-volumes-tmp", df)
+    ctx.bigquery_client.insert("keywords-tmp", df)
     ctx.storage_client.write_json(
         f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json", {**in_progress, file_to_ingest: i_max}
     )

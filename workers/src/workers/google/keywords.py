@@ -30,9 +30,13 @@ def insert(client: BigQueryClient, df: pl.DataFrame, query_keywords: list[str]) 
     df = df.with_columns(
         ingested_at=pl.when(pl.col("keyword").is_in(query_keywords)).then(date.today()).otherwise(None),
         updated_at=pl.lit(date.today()),
+        volume_bing=pl.lit(None).cast(pl.Int32),
+        is_adult=pl.lit(None).cast(pl.Boolean),
     ).select(
         "keyword",
         "volume_google",
+        "volume_bing",
+        "is_adult",
         "competition_index",
         "volume_history_google",
         "cpc_high",
@@ -115,16 +119,44 @@ def commit(
             ON keywords.keyword = tmp.keyword
             WHEN MATCHED THEN
                 UPDATE SET
-                    volume_google = tmp.volume_google,
-                    competition_index = tmp.competition_index,
-                    cpc_high = tmp.cpc_high,
-                    volume_history_google = tmp.volume_history_google,
-                    updated_at = tmp.updated_at,
+                    volume_google = CASE
+                        WHEN tmp.volume_google IS NULL THEN volume_google
+                        ELSE tmp.volume_google
+                    END,
+                    volume_bing = CASE
+                        WHEN tmp.volume_bing IS NULL THEN volume_bing
+                        ELSE tmp.volume_bing
+                    END,
+                    competition_index = CASE
+                        WHEN tmp.competition_index IS NULL THEN competition_index
+                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN competition_index
+                        ELSE tmp.competition_index
+                    END,
+                    cpc_high = CASE
+                        WHEN tmp.cpc_high IS NULL THEN cpc_high
+                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN cpc_high
+                        ELSE tmp.cpc_high
+                    END,
+                    volume_history_google = CASE
+                        WHEN tmp.volume_history_google IS NULL THEN volume_history_google
+                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN volume_history_google
+                        ELSE tmp.volume_history_google
+                    END,
+                    is_adult = CASE
+                        WHEN tmp.is_adult IS NULL THEN is_adult
+                        ELSE tmp.is_adult
+                    END,
+                    updated_at = CASE
+                        WHEN tmp.updated_at IS NULL THEN updated_at
+                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN updated_at
+                        ELSE tmp.updated_at
+                    END,
                     ingested_at = CASE
-                        WHEN tmp.ingested_at IS NULL THEN keywords.ingested_at
+                        WHEN tmp.ingested_at IS NULL THEN ingested_at
+                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN ingested_at
                         ELSE tmp.ingested_at
                     END
-            WHEN NOT MATCHED THEN
+            WHEN NOT MATCHED BY TARGET THEN
                 INSERT (
                     keyword,
                     volume_google,
@@ -132,6 +164,7 @@ def commit(
                     competition_index,
                     cpc_high,
                     volume_history_google,
+                    is_adult,
                     updated_at,
                     ingested_at
                 )
@@ -142,9 +175,12 @@ def commit(
                     tmp.competition_index,
                     tmp.cpc_high,
                     tmp.volume_history_google,
+                    tmp.is_adult,
                     tmp.updated_at,
                     tmp.ingested_at
                 )
+            WHEN NOT MATCHED BY SOURCE AND k.volume_google <= 10 AND k.volume_bing IS NULL THEN
+                UPDATE SET volume_bing = 0
         """
 
         logger.info("Merging keywords_tmp into keywords table")
@@ -248,7 +284,7 @@ def commit(
                 CREATE OR REPLACE TABLE keywords_new (
                     keyword String,
                     volume_google UInt32,
-                    volume_bing UInt32,
+                    volume_bing Int32 DEFAULT -1,
                     volume_estimated_google UInt32,
                     competition_index Float32,
                     cpc_high Float32,

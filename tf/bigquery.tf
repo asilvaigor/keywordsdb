@@ -93,14 +93,19 @@ resource "google_bigquery_table" "keywords_tmp" {
       mode = "REQUIRED"
     },
     {
+      name = "volume_bing"
+      type = "INTEGER"
+      mode = "NULLABLE"
+    },
+    {
       name = "volume_google"
       type = "INTEGER"
-      mode = "REQUIRED"
+      mode = "NULLABLE"
     },
     {
       name = "competition_index"
       type = "INTEGER"
-      mode = "REQUIRED"
+      mode = "NULLABLE"
     },
     {
       name = "volume_history_google"
@@ -108,19 +113,24 @@ resource "google_bigquery_table" "keywords_tmp" {
       mode = "NULLABLE"
     },
     {
+      name = "is_adult"
+      type = "BOOLEAN"
+      mode = "NULLABLE"
+    },
+    {
       name = "cpc_high"
       type = "FLOAT"
-      mode = "REQUIRED"
+      mode = "NULLABLE"
     },
     # {
     #   name = "cpc_low"
     #   type = "FLOAT"
-    #   mode = "REQUIRED"
+    #   mode = "NULLABLE"
     # },
     # {
     #   name = "cpc_avg"
     #   type = "FLOAT"
-    #   mode = "REQUIRED"
+    #   mode = "NULLABLE"
     # },
     {
       name = "updated_at"
@@ -131,36 +141,6 @@ resource "google_bigquery_table" "keywords_tmp" {
       name = "ingested_at"
       type = "DATE"
       mode = "NULLABLE"
-    }
-  ])
-}
-
-resource "google_bigquery_table" "bing_volumes_tmp" {
-  dataset_id = google_bigquery_dataset.keywords.dataset_id
-  table_id   = "bing-volumes-tmp"
-
-  clustering = ["keyword"]
-  table_constraints {
-    primary_key {
-      columns = ["keyword"]
-    }
-  }
-
-  schema = jsonencode([
-    {
-      name = "keyword"
-      type = "STRING"
-      mode = "REQUIRED"
-    },
-    {
-      name = "volume_bing"
-      type = "INTEGER"
-      mode = "REQUIRED"
-    },
-    {
-      name = "is_adult"
-      type = "BOOLEAN"
-      mode = "REQUIRED"
     }
   ])
 }
