@@ -30,7 +30,7 @@ def insert(client: BigQueryClient, df: pl.DataFrame, query_keywords: list[str]) 
     df = df.with_columns(
         ingested_at=pl.when(pl.col("keyword").is_in(query_keywords)).then(date.today()).otherwise(None),
         updated_at=pl.lit(date.today()),
-        volume_bing=pl.lit(None).cast(pl.Int32),
+        volume_bing=pl.lit(None).cast(pl.Int64),
         is_adult=pl.lit(None).cast(pl.Boolean),
     ).select(
         "keyword",
