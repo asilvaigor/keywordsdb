@@ -43,7 +43,7 @@ function PostCard({
         className={cn(
           "relative aspect-video w-full shrink-0 overflow-hidden",
           variant === "featured" && "lg:aspect-auto lg:h-auto lg:w-[55%]",
-          variant === "list" && "sm:aspect-auto sm:h-full sm:w-46",
+          variant === "list" && "sm:aspect-auto sm:w-46",
         )}
       >
         <Image
@@ -67,25 +67,19 @@ function PostCard({
         )}
       >
         {variant === "featured" && (
-          <div>
-            <span className="mb-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary uppercase tracking-wider">
-              Featured
-            </span>
-            <h2 className="text-2xl font-bold tracking-tight leading-snug transition-colors group-hover:text-primary lg:text-3xl">
-              {post.title}
-            </h2>
+          <div className="w-fit rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary uppercase tracking-wider">
+            Featured
           </div>
         )}
-        {variant !== "featured" && (
-          <h2
-            className={cn(
-              "font-bold tracking-tight leading-snug transition-colors group-hover:text-primary",
-              variant === "grid" ? "text-lg" : "text-base sm:font-semibold",
-            )}
-          >
-            {post.title}
-          </h2>
-        )}
+        <h2
+          className={cn(
+            "font-bold tracking-tight leading-snug transition-colors group-hover:text-primary",
+            variant === "featured" ? "sm:text-2xl" : "",
+            variant === "grid" ? "sm:text-lg" : "",
+          )}
+        >
+          {post.title}
+        </h2>
         <p
           className={cn(
             "text-sm text-muted-foreground leading-relaxed line-clamp-3",
