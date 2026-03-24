@@ -11,20 +11,20 @@ from src.workers.bing.context import Context
 def export_to_gcs(client: ClickhouseClient, storage_client: StorageClient) -> None:
     count_query = "SELECT count(*) FROM keywords WHERE volume_bing = -1 AND volume_google > 10"
     count = client.execute_query(count_query)
-    assert count
+    assert count is not None
     num_partitions = (count[0, 0] // 500_000) + 1
 
     extract_query = f"""
     INSERT INTO FUNCTION
     s3(
-        'https://storage.googleapis.com/${StorageClient.BUCKET}/bing-to-ingest/{{_partition_id}}.parquet',
-        '${storage_client.get_hmac_keys()[0]}',
-        '${storage_client.get_hmac_keys()[1]}',
-        '$Parquet'
+        'https://storage.googleapis.com/{StorageClient.BUCKET}/bing-to-ingest/{{_partition_id}}.parquet',
+        '{storage_client.get_hmac_keys()[0]}',
+        '{storage_client.get_hmac_keys()[1]}',
+        'Parquet'
     )
-    PARTITION BY rand() % ${num_partitions}
+    PARTITION BY rand() % {num_partitions}
     SELECT
-        keyword,
+        keyword
     FROM keywords
     WHERE volume_bing = -1 AND volume_google > 10
     ORDER BY volume_google DESC

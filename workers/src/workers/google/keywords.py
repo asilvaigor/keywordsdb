@@ -108,9 +108,11 @@ def commit(
                 SELECT
                     keyword,
                     volume_google,
+                    volume_bing,
                     competition_index,
                     cpc_high,
                     volume_history_google,
+                    is_adult,
                     updated_at,
                     ingested_at
                 FROM `{tmp_tablename}`
@@ -120,40 +122,42 @@ def commit(
             WHEN MATCHED THEN
                 UPDATE SET
                     volume_google = CASE
-                        WHEN tmp.volume_google IS NULL THEN volume_google
+                        WHEN tmp.volume_google IS NULL THEN keywords.volume_google
                         ELSE tmp.volume_google
                     END,
                     volume_bing = CASE
-                        WHEN tmp.volume_bing IS NULL THEN volume_bing
+                        WHEN tmp.volume_bing IS NULL THEN keywords.volume_bing
                         ELSE tmp.volume_bing
                     END,
                     competition_index = CASE
-                        WHEN tmp.competition_index IS NULL THEN competition_index
-                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN competition_index
+                        WHEN tmp.competition_index IS NULL THEN keywords.competition_index
+                        WHEN tmp.volume_google IS NULL AND keywords.volume_google IS NOT NULL
+                            THEN keywords.competition_index
                         ELSE tmp.competition_index
                     END,
                     cpc_high = CASE
-                        WHEN tmp.cpc_high IS NULL THEN cpc_high
-                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN cpc_high
+                        WHEN tmp.cpc_high IS NULL THEN keywords.cpc_high
+                        WHEN tmp.volume_google IS NULL AND keywords.volume_google IS NOT NULL THEN keywords.cpc_high
                         ELSE tmp.cpc_high
                     END,
                     volume_history_google = CASE
-                        WHEN tmp.volume_history_google IS NULL THEN volume_history_google
-                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN volume_history_google
+                        WHEN tmp.volume_history_google IS NULL THEN keywords.volume_history_google
+                        WHEN tmp.volume_google IS NULL AND keywords.volume_google IS NOT NULL
+                            THEN keywords.volume_history_google
                         ELSE tmp.volume_history_google
                     END,
                     is_adult = CASE
-                        WHEN tmp.is_adult IS NULL THEN is_adult
+                        WHEN tmp.is_adult IS NULL THEN keywords.is_adult
                         ELSE tmp.is_adult
                     END,
                     updated_at = CASE
-                        WHEN tmp.updated_at IS NULL THEN updated_at
-                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN updated_at
+                        WHEN tmp.updated_at IS NULL THEN keywords.updated_at
+                        WHEN tmp.volume_google IS NULL AND keywords.volume_google IS NOT NULL THEN keywords.updated_at
                         ELSE tmp.updated_at
                     END,
                     ingested_at = CASE
-                        WHEN tmp.ingested_at IS NULL THEN ingested_at
-                        WHEN tmp.volume_google IS NULL AND volume_google IS NOT NULL THEN ingested_at
+                        WHEN tmp.ingested_at IS NULL THEN keywords.ingested_at
+                        WHEN tmp.volume_google IS NULL AND keywords.volume_google IS NOT NULL THEN keywords.ingested_at
                         ELSE tmp.ingested_at
                     END
             WHEN NOT MATCHED BY TARGET THEN
@@ -179,7 +183,7 @@ def commit(
                     tmp.updated_at,
                     tmp.ingested_at
                 )
-            WHEN NOT MATCHED BY SOURCE AND k.volume_google <= 10 AND k.volume_bing IS NULL THEN
+            WHEN NOT MATCHED BY SOURCE AND keywords.volume_google <= 10 AND keywords.volume_bing IS NULL THEN
                 UPDATE SET volume_bing = 0
         """
 
