@@ -90,7 +90,7 @@ resource "google_bigquery_table" "keywords_tmp" {
     {
       name = "keyword"
       type = "STRING"
-      mode = "REQUIRED"
+      mode = "NULLABLE"
     },
     {
       name = "volume_bing"
@@ -135,7 +135,7 @@ resource "google_bigquery_table" "keywords_tmp" {
     {
       name = "updated_at"
       type = "DATE"
-      mode = "REQUIRED"
+      mode = "NULLABLE"
     },
     {
       name = "ingested_at"

@@ -25,8 +25,8 @@ locals {
       command     = ["python", "-u", "src/workers/google/main.py"]
     }
     bing = {
-      description = "Triggers bing worker batch job, to be launched manually"
-      schedule    = "0 0 1 1 *"
+      description = "Triggers bing worker batch job every 3 days at 12am UTC"
+      schedule    = "0 0 */3 * *"
       command     = ["python", "-u", "src/workers/bing/main.py"]
     }
     replicator = {

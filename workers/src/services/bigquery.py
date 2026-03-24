@@ -67,8 +67,5 @@ class BigQueryClient:
             else:
                 field_type = "STRING"
 
-            if field_name in ("ingested_at", "volume_history_google"):
-                schema.append(SchemaField(field_name, field_type))
-            else:
-                schema.append(SchemaField(field_name, field_type, "REQUIRED"))
+            schema.append(SchemaField(field_name, field_type, "NULLABLE"))
         return schema
