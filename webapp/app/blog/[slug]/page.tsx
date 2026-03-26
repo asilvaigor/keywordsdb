@@ -8,6 +8,7 @@ import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { type BlogPost, getAllPosts, getPost } from "@/lib/blog/posts";
+import { articleJsonLd, breadcrumbJsonLd } from "@/lib/json-ld";
 import { cn } from "@/lib/utils";
 
 export async function generateStaticParams() {
@@ -53,9 +54,22 @@ export default async function BlogPostPage({
   const post = getPost(slug);
   if (!post) notFound();
 
+  const jsonLdArticle = articleJsonLd(post);
+  const jsonLdBreadcrumb = breadcrumbJsonLd([
+    { name: "Home", url: "https://keywordsdb.com" },
+    { name: "Blog", url: "https://keywordsdb.com/blog" },
+    { name: post.title, url: `https://keywordsdb.com/blog/${post.slug}` },
+  ]);
+
   const { default: PostContent } = await import(`@/content/blog/${slug}.mdx`);
   return (
     <div className="flex flex-col">
+      <script type="application/ld+json">
+        {JSON.stringify(jsonLdArticle)}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(jsonLdBreadcrumb)}
+      </script>
       <Header />
       <main className="flex-1">
         <article className="container mx-auto max-w-3xl px-4 py-12">

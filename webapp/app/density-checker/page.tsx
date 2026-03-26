@@ -9,6 +9,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { breadcrumbJsonLd, faqPageJsonLd, websiteJsonLd } from "@/lib/json-ld";
 
 const title = "Keyword Density Checker | KeywordsDB";
 const description =
@@ -71,6 +72,29 @@ const faqs = [
 export default function DensityCheckerPage() {
   return (
     <div className="flex min-h-screen flex-col">
+      <script type="application/ld+json">
+        {JSON.stringify(
+          websiteJsonLd({
+            name: title,
+            url: "https://keywordsdb.com/density-checker",
+            description,
+          }),
+        )}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(faqPageJsonLd(faqs))}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(
+          breadcrumbJsonLd([
+            { name: "Home", url: "https://keywordsdb.com" },
+            {
+              name: "Keyword Density Checker",
+              url: "https://keywordsdb.com/density-checker",
+            },
+          ]),
+        )}
+      </script>
       <Header />
       <main className="flex-1">
         <DensityChecker />

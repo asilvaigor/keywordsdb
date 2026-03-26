@@ -6,7 +6,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 
-const faqs = [
+export const faqs = [
   {
     question: "What is KeywordsDB?",
     answer:
@@ -32,6 +32,8 @@ const faqs = [
         .
       </span>
     ),
+    textAnswer:
+      "We made a dedicated blog post about this! Check it out at our blog: https://keywordsdb.com/blog/can-you-trust-data-from-keyword-research-tools",
   },
   {
     question: "How is this different from other keyword tools?",

@@ -8,6 +8,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { breadcrumbJsonLd, faqPageJsonLd, websiteJsonLd } from "@/lib/json-ld";
 
 const title = "Free SEO Audit Tool | KeywordsDB";
 const description =
@@ -65,6 +66,26 @@ const faqs = [
 export default function SeoAuditPage() {
   return (
     <div className="flex min-h-screen flex-col">
+      <script type="application/ld+json">
+        {JSON.stringify(
+          websiteJsonLd({
+            name: title,
+            url: "https://keywordsdb.com/seo-audit",
+            description,
+          }),
+        )}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(faqPageJsonLd(faqs))}
+      </script>
+      <script type="application/ld+json">
+        {JSON.stringify(
+          breadcrumbJsonLd([
+            { name: "Home", url: "https://keywordsdb.com" },
+            { name: "SEO Audit", url: "https://keywordsdb.com/seo-audit" },
+          ]),
+        )}
+      </script>
       <Header />
       <main className="flex-1">
         <SeoAudit />

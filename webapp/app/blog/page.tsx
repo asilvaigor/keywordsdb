@@ -3,6 +3,7 @@ import PostCard from "@/components/blog/post-card";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { getAllPosts } from "@/lib/blog/posts";
+import { breadcrumbJsonLd } from "@/lib/json-ld";
 
 const title = "Blog | KeywordsDB";
 const description =
@@ -35,8 +36,16 @@ export default function BlogPage() {
   const grid = rest.slice(0, 2);
   const list = rest.slice(2);
 
+  const jsonLdBreadcrumb = breadcrumbJsonLd([
+    { name: "Home", url: "https://keywordsdb.com" },
+    { name: "Blog", url: "https://keywordsdb.com/blog" },
+  ]);
+
   return (
     <div className="flex flex-col">
+      <script type="application/ld+json">
+        {JSON.stringify(jsonLdBreadcrumb)}
+      </script>
       <Header />
       <main className="flex-1">
         {/* Page header */}
