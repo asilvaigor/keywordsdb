@@ -85,8 +85,13 @@ export async function checkLinks(
       status: await checkUrlStatus(url),
     })),
   );
+  // Exclude 401/403 — those mean access denied, not a broken link (common for bot-blocking sites)
   const brokenExternal = externalResults.filter(
-    (r) => r.status !== null && r.status >= 400,
+    (r) =>
+      r.status !== null &&
+      r.status >= 400 &&
+      r.status !== 401 &&
+      r.status !== 403,
   );
 
   const totalBroken = brokenInternal.length + brokenExternal.length;

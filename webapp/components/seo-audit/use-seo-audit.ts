@@ -7,8 +7,13 @@ import type {
   AuditStreamEvent,
 } from "@/lib/seo-audit/types";
 
+const MAX_PAGES_OPTIONS = [10, 50, 100, 250, 500, 1000] as const;
+
+export { MAX_PAGES_OPTIONS };
+
 export function useSeoAudit() {
   const [url, setUrl] = useState("");
+  const [maxPages, setMaxPages] = useState<number>(100);
   const [result, setResult] = useState<AuditResult | null>(null);
   const [progress, setProgress] = useState<AuditProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -16,7 +21,7 @@ export function useSeoAudit() {
   const eventSourceRef = useRef<EventSource | null>(null);
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    (e: React.SubmitEvent) => {
       e.preventDefault();
       const trimmed = url.trim();
       if (!trimmed || isRunning) return;
@@ -34,7 +39,7 @@ export function useSeoAudit() {
       eventSourceRef.current?.close();
 
       const es = new EventSource(
-        `/api/seo-audit?url=${encodeURIComponent(finalUrl)}`,
+        `/api/seo-audit?url=${encodeURIComponent(finalUrl)}&maxPages=${maxPages}`,
       );
       eventSourceRef.current = es;
 
@@ -70,16 +75,31 @@ export function useSeoAudit() {
         }
       };
     },
-    [url, isRunning, result, error],
+    [url, maxPages, isRunning, result, error],
   );
+
+  const handleStop = useCallback(() => {
+    const es = eventSourceRef.current;
+    if (es) {
+      es.onmessage = null;
+      es.onerror = null;
+      es.close();
+      eventSourceRef.current = null;
+    }
+    setIsRunning(false);
+    setProgress(null);
+  }, []);
 
   return {
     url,
     setUrl,
+    maxPages,
+    setMaxPages,
     result,
     progress,
     error,
     isRunning,
     handleSubmit,
+    handleStop,
   };
 }

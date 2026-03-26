@@ -144,6 +144,7 @@ export async function crawlSite(
     totalPages: number,
     currentUrl: string,
   ) => void,
+  signal?: AbortSignal,
 ): Promise<CrawlData> {
   const parsed = new URL(startUrl);
   const domain = parsed.hostname;
@@ -157,6 +158,7 @@ export async function crawlSite(
   const discoveredLinks = new Set<string>(queue);
 
   while (queue.length > 0 && pages.length < maxPages) {
+    if (signal?.aborted) break;
     const url = queue.shift();
     if (!url) continue;
     const normalizedUrl = url.replace(/\/+$/, "");

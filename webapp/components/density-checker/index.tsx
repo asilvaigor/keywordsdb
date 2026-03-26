@@ -166,7 +166,12 @@ export default function DensityChecker() {
             disabled={isPending}
           />
         </div>
-        <Button type="submit" size="lg" disabled={isPending || !url.trim()}>
+        <Button
+          type="submit"
+          size="lg"
+          disabled={isPending || !url.trim()}
+          className="h-10"
+        >
           {isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (

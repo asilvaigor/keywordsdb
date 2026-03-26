@@ -11,7 +11,7 @@ import {
 } from "@/lib/seo-audit/score";
 import type { AuditResult } from "@/lib/seo-audit/types";
 
-const MAX_PAGES = 1000;
+export const MAX_PAGES = 1000;
 
 export async function runAudit(
   url: string,
@@ -20,11 +20,13 @@ export async function runAudit(
     totalPages: number,
     currentUrl: string,
   ) => void,
+  maxPages = MAX_PAGES,
+  signal?: AbortSignal,
 ): Promise<AuditResult> {
   const start = Date.now();
 
   // Phase 1: Crawl
-  const crawlData = await crawlSite(url, MAX_PAGES, onProgress);
+  const crawlData = await crawlSite(url, maxPages, onProgress, signal);
 
   if (crawlData.pages.length === 0) {
     throw new Error(
