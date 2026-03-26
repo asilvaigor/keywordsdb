@@ -50,6 +50,7 @@ function Footer() {
             <div className="flex flex-col gap-2">
               <FooterLink href="/blog">Blog</FooterLink>
               <FooterLink href="/density-checker">Density Checker</FooterLink>
+              <FooterLink href="/seo-audit">SEO Audit</FooterLink>
             </div>
           </div>
 
