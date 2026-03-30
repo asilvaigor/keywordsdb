@@ -31,7 +31,6 @@ export const metadata: Metadata = {
 export default function Contact() {
   return (
     <div className="flex min-h-screen flex-col">
-      <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
       <Header />
       <main className="flex-1">
         <div className="container max-w-4xl mx-auto px-4 py-16 flex items-center text-center md:text-left">

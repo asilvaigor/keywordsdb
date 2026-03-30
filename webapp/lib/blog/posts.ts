@@ -9,7 +9,6 @@ export type BlogPost = {
   coverImageWidth?: number;
   coverImageHeight?: number;
   coverImageAlt?: string;
-  coverImageCitation: string;
   ogImage: string;
   ogImageWidth: number;
   ogImageHeight: number;

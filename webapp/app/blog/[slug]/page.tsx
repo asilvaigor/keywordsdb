@@ -130,9 +130,9 @@ export default async function BlogPostPage({
               }
               preload
             />
-            {post.coverImageCitation && (
+            {post.ogImageAlt && (
               <p className="mt-2 text-sm text-muted-foreground text-center">
-                {post.coverImageCitation}
+                {post.ogImageAlt}
               </p>
             )}
           </div>
