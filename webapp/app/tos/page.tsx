@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
-const title = "Terms of Service | KeywordsDB";
+const title = "KeywordsDB Terms of Service - Legal Agreement";
 const description =
   "Read our comprehensive Terms of Service to understand the rules, guidelines and responsabilities governing the use of KeywordsDB.";
 
@@ -36,7 +36,7 @@ export default function TOS() {
           Website Terms and Conditions of Use
         </h1>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">1. Terms</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">1. Terms</h2>
         <p className="mb-4">
           By accessing this Website, accessible from keywordsdb.com, you are
           agreeing to be bound by these Website Terms and Conditions of Use and
@@ -46,7 +46,7 @@ export default function TOS() {
           Website are protected by copyright and trade mark law.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">2. Use License</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">2. Use License</h2>
         <p className="mb-4">
           Permission is granted to temporarily download one copy of the
           materials on KeywordsDB&apos;s Website for personal or commercial use.
@@ -83,7 +83,7 @@ export default function TOS() {
           possession whether it is printed or electronic format.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">3. Disclaimer</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">3. Disclaimer</h2>
         <p className="mb-4">
           All the materials on KeywordsDB&apos;s Website are provided &quot;as
           is&quot;. KeywordsDB makes no warranties, may it be expressed or
@@ -93,7 +93,7 @@ export default function TOS() {
           relating to such materials or any sites linked to this Website.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">4. Limitations</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">4. Limitations</h2>
         <p className="mb-4">
           KeywordsDB or its suppliers will not be hold accountable for any
           damages that will arise with the use or inability to use the materials
@@ -104,9 +104,9 @@ export default function TOS() {
           incidental damages, these limitations may not apply to you.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           5. Revisions and Errata
-        </h3>
+        </h2>
         <p className="mb-4">
           The materials appearing on KeywordsDB&apos;s Website may include
           technical, typographical, or photographic errors. KeywordsDB will not
@@ -116,7 +116,7 @@ export default function TOS() {
           commitment to update the materials.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">6. Links</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">6. Links</h2>
         <p className="mb-4">
           KeywordsDB has not reviewed all of the sites linked to its Website and
           is not responsible for the contents of any such linked site. The
@@ -124,19 +124,19 @@ export default function TOS() {
           site. The use of any linked website is at the user&apos;s own risk.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           7. Site Terms of Use Modifications
-        </h3>
+        </h2>
         <p className="mb-4">
           KeywordsDB may revise these Terms of Use for its Website at any time
           without prior notice. By using this Website, you are agreeing to be
           bound by the current version of these Terms and Conditions of Use.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">8. Your Privacy</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">8. Your Privacy</h2>
         <p className="mb-4">Please read our Privacy Policy.</p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">9. Governing Law</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">9. Governing Law</h2>
         <p className="mb-4">
           Any claim related to KeywordsDB&apos;s Website shall be governed by
           the laws of fr without regards to its conflict of law provisions.

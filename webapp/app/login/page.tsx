@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import Login from "@/components/auth/login";
 import { getUserData } from "@/lib/db/users";
 
-const title = "Login - keywordsdb.com";
+const title = "Log In to KeywordsDB - Free Keyword Research";
 const description =
   "Access the KeywordsDB dashboard to unlock the full potential of our free keyword research tool and take your SEO strategy to the next level.";
 

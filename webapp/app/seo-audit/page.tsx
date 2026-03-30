@@ -116,6 +116,17 @@ export default function SeoAuditPage() {
                 they hurt your rankings. We recommend running an audit after any
                 major site changes or at least once a month.
               </p>
+              <p>
+                A good SEO audit doesn&apos;t just list problems — it helps you
+                understand which issues have the most impact on your rankings.
+                Title tags, meta descriptions, heading structure, and structured
+                data are all factors search engines use to interpret and index
+                your pages. Missing or misconfigured elements in any of these
+                areas can quietly hold back your organic visibility, even when
+                your content is otherwise strong. Use the score and
+                recommendations from this tool as a starting point, then
+                prioritize fixes based on how many pages are affected.
+              </p>
             </div>
 
             {/* FAQ section */}

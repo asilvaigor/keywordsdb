@@ -5,7 +5,7 @@ import Header from "@/components/header";
 import { getAllPosts } from "@/lib/blog/posts";
 import { breadcrumbJsonLd } from "@/lib/json-ld";
 
-const title = "Blog | KeywordsDB";
+const title = "KeywordsDB Blog - SEO & Keyword Research Tips";
 const description =
   "Keyword research tips, SEO strategies, case studies, and product updates from the KeywordsDB team to help you find better keywords faster.";
 

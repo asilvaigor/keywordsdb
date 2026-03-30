@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
-const title = "Privacy | KeywordsDB";
+const title = "KeywordsDB Privacy Policy - How We Protect Your Data";
 const description =
-  "Learn about our commitment to protecting your privacy and how we handle your personal information at KeywordsDB.";
+  "Learn about our commitment to protecting your privacy and how we collect, store, and handle your personal information at KeywordsDB.";
 
 export const metadata: Metadata = {
   title: title,
@@ -51,15 +51,15 @@ export default function Privacy() {
           website.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">Consent</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">Consent</h2>
         <p className="mb-4">
           By using our website, you hereby consent to our Privacy Policy and
           agree to its terms.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           Information we collect
-        </h3>
+        </h2>
         <p className="mb-4">
           The personal information that you are asked to provide, and the
           reasons why you are asked to provide it, will be made clear to you at
@@ -72,7 +72,7 @@ export default function Privacy() {
           information you may choose to provide.
         </p>
 
-        <h4 className="mb-2 mt-4 text-lg font-semibold">Personal Data</h4>
+        <h3 className="mb-2 mt-4 text-lg font-semibold">Personal Data</h3>
         <p className="mb-4">
           While using Our Service, We may ask You to provide Us with certain
           personally identifiable information that can be used to contact or
@@ -84,7 +84,7 @@ export default function Privacy() {
           <li>Usage Data</li>
         </ul>
 
-        <h4 className="mb-2 mt-4 text-lg font-semibold">Usage Data</h4>
+        <h3 className="mb-2 mt-4 text-lg font-semibold">Usage Data</h3>
         <p className="mb-4">
           Usage Data is collected automatically when using the Service.
         </p>
@@ -109,9 +109,9 @@ export default function Privacy() {
           mobile device.
         </p>
 
-        <h4 className="mb-2 mt-4 text-lg font-semibold">
+        <h3 className="mb-2 mt-4 text-lg font-semibold">
           Tracking Technologies and Cookies
-        </h4>
+        </h3>
         <p className="mb-4">
           We use Cookies and similar tracking technologies to track the activity
           on Our Service and store certain information. Tracking technologies
@@ -179,9 +179,9 @@ export default function Privacy() {
           </li>
         </ul>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           Retention of Your Personal Data
-        </h3>
+        </h2>
         <p className="mb-4">
           The Company will retain Your Personal Data only for as long as is
           necessary for the purposes set out in this Privacy Policy. We will
@@ -198,9 +198,9 @@ export default function Privacy() {
           to retain this data for longer time periods.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           How we use your information
-        </h3>
+        </h2>
         <p className="mb-4">
           We use the information we collect in various ways, including to:
         </p>
@@ -219,9 +219,9 @@ export default function Privacy() {
           <li>Find and prevent fraud</li>
         </ul>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           CCPA Privacy Rights (Do Not Sell My Personal Information)
-        </h3>
+        </h2>
         <p className="mb-4">
           Under the CCPA, among other rights, California consumers have the
           right to:
@@ -244,9 +244,9 @@ export default function Privacy() {
           would like to exercise any of these rights, please contact us.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           GDPR Data Protection Rights
-        </h3>
+        </h2>
         <p className="mb-4">
           We would like to make sure you are fully aware of all of your data
           protection rights. Every user is entitled to the following:
@@ -284,9 +284,9 @@ export default function Privacy() {
           would like to exercise any of these rights, please contact us.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           Transfer of Your Personal Data
-        </h3>
+        </h2>
         <p className="mb-4">
           Your information, including Personal Data, is processed at the
           Company&apos;s operating offices and in any other places where the
@@ -308,9 +308,9 @@ export default function Privacy() {
           including the security of Your data and other personal information.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           Delete Your Personal Data
-        </h3>
+        </h2>
         <p className="mb-4">
           You have the right to delete or request that We assist in deleting the
           Personal Data that We have collected about You.
@@ -331,9 +331,9 @@ export default function Privacy() {
           when we have a legal obligation or lawful basis to do so.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           Children&apos;s Information
-        </h3>
+        </h2>
         <p className="mb-4">
           Another part of our priority is adding protection for children while
           using the internet. We encourage parents and guardians to observe,
@@ -347,9 +347,9 @@ export default function Privacy() {
           efforts to promptly remove such information from our records.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">
+        <h2 className="mb-3 mt-6 text-xl font-semibold">
           Changes to This Privacy Policy
-        </h3>
+        </h2>
         <p className="mb-4">
           We may update our Privacy Policy from time to time. Thus, we advise
           you to review this page periodically for any changes. We will notify
@@ -358,7 +358,7 @@ export default function Privacy() {
           page.
         </p>
 
-        <h3 className="mb-3 mt-6 text-xl font-semibold">Contact Us</h3>
+        <h2 className="mb-3 mt-6 text-xl font-semibold">Contact Us</h2>
         <p className="mb-4">
           If you have any questions or suggestions about our Privacy Policy, do
           not hesitate to contact us at support@keywordsdb.com.

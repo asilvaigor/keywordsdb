@@ -124,6 +124,16 @@ export default function DensityCheckerPage() {
                 you can analyze both individual terms and common expressions.
               </p>
               <p>
+                Keyword density is just one signal in a broader SEO strategy.
+                Search engines like Google look at hundreds of factors when
+                ranking pages, but ensuring your target keywords appear
+                naturally and at a reasonable frequency is still a valuable
+                on-page practice. A density that&apos;s too low may indicate the
+                page isn&apos;t focused enough on the topic, while a density
+                that&apos;s too high can look unnatural and may lead to keyword
+                stuffing penalties.
+              </p>
+              <p>
                 Want to learn more about how keyword density fits into your SEO
                 strategy?{" "}
                 <Link
