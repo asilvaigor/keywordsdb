@@ -122,6 +122,8 @@ function extractInternalLinks(html: string, baseUrl: URL): string[] {
         (resolved.protocol === "http:" || resolved.protocol === "https:") &&
         !resolved.pathname.startsWith("/cdn-cgi/")
       ) {
+        // Normalize protocol to match base URL to avoid http/https duplicates
+        resolved.protocol = baseUrl.protocol;
         resolved.hash = "";
         resolved.search = "";
         const normalized = resolved.href.replace(/\/+$/, "");
@@ -144,7 +146,6 @@ export async function crawlSite(
     totalPages: number,
     currentUrl: string,
   ) => void,
-  signal?: AbortSignal,
 ): Promise<CrawlData> {
   const parsed = new URL(startUrl);
   const domain = parsed.hostname;
@@ -158,7 +159,6 @@ export async function crawlSite(
   const discoveredLinks = new Set<string>(queue);
 
   while (queue.length > 0 && pages.length < maxPages) {
-    if (signal?.aborted) break;
     const url = queue.shift();
     if (!url) continue;
     const normalizedUrl = url.replace(/\/+$/, "");
@@ -177,6 +177,12 @@ export async function crawlSite(
     // Only process HTML pages
     const contentType = page.headers["content-type"] ?? "";
     if (!contentType.includes("text/html") && !contentType.includes("xhtml")) {
+      continue;
+    }
+
+    // Deduplicate by finalUrl (different original URLs can redirect to the same page)
+    const finalNormalized = page.finalUrl.replace(/\/+$/, "");
+    if (pages.some((p) => p.finalUrl.replace(/\/+$/, "") === finalNormalized)) {
       continue;
     }
 

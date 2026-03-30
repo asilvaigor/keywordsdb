@@ -1,15 +1,12 @@
 "use client";
 
-import { CircleAlert, Globe, Search, Square } from "lucide-react";
+import { ArrowLeft, CircleAlert, Globe, Search, Square } from "lucide-react";
 import {
   CategorySection,
   IssuesView,
 } from "@/components/seo-audit/audit-results";
 import { AuditSummary } from "@/components/seo-audit/audit-summary";
-import {
-  MAX_PAGES_OPTIONS,
-  useSeoAudit,
-} from "@/components/seo-audit/use-seo-audit";
+import { useSeoAudit } from "@/components/seo-audit/use-seo-audit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -99,64 +96,79 @@ export default function SeoAudit() {
       )}
 
       {/* Search bar */}
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-wrap gap-2 items-center"
-      >
-        <div className="relative flex-1 min-w-0">
-          <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Enter a URL (e.g. keywordsdb.com)"
-            value={url}
-            onChange={(e) => setUrl(e.target.value)}
-            className="h-10 pl-9 text-sm"
-            disabled={isRunning}
-          />
-        </div>
-        <div className="flex gap-2 items-center w-full sm:w-auto">
-          <Select
-            value={String(maxPages)}
-            onValueChange={(v) => setMaxPages(Number(v))}
-            disabled={isRunning}
-          >
-            <SelectTrigger className="data-[size=default]:h-10 w-30">
-              <SelectValue>{maxPages} pages</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {MAX_PAGES_OPTIONS.map((n) => (
-                <SelectItem key={n} value={String(n)}>
-                  {n} pages
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          {isRunning ? (
-            <Button
-              key="stop"
-              type="button"
-              size="lg"
-              variant="destructive"
-              onClick={handleStop}
-              className="h-10 flex-1 sm:flex-none"
+      {!hasResults && (
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-wrap gap-2 items-center"
+        >
+          <div className="relative flex-1 min-w-0">
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Enter a URL (e.g. keywordsdb.com)"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="h-10 pl-9 text-sm"
+              disabled={isRunning}
+            />
+          </div>
+          <div className="flex gap-2 items-center w-full sm:w-auto">
+            <Select
+              value={String(maxPages)}
+              onValueChange={(v) => setMaxPages(Number(v))}
+              disabled={isRunning}
             >
-              <Square className="h-4 w-4" data-icon="inline-start" />
-              Stop
-            </Button>
-          ) : (
-            <Button
-              key="audit"
-              type="submit"
-              size="lg"
-              disabled={!url.trim()}
-              className="h-10 flex-1 sm:flex-none"
-            >
-              <Search className="h-4 w-4" data-icon="inline-start" />
-              Audit
-            </Button>
-          )}
-        </div>
-      </form>
+              <SelectTrigger className="data-[size=default]:h-10 w-30">
+                <SelectValue>{maxPages} pages</SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {[25, 50, 100, 250, 500, 1000].map((n) => (
+                  <SelectItem key={n} value={String(n)}>
+                    {n} pages
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {isRunning ? (
+              <Button
+                key="stop"
+                type="button"
+                size="lg"
+                variant="destructive"
+                onClick={handleStop}
+                className="h-10 flex-1 sm:flex-none"
+              >
+                <Square className="h-4 w-4" data-icon="inline-start" />
+                Stop
+              </Button>
+            ) : (
+              <Button
+                key="audit"
+                type="submit"
+                size="lg"
+                disabled={!url.trim()}
+                className="h-10 flex-1 sm:flex-none"
+              >
+                <Search className="h-4 w-4" data-icon="inline-start" />
+                Audit
+              </Button>
+            )}
+          </div>
+        </form>
+      )}
+
+      {/* Back button */}
+      {hasResults && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => window.location.reload()}
+          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+      )}
 
       {/* Error */}
       {error && (
@@ -172,7 +184,7 @@ export default function SeoAudit() {
 
       {/* Results */}
       {result && (
-        <div className="my-8 sm:my-6 animate-fade-in-up space-y-8">
+        <div className="mb-12 sm:mb-20 animate-fade-in-up space-y-8">
           {/* Summary */}
           <AuditSummary result={result} />
 

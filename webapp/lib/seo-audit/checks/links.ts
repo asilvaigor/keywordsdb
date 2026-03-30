@@ -1,11 +1,13 @@
 import type {
   AuditCheck,
+  AuditCheckPage,
   CrawlData,
   PageExtraction,
 } from "@/lib/seo-audit/types";
 
 const LINK_CHECK_TIMEOUT = 5_000;
 const MAX_EXTERNAL_CHECKS = 50;
+const MAX_PAGES_PER_CHECK = 10;
 
 /** Cloudflare infrastructure paths — not real pages, safe to ignore */
 function isCloudflarePath(url: string): boolean {
@@ -97,27 +99,53 @@ export async function checkLinks(
   const totalBroken = brokenInternal.length + brokenExternal.length;
   const status = totalBroken === 0 ? "pass" : "fail";
 
-  // Format: "BROKEN_URL (STATUS) | SOURCE_PAGE_1, SOURCE_PAGE_2"
-  const brokenDetails =
+  // Build per-page details for broken links
+  const brokenPages: AuditCheckPage[] =
     totalBroken > 0
       ? [
           ...brokenInternal.map((p) => {
             const normalized = p.url.replace(/\/+$/, "");
             const sources = internalLinkSources.get(normalized);
-            const sourcePart = sources?.size
-              ? ` | ${[...sources].slice(0, 3).join(", ")}`
+            const sourceList = sources?.size
+              ? [...sources]
+                  .slice(0, 3)
+                  .map((s) => {
+                    try {
+                      const u = new URL(s);
+                      return u.pathname === "/" ? u.hostname : u.pathname;
+                    } catch {
+                      return s;
+                    }
+                  })
+                  .join(", ")
               : "";
-            return `${p.url} (${p.status})${sourcePart}`;
+            return {
+              url: p.url,
+              description: `HTTP ${p.status}${sourceList ? ` — linked from ${sourceList}` : ""}`,
+            };
           }),
           ...brokenExternal.map((r) => {
             const sources = externalLinkSources.get(r.url);
-            const sourcePart = sources?.size
-              ? ` | ${[...sources].slice(0, 3).join(", ")}`
+            const sourceList = sources?.size
+              ? [...sources]
+                  .slice(0, 3)
+                  .map((s) => {
+                    try {
+                      const u = new URL(s);
+                      return u.pathname === "/" ? u.hostname : u.pathname;
+                    } catch {
+                      return s;
+                    }
+                  })
+                  .join(", ")
               : "";
-            return `${r.url} (${r.status})${sourcePart}`;
+            return {
+              url: r.url,
+              description: `HTTP ${r.status}${sourceList ? ` — linked from ${sourceList}` : ""}`,
+            };
           }),
-        ].slice(0, 10)
-      : undefined;
+        ].slice(0, MAX_PAGES_PER_CHECK)
+      : [];
 
   checks.push({
     id: "links-broken",
@@ -128,7 +156,7 @@ export async function checkLinks(
       totalBroken === 0
         ? `No broken links found (checked ${crawlData.pages.length} internal + ${externalSample.length} external URLs).`
         : `Found ${totalBroken} broken link${totalBroken > 1 ? "s" : ""} (${brokenInternal.length} internal, ${brokenExternal.length} external).`,
-    details: brokenDetails,
+    pages: brokenPages.length > 0 ? brokenPages : undefined,
   });
 
   // 2. Internal links per page
@@ -148,9 +176,13 @@ export async function checkLinks(
     const linkStatus = avg >= 3 && pagesWithZero === 0 ? "pass" : "fail";
 
     // Collect pages with zero internal links (ignore Cloudflare paths)
-    const zeroLinkPages = relevantPages
+    const zeroLinkPages: AuditCheckPage[] = relevantPages
       .filter((p) => p.extraction.links.internal.length === 0)
-      .map((p) => p.url);
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => ({
+        url: p.url,
+        description: "No internal links on this page",
+      }));
 
     checks.push({
       id: "links-internal",
@@ -163,8 +195,7 @@ export async function checkLinks(
           : pagesWithZero > 0
             ? `${pagesWithZero} page${pagesWithZero > 1 ? "s" : ""} ${pagesWithZero > 1 ? "have" : "has"} no internal links. Average of ${avg.toFixed(1)} links per page across ${relevantPages.length} pages. Improve interlinking for better crawlability.`
             : `Average of ${avg.toFixed(1)} internal links per page. Aim for at least 3 internal links per page.`,
-      details:
-        zeroLinkPages.length > 0 ? zeroLinkPages.slice(0, 10) : undefined,
+      pages: zeroLinkPages.length > 0 ? zeroLinkPages : undefined,
     });
   }
 
@@ -185,6 +216,13 @@ export async function checkLinks(
 
     const orphanStatus = orphans.length === 0 ? "pass" : "fail";
 
+    const orphanPages: AuditCheckPage[] = orphans
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => ({
+        url: p.url,
+        description: "Not linked from any other crawled page",
+      }));
+
     checks.push({
       id: "links-orphans",
       category: "links",
@@ -194,8 +232,7 @@ export async function checkLinks(
         orphans.length === 0
           ? `No orphan pages found among ${allPages.length} crawled pages — all pages are linked to.`
           : `Found ${orphans.length} orphan page${orphans.length > 1 ? "s" : ""} not linked from other crawled pages. These may be hard for search engines to discover.`,
-      details:
-        orphans.length > 0 ? orphans.slice(0, 10).map((p) => p.url) : undefined,
+      pages: orphanPages.length > 0 ? orphanPages : undefined,
     });
   }
 

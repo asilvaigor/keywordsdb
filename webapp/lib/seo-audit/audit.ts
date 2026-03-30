@@ -11,22 +11,19 @@ import {
 } from "@/lib/seo-audit/score";
 import type { AuditResult } from "@/lib/seo-audit/types";
 
-export const MAX_PAGES = 1000;
-
 export async function runAudit(
   url: string,
+  maxPages: number,
   onProgress: (
     pagesScanned: number,
     totalPages: number,
     currentUrl: string,
   ) => void,
-  maxPages = MAX_PAGES,
-  signal?: AbortSignal,
 ): Promise<AuditResult> {
   const start = Date.now();
 
   // Phase 1: Crawl
-  const crawlData = await crawlSite(url, maxPages, onProgress, signal);
+  const crawlData = await crawlSite(url, maxPages, onProgress);
 
   if (crawlData.pages.length === 0) {
     throw new Error(
@@ -45,8 +42,8 @@ export async function runAudit(
 
   // Phase 3: Run all checks
   const metaChecks = await checkMeta(primaryPage, primaryUrl, allPages);
-  const contentChecks = checkContent(primaryPage);
-  const technicalChecks = checkTechnical(primaryPage, crawlData);
+  const contentChecks = checkContent(allPages);
+  const technicalChecks = checkTechnical(allPages, crawlData);
   const linkChecks = await checkLinks(allPages, crawlData);
   const perfChecks = checkPerformance(crawlData.pages);
 
@@ -61,9 +58,9 @@ export async function runAudit(
 
   const weights = {
     meta: 0.3,
-    content: 0.2,
+    content: 0.1,
     technical: 0.25,
-    links: 0.15,
+    links: 0.25,
     performance: 0.1,
   } as const;
 

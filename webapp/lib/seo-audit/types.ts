@@ -7,6 +7,11 @@ export type AuditCategory =
   | "links"
   | "performance";
 
+export type AuditCheckPage = {
+  url: string;
+  description: string;
+};
+
 export type AuditCheck = {
   id: string;
   category: AuditCategory;
@@ -14,6 +19,7 @@ export type AuditCheck = {
   status: AuditStatus;
   description: string;
   details?: string | string[];
+  pages?: AuditCheckPage[];
 };
 
 export type AuditCategoryResult = {

@@ -1,78 +1,100 @@
-import type { AuditCheck, PageExtraction } from "@/lib/seo-audit/types";
+import type {
+  AuditCheck,
+  AuditCheckPage,
+  PageExtraction,
+} from "@/lib/seo-audit/types";
 
-export function checkContent(primaryPage: PageExtraction): AuditCheck[] {
+const MAX_PAGES_PER_CHECK = 10;
+
+export function checkContent(
+  allPages: { url: string; extraction: PageExtraction }[],
+): AuditCheck[] {
   const checks: AuditCheck[] = [];
 
-  // 1. Word count
-  const wc = primaryPage.wordCount;
-  const wcStatus = wc >= 300 ? "pass" : "fail";
-  checks.push({
-    id: "content-word-count",
-    category: "content",
-    title: "Word count",
-    status: wcStatus,
-    description:
-      wcStatus === "pass"
-        ? `Page has ${wc.toLocaleString()} words — good content length.`
-        : `Page has only ${wc.toLocaleString()} words. Aim for at least 300 words for better search visibility.`,
-  });
+  // 1. Word count — check all pages
+  {
+    const failing: AuditCheckPage[] = allPages
+      .filter((p) => p.extraction.wordCount < 300)
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => ({
+        url: p.url,
+        description: `${p.extraction.wordCount.toLocaleString()} words`,
+      }));
 
-  // 2. Heading structure
-  const { h1, h2 } = primaryPage.headings;
-  const h1Count = h1.length;
-  const h2Count = h2.length;
-
-  let headingStatus: "pass" | "fail";
-  let headingDesc: string;
-
-  if (h1Count === 1 && h2Count >= 1) {
-    headingStatus = "pass";
-    headingDesc = `Good heading structure: 1 H1 and ${h2Count} H2 tag${h2Count > 1 ? "s" : ""}.`;
-  } else if (h1Count === 1 && h2Count === 0) {
-    headingStatus = "fail";
-    headingDesc =
-      "Page has 1 H1 but no H2 tags. Use H2 headings to structure your content.";
-  } else if (h1Count > 1) {
-    headingStatus = "fail";
-    headingDesc = `Page has ${h1Count} H1 tags — use exactly one H1 per page for clear topic hierarchy.`;
-  } else {
-    headingStatus = "fail";
-    headingDesc =
-      "Page is missing an H1 tag. Every page should have exactly one H1 heading.";
+    checks.push({
+      id: "content-word-count",
+      category: "content",
+      title: "Word count",
+      status: failing.length === 0 ? "pass" : "fail",
+      description:
+        failing.length === 0
+          ? `All ${allPages.length} page${allPages.length > 1 ? "s" : ""} have at least 300 words.`
+          : `${failing.length} page${failing.length > 1 ? "s have" : " has"} fewer than 300 words. Aim for at least 300 words for better search visibility.`,
+      pages: failing.length > 0 ? failing : undefined,
+    });
   }
 
-  checks.push({
-    id: "content-headings",
-    category: "content",
-    title: "Heading structure",
-    status: headingStatus,
-    description: headingDesc,
-    details: `H1: ${h1Count}, H2: ${h2Count}, H3: ${primaryPage.headings.h3.length}`,
-  });
+  // 2. Heading structure — check all pages
+  {
+    const failing: AuditCheckPage[] = allPages
+      .filter((p) => {
+        const { h1, h2 } = p.extraction.headings;
+        return h1.length !== 1 || h2.length < 1;
+      })
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => {
+        const { h1, h2, h3 } = p.extraction.headings;
+        let issue: string;
+        if (h1.length === 0) issue = "Missing H1 tag";
+        else if (h1.length > 1) issue = `${h1.length} H1 tags (should be 1)`;
+        else issue = "No H2 tags to structure content";
+        return {
+          url: p.url,
+          description: `${issue} — H1: ${h1.length}, H2: ${h2.length}, H3: ${h3.length}`,
+        };
+      });
 
-  // 3. Image alt text
-  const images = primaryPage.images;
-  if (images.length > 0) {
-    const withAlt = images.filter((img) => img.hasAlt).length;
-    const pct = (withAlt / images.length) * 100;
-    const status = pct === 100 ? "pass" : "fail";
     checks.push({
-      id: "content-image-alt",
+      id: "content-headings",
       category: "content",
-      title: "Image alt text",
-      status,
+      title: "Heading structure",
+      status: failing.length === 0 ? "pass" : "fail",
       description:
-        status === "pass"
-          ? `All ${images.length} image${images.length > 1 ? "s" : ""} have alt text.`
-          : `${withAlt} of ${images.length} images (${Math.round(pct)}%) have alt text. Add descriptive alt text to all images for accessibility and SEO.`,
+        failing.length === 0
+          ? `All pages have good heading structure (1 H1 + at least 1 H2).`
+          : `${failing.length} page${failing.length > 1 ? "s have" : " has"} heading structure issues. Use exactly one H1 and at least one H2 per page.`,
+      pages: failing.length > 0 ? failing : undefined,
     });
-  } else {
+  }
+
+  // 3. Image alt text — check all pages
+  {
+    const failing: AuditCheckPage[] = allPages
+      .filter((p) => {
+        const images = p.extraction.images;
+        if (images.length === 0) return false;
+        return images.some((img) => !img.hasAlt);
+      })
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => {
+        const total = p.extraction.images.length;
+        const missing = p.extraction.images.filter((img) => !img.hasAlt).length;
+        return {
+          url: p.url,
+          description: `${missing} of ${total} image${total > 1 ? "s" : ""} missing alt text`,
+        };
+      });
+
     checks.push({
       id: "content-image-alt",
       category: "content",
       title: "Image alt text",
-      status: "pass",
-      description: "No images found on the page (nothing to check).",
+      status: failing.length === 0 ? "pass" : "fail",
+      description:
+        failing.length === 0
+          ? `All images across ${allPages.length} page${allPages.length > 1 ? "s" : ""} have alt text.`
+          : `${failing.length} page${failing.length > 1 ? "s have" : " has"} images missing alt text. Add descriptive alt text for accessibility and SEO.`,
+      pages: failing.length > 0 ? failing : undefined,
     });
   }
 

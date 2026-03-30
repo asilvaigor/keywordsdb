@@ -7,13 +7,9 @@ import type {
   AuditStreamEvent,
 } from "@/lib/seo-audit/types";
 
-const MAX_PAGES_OPTIONS = [10, 50, 100, 250, 500, 1000] as const;
-
-export { MAX_PAGES_OPTIONS };
-
 export function useSeoAudit() {
   const [url, setUrl] = useState("");
-  const [maxPages, setMaxPages] = useState<number>(100);
+  const [maxPages, setMaxPages] = useState<number>(1000);
   const [result, setResult] = useState<AuditResult | null>(null);
   const [progress, setProgress] = useState<AuditProgress | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +55,7 @@ export function useSeoAudit() {
             setResult(data);
             setProgress(null);
           } else if (data.type === "error") {
-            setError(data.error);
+            setError(`There was an error running the audit: ${data.error}`);
             setProgress(null);
           }
         } catch {

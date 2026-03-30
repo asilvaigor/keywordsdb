@@ -1,16 +1,19 @@
 import type {
   AuditCheck,
+  AuditCheckPage,
   CrawlData,
   PageExtraction,
 } from "@/lib/seo-audit/types";
 
+const MAX_PAGES_PER_CHECK = 10;
+
 export function checkTechnical(
-  primaryPage: PageExtraction,
+  allPages: { url: string; extraction: PageExtraction }[],
   crawlData: CrawlData,
 ): AuditCheck[] {
   const checks: AuditCheck[] = [];
 
-  // 1. HTTPS
+  // 1. HTTPS — site-level check
   const usesHttps = crawlData.startUrl.startsWith("https://");
   const primaryPage0 = crawlData.pages[0];
   const redirectedToHttps = primaryPage0
@@ -29,7 +32,7 @@ export function checkTechnical(
         : "Site is not using HTTPS. This is essential for security and SEO rankings.",
   });
 
-  // 2. robots.txt
+  // 2. robots.txt — site-level check
   if (crawlData.robotsTxt) {
     const txt = crawlData.robotsTxt.toLowerCase();
     const hasDisallowAll =
@@ -62,7 +65,7 @@ export function checkTechnical(
     });
   }
 
-  // 3. sitemap.xml
+  // 3. sitemap.xml — site-level check
   if (crawlData.sitemapXml) {
     const isValid =
       crawlData.sitemapXml.includes("<urlset") ||
@@ -87,44 +90,80 @@ export function checkTechnical(
     });
   }
 
-  // 4. Structured data
-  const { jsonLd, microdata } = primaryPage.structuredData;
-  checks.push({
-    id: "tech-structured-data",
-    category: "technical",
-    title: "Structured data",
-    status: jsonLd || microdata ? "pass" : "fail",
-    description:
-      jsonLd || microdata
-        ? `Structured data found: ${[jsonLd && "JSON-LD", microdata && "Microdata"].filter(Boolean).join(", ")}. This can enhance search result appearance with rich snippets.`
-        : "No structured data (JSON-LD or Microdata) found. Adding structured data can improve how your page appears in search results.",
-  });
+  // 4. Structured data — check all pages
+  {
+    const failing: AuditCheckPage[] = allPages
+      .filter(
+        (p) =>
+          !p.extraction.structuredData.jsonLd &&
+          !p.extraction.structuredData.microdata,
+      )
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => ({
+        url: p.url,
+        description: "No JSON-LD or Microdata found",
+      }));
 
-  // 5. HTML5 Doctype
-  checks.push({
-    id: "tech-doctype",
-    category: "technical",
-    title: "HTML5 Doctype",
-    status: primaryPage.meta.doctype ? "pass" : "fail",
-    description: primaryPage.meta.doctype
-      ? "Page uses the HTML5 doctype declaration."
-      : "Missing or non-HTML5 doctype. Use <!DOCTYPE html> as the first line of your HTML.",
-  });
+    checks.push({
+      id: "tech-structured-data",
+      category: "technical",
+      title: "Structured data",
+      status: failing.length === 0 ? "pass" : "fail",
+      description:
+        failing.length === 0
+          ? `All pages have structured data (JSON-LD or Microdata) for rich search snippets.`
+          : `${failing.length} page${failing.length > 1 ? "s" : ""} missing structured data. Adding JSON-LD or Microdata can improve how pages appear in search results.`,
+      pages: failing.length > 0 ? failing : undefined,
+    });
+  }
 
-  // 6. Character encoding
-  const charset = primaryPage.meta.charset;
-  checks.push({
-    id: "tech-charset",
-    category: "technical",
-    title: "Character encoding",
-    status: charset === "UTF-8" ? "pass" : "fail",
-    description:
-      charset === "UTF-8"
-        ? "Character encoding is set to UTF-8."
-        : charset
-          ? `Character encoding is set to ${charset}. UTF-8 is the recommended standard.`
-          : 'No character encoding declared. Add <meta charset="UTF-8"> to avoid rendering issues.',
-  });
+  // 5. HTML5 Doctype — check all pages
+  {
+    const failing: AuditCheckPage[] = allPages
+      .filter((p) => !p.extraction.meta.doctype)
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => ({
+        url: p.url,
+        description: "Missing or non-HTML5 doctype",
+      }));
+
+    checks.push({
+      id: "tech-doctype",
+      category: "technical",
+      title: "HTML5 Doctype",
+      status: failing.length === 0 ? "pass" : "fail",
+      description:
+        failing.length === 0
+          ? `All pages use the HTML5 doctype declaration.`
+          : `${failing.length} page${failing.length > 1 ? "s" : ""} missing HTML5 doctype. Use <!DOCTYPE html> as the first line of your HTML.`,
+      pages: failing.length > 0 ? failing : undefined,
+    });
+  }
+
+  // 6. Character encoding — check all pages
+  {
+    const failing: AuditCheckPage[] = allPages
+      .filter((p) => p.extraction.meta.charset !== "UTF-8")
+      .slice(0, MAX_PAGES_PER_CHECK)
+      .map((p) => ({
+        url: p.url,
+        description: p.extraction.meta.charset
+          ? `Charset: ${p.extraction.meta.charset} (should be UTF-8)`
+          : "No charset declared",
+      }));
+
+    checks.push({
+      id: "tech-charset",
+      category: "technical",
+      title: "Character encoding",
+      status: failing.length === 0 ? "pass" : "fail",
+      description:
+        failing.length === 0
+          ? `All pages have UTF-8 character encoding.`
+          : `${failing.length} page${failing.length > 1 ? "s" : ""} not using UTF-8 encoding. UTF-8 is the recommended standard.`,
+      pages: failing.length > 0 ? failing : undefined,
+    });
+  }
 
   return checks;
 }

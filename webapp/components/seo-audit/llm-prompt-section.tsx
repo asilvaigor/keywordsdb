@@ -14,6 +14,7 @@ function generateLlmPrompt(result: AuditResult): string {
         category: cat.label,
         description: c.description,
         details: c.details,
+        pages: c.pages,
       })),
   );
 
@@ -34,6 +35,12 @@ function generateLlmPrompt(result: AuditResult): string {
         ? c.details.join("\n")
         : c.details;
       prompt += `\`\`\`\n${detailStr}\n\`\`\`\n`;
+    }
+    if (c.pages && c.pages.length > 0) {
+      prompt += "\nAffected pages:\n";
+      for (const page of c.pages) {
+        prompt += `- ${page.url} — ${page.description}\n`;
+      }
     }
     if (i < failedChecks.length - 1) {
       prompt += "\n";

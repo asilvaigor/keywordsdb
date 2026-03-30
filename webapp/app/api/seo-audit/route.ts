@@ -1,10 +1,14 @@
 import type { NextRequest } from "next/server";
-import { MAX_PAGES, runAudit } from "@/lib/seo-audit/audit";
+import { runAudit } from "@/lib/seo-audit/audit";
 import { validateUrl } from "@/lib/seo-audit/crawl";
 import type { AuditError, AuditProgress } from "@/lib/seo-audit/types";
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get("url");
+  const maxPages = Math.min(
+    Math.max(Number(request.nextUrl.searchParams.get("maxPages") ?? 1000), 1),
+    1000,
+  );
 
   if (!url) {
     return Response.json({ error: "Missing url parameter" }, { status: 400 });
@@ -14,17 +18,6 @@ export async function GET(request: NextRequest) {
   if (error || !parsed) {
     return Response.json({ error }, { status: 400 });
   }
-
-  const maxPagesParam = request.nextUrl.searchParams.get("maxPages");
-  const maxPages = maxPagesParam
-    ? Math.max(
-        1,
-        Math.min(Number.parseInt(maxPagesParam, 10) || MAX_PAGES, MAX_PAGES),
-      )
-    : MAX_PAGES;
-
-  const abortController = new AbortController();
-  request.signal.addEventListener("abort", () => abortController.abort());
 
   const encoder = new TextEncoder();
 
@@ -41,6 +34,7 @@ export async function GET(request: NextRequest) {
       try {
         const result = await runAudit(
           parsed.href,
+          maxPages,
           (pagesScanned, totalPages, currentUrl) => {
             const progress: AuditProgress = {
               type: "progress",
@@ -50,8 +44,6 @@ export async function GET(request: NextRequest) {
             };
             enqueue(JSON.stringify(progress));
           },
-          maxPages,
-          abortController.signal,
         );
 
         enqueue(JSON.stringify(result));
