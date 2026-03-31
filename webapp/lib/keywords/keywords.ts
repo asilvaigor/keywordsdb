@@ -53,20 +53,28 @@ export async function* getKeywordsStream(
     throw new Error("Unauthorized");
   }
 
+  console.log(
+    `[${userData?.email ?? "unknown"}] Starting getKeywordsStream with filters: ${JSON.stringify(filters)}, sorting: ${JSON.stringify(sorting)}, columns: ${columns.join(",")}, page: ${page}, pageSize: ${pageSize}, isSample: ${isSample}`,
+  );
+
   const cacheKey = `keywords${isSample ? "-sample" : ""}-${JSON.stringify(filters)}-${JSON.stringify(sorting)}-${columns.join(",")}-${page}-${pageSize}`;
   const hash = createHash("sha256").update(cacheKey, "utf8").digest("hex");
   const docRef = firestore.collection("keywords-cache").doc(hash);
   const doc = (await docRef.get()).data() as KeywordsCached | undefined;
 
   if (doc) {
-    console.log("Returning keywords from firestore cache");
+    console.log(
+      `[${userData?.email ?? "unknown"}] Returning keywords from firestore cache`,
+    );
     yield doc.results;
     return;
   }
 
   let allResults: Keyword[] = [];
   if (isSample) {
-    console.log("Streaming keywords from sample");
+    console.log(
+      `[${userData?.email ?? "unknown"}] Streaming keywords from sample`,
+    );
     allResults = await getKeywordsStreamSample({
       filters,
       sorting,
@@ -76,7 +84,9 @@ export async function* getKeywordsStream(
     });
     yield allResults;
   } else {
-    console.log("Streaming keywords from clickhouse");
+    console.log(
+      `[${userData?.email ?? "unknown"}] Streaming keywords from clickhouse`,
+    );
 
     if (userData) {
       // always true
@@ -112,6 +122,9 @@ export async function* getKeywordsStream(
 
   // Add keyword term to be ingested
   if (filters.keyword) {
+    console.log(
+      `[${userData?.email ?? "unknown"}] Adding keyword term to be ingested: ${filters.keyword}`,
+    );
     firestore
       .collection("keywords-to-ingest")
       .doc("webapp")
@@ -122,7 +135,9 @@ export async function* getKeywordsStream(
       .catch(console.error);
   }
 
-  console.log("Streaming query completed successfully");
+  console.log(
+    `[${userData?.email ?? "unknown"}] Streaming query completed successfully`,
+  );
 }
 
 export async function getKeywordsCount(
@@ -145,16 +160,22 @@ export async function getKeywordsCount(
   const docRef = firestore.collection("keyword-counts-cache").doc(hash);
   const doc = (await docRef.get()).data() as KeywordCountsCached | undefined;
   if (doc) {
-    console.log("Returning keyword count from firestore cache");
+    console.log(
+      `[${userData?.email ?? "unknown"}] Returning keyword count from firestore cache`,
+    );
     return doc.count;
   }
 
   let count: number;
   if (isSample) {
-    console.log("Getting keyword count from sample");
+    console.log(
+      `[${userData?.email ?? "unknown"}] Getting keyword count from sample`,
+    );
     count = await getKeywordsCountSample(filters);
   } else {
-    console.log("Getting keyword count from clickhouse");
+    console.log(
+      `[${userData?.email ?? "unknown"}] Getting keyword count from clickhouse`,
+    );
     count = await getKeywordsCountClickhouse(filters);
   }
 
@@ -195,5 +216,6 @@ export async function getDownloadUrls({
     sorting,
     isSample,
   });
+  console.log(`[${userData?.email ?? "unknown"}] Returning download URLs`);
   return urls;
 }
