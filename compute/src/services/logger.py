@@ -23,7 +23,7 @@ def _override_pywarnings(logger: structlog.stdlib.BoundLogger) -> None:
         message = warnings.formatwarning(message, category, filename, lineno, line)
         logger.warning(message)
 
-    warnings.showwarning = showwarning  # type: ignore[invalid-assignment]
+    warnings.showwarning = showwarning  # ty:ignore[invalid-assignment]
 
 
 def _override_stderr(logger: structlog.stdlib.BoundLogger) -> None:
@@ -150,4 +150,4 @@ def get_logger() -> structlog.stdlib.BoundLogger:
     if _logger_instance is None:
         configure_logger()
 
-    return _logger_instance  # type: ignore[return-value]
+    return _logger_instance  # ty:ignore[invalid-return-type]

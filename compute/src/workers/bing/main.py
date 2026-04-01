@@ -1,9 +1,9 @@
 import asyncio
 import multiprocessing
 
+from src.services.bigquery import KeywordsTmpTable
 from src.services.clickhouse import ClickhouseClient
 from src.services.storage import StorageClient
-from src.workers.bing.adult_classifier import is_adult
 from src.workers.bing.banned_keywords import update_banned_keywords
 from src.workers.bing.context import Context
 
@@ -66,10 +66,9 @@ async def main_async() -> None:
     keywords = keywords[i_min:i_max].to_list()
     ctx.logger.info(f"Got {len(keywords)} keywords to ingest, range=[{i_min},{i_max}], total={tot_keywords}")
     df = await ctx.ads_client.get_keyword_info(keywords)
-    df = df.with_columns(is_adult=is_adult("keyword"))
 
     ctx.logger.info(f"Inserting {len(df)} rows into BigQuery")
-    ctx.bigquery_client.insert("keywords-tmp", df)
+    ctx.bigquery_client.insert(KeywordsTmpTable, df)
     ctx.storage_client.write_json(
         f"gs://{StorageClient.BUCKET}/bing-to-ingest/in_progress.json", {**in_progress, file_to_ingest: i_max}
     )

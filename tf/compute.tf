@@ -44,6 +44,14 @@ locals {
         "roles/datastore.user",
       ]
     }
+    classifier = {
+      display_name = "Worker-classifier"
+      roles = [
+        "roles/bigquery.user",
+        "roles/bigquery.dataOwner",
+        "roles/storage.objectUser",
+      ]
+    }
   }
 
   worker_iam_bindings = {

@@ -52,7 +52,7 @@ class FirestoreClient:
             return "", []
 
         docs.close()
-        keywords: list[str] = doc.to_dict()["keywords"]  # type: ignore[not-subscriptable]
+        keywords: list[str] = doc.to_dict()["keywords"]  # ty:ignore[not-subscriptable]
         return doc.id, keywords
 
     def insert_keywords_to_ingest(self, keywords: Generator[str]) -> None:
@@ -137,5 +137,5 @@ class FirestoreClient:
         source_doc_ref = self.client.collection(source_collection).document(doc_id)
         dest_doc_ref = dest_client.client.collection(dest_collection).document(doc_id)
 
-        doc: DocumentSnapshot = source_doc_ref.get()  # type: ignore[invalid-argument-type]
-        dest_doc_ref.set(doc.to_dict())  # type: ignore[invalid-argument-type]
+        doc: DocumentSnapshot = source_doc_ref.get()  # ty:ignore[invalid-assignment]
+        dest_doc_ref.set(doc.to_dict())  # ty:ignore[invalid-argument-type]

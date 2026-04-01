@@ -43,7 +43,7 @@ Next.js 16 application with React 19 serving the public website and authenticate
 - CI/CD via GitHub Actions and Cloud Build
 - Environment variables managed in Cloud Run
 
-### Workers (`/workers`)
+### Compute (`/compute`)
 Python workers for ingesting keyword data from Google Ads and Bing Ads APIs.
 
 **Tech Stack:**
@@ -55,7 +55,7 @@ Python workers for ingesting keyword data from Google Ads and Bing Ads APIs.
 - **Linting**: Ruff
 
 **File Organization:**
-- `/src/workers/*` - Worker implementations (bing, google)
+- `/src/compute/*` - Worker implementations (bing, google)
 - `/src/services/*` - Shared services (logger, ads, bigquery, clickhouse, storage, etc.)
 
 **Worker Jobs**

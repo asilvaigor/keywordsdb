@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-24.04
     outputs:
       webapp: ${{ steps.filter.outputs.webapp }}
-      worker: ${{ steps.filter.outputs.workers }}
+      compute: ${{ steps.filter.outputs.compute }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v2
@@ -17,11 +17,11 @@ jobs:
           filters: |
             webapp:
               - 'webapp/**'
-            workers:
-              - 'workers/**'
+            compute:
+              - 'compute/**'
   lint-py:
     needs: [check-changes]
-    if: needs.check-changes.outputs.workers == 'true'
+    if: needs.check-changes.outputs.compute == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4

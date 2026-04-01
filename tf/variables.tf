@@ -10,6 +10,11 @@ variable "google_ads_developer_token" {
   sensitive   = true
 }
 
+variable "cloudflare_account_id" {
+  type        = string
+  description = "Cloudflare Account ID"
+}
+
 variable "cloudflare_api_token" {
   type        = string
   description = "Cloudflare API token"

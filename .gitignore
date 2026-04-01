@@ -9,7 +9,7 @@ wheels/
 .ruff_cache
 .mypy_cache
 
-*.ipynb
+t.ipynb
 .env
 
 *.tfstate

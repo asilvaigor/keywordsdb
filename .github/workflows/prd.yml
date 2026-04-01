@@ -14,7 +14,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: ./.github/actions/lint-js
-  build-workers:
+  build-compute:
     runs-on: ubuntu-24.04
     permissions:
       contents: "read"
@@ -26,7 +26,8 @@ jobs:
         with:
           env: prd
           tag: keep
-          name: workers
+          name: compute
+          image_name: workers
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
   build-webapp:
@@ -43,6 +44,7 @@ jobs:
         with:
           env: prd
           name: webapp
+          image_name: webapp
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
   deploy-webapp:

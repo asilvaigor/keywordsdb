@@ -53,6 +53,13 @@ class StorageClient:
         blob = bucket.blob(path)
         blob.delete()
 
+    def read_bytes(self, path: str) -> bytes:
+        """Read a file from the bucket as bytes."""
+        bucket_name, path = self._split_bucket_path(path)
+        bucket = self.client.bucket(bucket_name)
+        blob = bucket.blob(path)
+        return blob.download_as_bytes()
+
     def read_df(self, path: str) -> pl.DataFrame:
         """Get a parquet file from the bucket as a DataFrame."""
         assert path.endswith(".parquet")

@@ -71,6 +71,36 @@ resource "google_bigquery_table" "keywords" {
       name = "is_adult"
       type = "BOOLEAN"
       mode = "NULLABLE"
+    },
+    {
+      name = "is_question"
+      type = "BOOLEAN"
+      mode = "NULLABLE"
+    },
+    {
+      name = "is_branded"
+      type = "BOOLEAN"
+      mode = "NULLABLE"
+    },
+    {
+      name = "is_comparison"
+      type = "BOOLEAN"
+      mode = "NULLABLE"
+    },
+    {
+      name = "intent"
+      type = "STRING"
+      mode = "NULLABLE"
+    },
+    {
+      name = "entity_type"
+      type = "STRING"
+      mode = "NULLABLE"
+    },
+    {
+      name = "saas_potential"
+      type = "FLOAT"
+      mode = "NULLABLE"
     }
   ])
 }
@@ -92,14 +122,19 @@ resource "google_bigquery_table" "keywords_tmp" {
       type = "STRING"
       mode = "NULLABLE"
     },
+      {
+      name = "volume_google"
+      type = "INTEGER"
+      mode = "NULLABLE"
+    },
     {
       name = "volume_bing"
       type = "INTEGER"
       mode = "NULLABLE"
     },
     {
-      name = "volume_google"
-      type = "INTEGER"
+      name = "is_adult"
+      type = "BOOLEAN"
       mode = "NULLABLE"
     },
     {
@@ -113,8 +148,33 @@ resource "google_bigquery_table" "keywords_tmp" {
       mode = "NULLABLE"
     },
     {
-      name = "is_adult"
+      name = "is_question"
       type = "BOOLEAN"
+      mode = "NULLABLE"
+    },
+    {
+      name = "is_branded"
+      type = "BOOLEAN"
+      mode = "NULLABLE"
+    },
+    {
+      name = "is_comparison"
+      type = "BOOLEAN"
+      mode = "NULLABLE"
+    },
+    {
+      name = "intent"
+      type = "STRING"
+      mode = "NULLABLE"
+    },
+    {
+      name = "entity_type"
+      type = "STRING"
+      mode = "NULLABLE"
+    },
+    {
+      name = "saas_potential"
+      type = "FLOAT"
       mode = "NULLABLE"
     },
     {

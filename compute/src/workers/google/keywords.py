@@ -5,15 +5,12 @@ from datetime import date
 import polars as pl
 from google.cloud.exceptions import NotFound
 
-from src.services.bigquery import BigQueryClient
+from src.services.bigquery import BigQueryClient, KeywordsTable, KeywordsTmpTable
 from src.services.bing import GOOGLE_BING_VOLUME_RATIO
 from src.services.clickhouse import ClickhouseClient
 from src.services.firestore import FirestoreClient
 from src.services.logger import get_logger
 from src.services.storage import StorageClient
-
-TABLENAME = "keywords"
-TMP_TABLENAME = "keywords-tmp"
 
 
 def insert(client: BigQueryClient, df: pl.DataFrame, query_keywords: list[str]) -> None:
@@ -30,21 +27,8 @@ def insert(client: BigQueryClient, df: pl.DataFrame, query_keywords: list[str]) 
     df = df.with_columns(
         ingested_at=pl.when(pl.col("keyword").is_in(query_keywords)).then(date.today()).otherwise(None),
         updated_at=pl.lit(date.today()),
-        volume_bing=pl.lit(None).cast(pl.Int64),
-        is_adult=pl.lit(None).cast(pl.Boolean),
-    ).select(
-        "keyword",
-        "volume_google",
-        "volume_bing",
-        "is_adult",
-        "competition_index",
-        "volume_history_google",
-        "cpc_high",
-        "updated_at",
-        "ingested_at",
     )
-
-    client.insert(TMP_TABLENAME, df)
+    client.insert(KeywordsTmpTable, df)
 
 
 def get_oldest_k_keywords(client: ClickhouseClient, k: int) -> Generator[str]:
@@ -96,27 +80,41 @@ def commit(
     logger = get_logger()
 
     def migrate_tmp_table() -> None:
-        tmp_tablename = client.get_full_name(TMP_TABLENAME)
+        tmp_tablename = client.get_full_name(KeywordsTmpTable.name)
         try:
             client.client.get_table(tmp_tablename)
         except NotFound:
             return
 
         merge_query = f"""
-            MERGE `{client.get_full_name(TABLENAME)}` keywords
+            MERGE `{client.get_full_name(KeywordsTable.name)}` keywords
             USING (
-                SELECT
-                    keyword,
-                    volume_google,
-                    volume_bing,
-                    competition_index,
-                    cpc_high,
-                    volume_history_google,
-                    is_adult,
-                    updated_at,
-                    ingested_at
-                FROM `{tmp_tablename}`
-                QUALIFY ROW_NUMBER() OVER (PARTITION BY keyword ORDER BY updated_at DESC) = 1
+                SELECT * FROM (
+                    SELECT
+                        keyword,
+                        LAST_VALUE(volume_google IGNORE NULLS) OVER w AS volume_google,
+                        LAST_VALUE(volume_bing IGNORE NULLS) OVER w AS volume_bing,
+                        LAST_VALUE(competition_index IGNORE NULLS) OVER w AS competition_index,
+                        LAST_VALUE(cpc_high IGNORE NULLS) OVER w AS cpc_high,
+                        LAST_VALUE(volume_history_google IGNORE NULLS) OVER w AS volume_history_google,
+                        LAST_VALUE(is_adult IGNORE NULLS) OVER w AS is_adult,
+                        LAST_VALUE(is_question IGNORE NULLS) OVER w AS is_question,
+                        LAST_VALUE(is_branded IGNORE NULLS) OVER w AS is_branded,
+                        LAST_VALUE(is_comparison IGNORE NULLS) OVER w AS is_comparison,
+                        LAST_VALUE(intent IGNORE NULLS) OVER w AS intent,
+                        LAST_VALUE(entity_type IGNORE NULLS) OVER w AS entity_type,
+                        LAST_VALUE(saas_potential IGNORE NULLS) OVER w AS saas_potential,
+                        MAX(updated_at) OVER (PARTITION BY keyword) AS updated_at,
+                        LAST_VALUE(ingested_at IGNORE NULLS) OVER w AS ingested_at,
+                        ROW_NUMBER() OVER (PARTITION BY keyword ORDER BY updated_at DESC) AS rn
+                    FROM `{tmp_tablename}`
+                    WINDOW w AS (
+                        PARTITION BY keyword
+                        ORDER BY updated_at ASC
+                        ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+                    )
+                )
+                WHERE rn = 1
             ) tmp
             ON keywords.keyword = tmp.keyword
             WHEN MATCHED THEN
@@ -150,6 +148,30 @@ def commit(
                         WHEN tmp.is_adult IS NULL THEN keywords.is_adult
                         ELSE tmp.is_adult
                     END,
+                    is_question = CASE
+                        WHEN tmp.is_question IS NULL THEN keywords.is_question
+                        ELSE tmp.is_question
+                    END,
+                    is_branded = CASE
+                        WHEN tmp.is_branded IS NULL THEN keywords.is_branded
+                        ELSE tmp.is_branded
+                    END,
+                    is_comparison = CASE
+                        WHEN tmp.is_comparison IS NULL THEN keywords.is_comparison
+                        ELSE tmp.is_comparison
+                    END,
+                    intent = CASE
+                        WHEN tmp.intent IS NULL THEN keywords.intent
+                        ELSE tmp.intent
+                    END,
+                    entity_type = CASE
+                        WHEN tmp.entity_type IS NULL THEN keywords.entity_type
+                        ELSE tmp.entity_type
+                    END,
+                    saas_potential = CASE
+                        WHEN tmp.saas_potential IS NULL THEN keywords.saas_potential
+                        ELSE tmp.saas_potential
+                    END,
                     updated_at = CASE
                         WHEN tmp.updated_at IS NULL THEN keywords.updated_at
                         WHEN tmp.volume_google IS NULL AND keywords.volume_google IS NOT NULL THEN keywords.updated_at
@@ -169,6 +191,12 @@ def commit(
                     cpc_high,
                     volume_history_google,
                     is_adult,
+                    is_question,
+                    is_branded,
+                    is_comparison,
+                    intent,
+                    entity_type,
+                    saas_potential,
                     updated_at,
                     ingested_at
                 )
@@ -180,6 +208,12 @@ def commit(
                     tmp.cpc_high,
                     tmp.volume_history_google,
                     tmp.is_adult,
+                    tmp.is_question,
+                    tmp.is_branded,
+                    tmp.is_comparison,
+                    tmp.intent,
+                    tmp.entity_type,
+                    tmp.saas_potential,
                     tmp.updated_at,
                     tmp.ingested_at
                 )
@@ -294,6 +328,12 @@ def commit(
                     cpc_high Float32,
                     volume_history_google String,
                     is_adult UInt8,
+                    is_question UInt8,
+                    is_branded UInt8,
+                    is_comparison UInt8,
+                    intent String,
+                    entity_type String,
+                    saas_potential Float32,
                     updated_at Date,
                     ingested_at Date,
 
@@ -302,6 +342,13 @@ def commit(
                     INDEX ingested_at_idx ingested_at TYPE minmax GRANULARITY 1,
                     INDEX competition_index_idx(competition_index) TYPE set(100) GRANULARITY 1,
                     INDEX cpc_high_idx(cpc_high) TYPE minmax GRANULARITY 1,
+                    INDEX is_adult_idx is_adult TYPE set(2) GRANULARITY 1,
+                    INDEX is_question_idx is_question TYPE set(2) GRANULARITY 1,
+                    INDEX is_branded_idx is_branded TYPE set(2) GRANULARITY 1,
+                    INDEX is_comparison_idx is_comparison TYPE set(2) GRANULARITY 1,
+                    INDEX intent_idx(intent) TYPE set(100) GRANULARITY 1,
+                    INDEX entity_type_idx(entity_type) TYPE set(100) GRANULARITY 1,
+                    INDEX saas_potential_idx saas_potential TYPE minmax GRANULARITY 1,
                     INDEX keyword_text_idx(keyword) TYPE text(tokenizer = 'ngrams')
                 )
                 ENGINE MergeTree
@@ -319,6 +366,12 @@ def commit(
                     cpc_high,
                     base64Encode(volume_history_google) as volume_history_google,
                     is_adult,
+                    is_question,
+                    is_branded,
+                    is_comparison,
+                    intent,
+                    entity_type,
+                    saas_potential,
                     updated_at,
                     ingested_at
                 FROM s3(
@@ -377,9 +430,15 @@ def _export_to_gcs(client: BigQueryClient, storage_client: StorageClient, prefix
             cpc_high,
             volume_history_google,
             is_adult,
+            is_question,
+            is_branded,
+            is_comparison,
+            intent,
+            entity_type,
+            saas_potential,
             updated_at,
             ingested_at
-        FROM `{client.get_full_name(TABLENAME)}`
+        FROM `{client.get_full_name(KeywordsTable.name)}`
         WHERE volume_google IS NULL OR volume_google > 0
     """
     export_job = client.client.query(extract_query)
@@ -397,6 +456,13 @@ def _get_top_k_rows(client: ClickhouseClient, k: int) -> pl.DataFrame:
                 competition_index,
                 cpc_high,
                 volume_history_google,
+                is_adult,
+                is_question,
+                is_branded,
+                is_comparison,
+                intent,
+                entity_type,
+                saas_potential,
                 updated_at
             FROM keywords
             WHERE is_adult = FALSE OR is_adult IS NULL
@@ -427,6 +493,12 @@ def _get_sample(client: ClickhouseClient) -> pl.DataFrame:
                 cpc_high,
                 volume_history_google,
                 is_adult,
+                is_question,
+                is_branded,
+                is_comparison,
+                intent,
+                entity_type,
+                saas_potential,
                 updated_at
             FROM keywords
             WHERE is_adult = FALSE OR is_adult IS NULL

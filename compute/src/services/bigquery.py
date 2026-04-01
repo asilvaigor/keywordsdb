@@ -4,6 +4,61 @@ import polars as pl
 from google.cloud.bigquery import Client, CreateDisposition, LoadJobConfig, SchemaField, WriteDisposition
 
 
+class Table:
+    name: str
+    schema: dict[str, pl.DataType]
+
+    @classmethod
+    def fill_missing_columns(cls, df: pl.DataFrame) -> pl.DataFrame:
+        for col, dtype in cls.schema.items():
+            if col not in df.columns:
+                df = df.with_columns(pl.lit(None).cast(dtype).alias(col))
+        return df.select(list(cls.schema.keys()))
+
+
+class KeywordsTable(Table):
+    name = "keywords"
+    schema = {
+        "keyword": pl.String,
+        "volume_google": pl.Int64,
+        "volume_bing": pl.Int64,
+        "volume_google_estimated": pl.Int64,
+        "volume_history": pl.Binary,
+        "cpc_high": pl.Float64,
+        "competition_index": pl.Float64,
+        "is_adult": pl.Boolean,
+        "is_comparison": pl.Boolean,
+        "is_branded": pl.Boolean,
+        "is_question": pl.Boolean,
+        "intent": pl.String,
+        "entity_type": pl.String,
+        "saas_potential": pl.Float64,
+        "updated_at": pl.Date,
+        "ingested_at": pl.Date,
+    }
+
+
+class KeywordsTmpTable(Table):
+    name = "keywords-tmp"
+    schema = {
+        "keyword": pl.String,
+        "volume_google": pl.Int64,
+        "volume_bing": pl.Int64,
+        "volume_google_estimated": pl.Int64,
+        "volume_history": pl.Binary,
+        "cpc_high": pl.Float64,
+        "competition_index": pl.Float64,
+        "is_adult": pl.Boolean,
+        "is_comparison": pl.Boolean,
+        "is_branded": pl.Boolean,
+        "is_question": pl.Boolean,
+        "intent": pl.String,
+        "entity_type": pl.String,
+        "saas_potential": pl.Float64,
+        "updated_at": pl.Date,
+    }
+
+
 class BigQueryClient:
     def __init__(self) -> None:
         self._project_id = "keywordsdb-3"
@@ -17,19 +72,20 @@ class BigQueryClient:
         table_ref = self.client.dataset(self._dataset).table(tablename)
         self.client.delete_table(table_ref, not_found_ok=True)
 
-    def insert(self, tablename: str, df: pl.DataFrame) -> None:
+    def insert(self, table: type[Table], df: pl.DataFrame) -> None:
         """
         Insert records into a table. Creates the table if it doesn't exist yet.
 
         Args:
-            tablename: Name of the table
+            table: Table class
             df: Polars DataFrame containing the records to insert
         """
         if df.is_empty():
             return
 
         schema = self._create_schema(df)
-        table_ref = self.client.dataset(self._dataset).table(tablename)
+        df = table.fill_missing_columns(df)
+        table_ref = self.client.dataset(self._dataset).table(table.name)
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmp:
             df.write_parquet(tmp.name)
@@ -56,9 +112,9 @@ class BigQueryClient:
 
             if str(dtype) == "Date":
                 field_type = "DATE"
-            elif str(dtype) == "Int64":
+            elif str(dtype) in ["Int64", "Int32"]:
                 field_type = "INTEGER"
-            elif str(dtype) == "Float64":
+            elif str(dtype) in ["Float64", "Float32"]:
                 field_type = "FLOAT"
             elif str(dtype) == "Binary":
                 field_type = "BYTES"

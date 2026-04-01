@@ -6,9 +6,9 @@ runs:
         python-version: "3.14"
     - run: pip install uv
       shell: bash
-    - run: cd workers && uv sync --frozen
+    - run: cd compute && uv sync --frozen
       shell: bash
-    - run: cd workers && uv run ruff check && uv run ruff format --check --diff
+    - run: cd compute && uv run ruff check && uv run ruff format --check --diff
       shell: bash
-    - run: cd workers && uv run ty check
+    - run: cd compute && uv run ty check
       shell: bash

@@ -5,6 +5,9 @@ inputs:
   name:
     required: true
     type: string
+  image_name:
+    required: true
+    type: string
   project_id:
     required: true
     type: string
@@ -33,6 +36,6 @@ runs:
         --region us-central1
         --gcs-source-staging-dir gs://keywordsdb-cloudbuild/source
         --gcs-log-dir gs://keywordsdb-cloudbuild/logs
-        --tag us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.name }}:${{ inputs.tag != '' && inputs.tag || inputs.env }}
+        --tag us-central1-docker.pkg.dev/${{ inputs.project_id }}/keywordsdb/${{ inputs.image_name }}:${{ inputs.tag != '' && inputs.tag || inputs.env }}
         ${{ inputs.name }}
       shell: bash

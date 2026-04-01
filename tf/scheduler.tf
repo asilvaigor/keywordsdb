@@ -18,21 +18,45 @@ resource "google_project_iam_member" "batch_scheduler" {
 }
 
 locals {
+  machine_types = {
+    g1_small = {
+      cpu         = 1000
+      mem         = 1740
+      disk_type   = "pd-standard"
+      machine_type = "g1-small"
+    }
+    c4d_standard_2 = {
+      cpu         = 2000
+      mem         = 7160
+      disk_type   = "hd-balanced"
+      machine_type = "c4d-standard-2"
+    }
+  }
+
   scheduler_jobs = {
     google = {
-      description = "Triggers google worker batch job daily at 8pm UTC"
-      schedule    = "0 20 * * *"
-      command     = ["python", "-u", "src/workers/google/main.py"]
+      description  = "Triggers google worker batch job daily at 8pm UTC"
+      schedule     = "0 20 * * *"
+      command      = ["python", "-u", "src/workers/google/main.py"]
+      machine_type = "g1_small"
     }
     bing = {
-      description = "Triggers bing worker batch job every 3 days at 12am UTC"
-      schedule    = "0 0 */3 * *"
-      command     = ["python", "-u", "src/workers/bing/main.py"]
+      description  = "Triggers bing worker batch job every 3 days at 12am UTC"
+      schedule     = "0 0 */3 * *"
+      command      = ["python", "-u", "src/workers/bing/main.py"]
+      machine_type = "g1_small"
+    }
+    classifier = {
+      description  = "Triggers classifier worker batch every 3 days at 1am UTC"
+      schedule     = "0 1 */3 * *"
+      command      = ["python", "-u", "src/workers/classifier/main.py"]
+      machine_type = "c4d_standard_2"
     }
     replicator = {
-      description = "Triggers replicator worker batch job daily at 1am UTC"
-      schedule    = "0 1 * * *"
-      command     = ["python", "-u", "src/workers/replicator/main.py"]
+      description  = "Triggers replicator worker batch job daily at 1am UTC"
+      schedule     = "0 1 * * *"
+      command      = ["python", "-u", "src/workers/replicator/main.py"]
+      machine_type = "g1_small"
     }
   }
 }
@@ -70,8 +94,8 @@ resource "google_cloud_scheduler_job" "worker_prd" {
               }
             }
             computeResource = {
-              cpuMilli  = 1000
-              memoryMib = 1740
+              cpuMilli  = local.machine_types[each.value.machine_type].cpu
+              memoryMib = local.machine_types[each.value.machine_type].mem
             }
             environment = {
               variables = {
@@ -88,10 +112,10 @@ resource "google_cloud_scheduler_job" "worker_prd" {
       allocationPolicy = {
         instances = [{
           policy = {
-            machineType       = "g1-small"
+            machineType       = local.machine_types[each.value.machine_type].machine_type
             provisioningModel = "SPOT"
             bootDisk = {
-              type   = "pd-standard"
+              type   = local.machine_types[each.value.machine_type].disk_type
               sizeGb = 30 # minimum size for COS image
               image  = "batch-cos"
             }
