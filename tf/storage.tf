@@ -15,6 +15,14 @@ resource "google_storage_bucket" "keywordsdb_backup" {
   }
 }
 
+resource "google_storage_bucket" "keywordsdb_kaggle" {
+  name     = "keywordsdb-kaggle"
+  location = "us-east1"
+  soft_delete_policy {
+    retention_duration_seconds = 0
+  }
+}
+
 resource "google_storage_bucket" "keywordsdb" {
   for_each = toset(["stg", "prd"])
   name     = "keywordsdb-${each.key}"
