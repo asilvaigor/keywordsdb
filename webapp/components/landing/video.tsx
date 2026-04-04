@@ -39,7 +39,7 @@ function Video() {
           0-10s: Hook — "Finding profitable keywords shouldn't cost $99/mo"
           10-25s: Type a keyword, results stream in real-time
           25-40s: Add filters — volume 1K-10K, CPC > $2, sort by competition
-          40-55s: Highlight data — "290M keywords from real Google Ads data"
+          40-55s: Highlight data — "300M keywords from real Google Ads data"
           55-70s: Show speed — switch searches, instant results
           70-85s: Pricing — "Start free, then just $9/mo"
           85-90s: CTA — "Try 10 searches free at keywordsdb.com"

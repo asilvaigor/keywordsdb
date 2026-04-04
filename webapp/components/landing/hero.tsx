@@ -38,7 +38,7 @@ function Hero() {
         {/* Badge */}
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-muted/50 px-4 py-1.5 text-sm font-medium text-muted-foreground">
           <ChartNoAxesCombined className="h-3.5 w-3.5" />
-          <span>Over 290 Million Keywords from Google</span>
+          <span>Over 300 Million Keywords from Google</span>
         </div>
 
         {/* Headline */}
@@ -48,7 +48,7 @@ function Hero() {
 
         {/* Subheadline */}
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-          Full access to 290M+ keywords for data-driven research. Search, filter
+          Full access to 300M+ keywords for data-driven research. Search, filter
           and sort them by volume, CPC, and competition.
         </p>
 
@@ -69,7 +69,7 @@ function Hero() {
         {/* Trust badges */}
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground">
           <span className="flex items-center gap-1">
-            <Database className="w-3.5 h-3.5" /> 290M+ keywords
+            <Database className="w-3.5 h-3.5" /> 300M+ keywords
           </span>
           <span className="flex items-center gap-1">
             <Google className="w-3.5 h-3.5" variant="mono" /> Real Google Search

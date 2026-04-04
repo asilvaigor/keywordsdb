@@ -20,7 +20,7 @@ export const trustFeatures = [
   },
   {
     icon: Star,
-    label: "290M+ keywords available",
+    label: "300M+ keywords available",
   },
 ];
 
@@ -35,7 +35,7 @@ function Paywall({ email }: { email: string }) {
           You&apos;ve used your 10 free searches
         </h1>
         <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-          Great research so far! Upgrade to keep searching 290M+ keywords with
+          Great research so far! Upgrade to keep searching 300M+ keywords with
           all the filters and sorting you love.
         </p>
       </div>

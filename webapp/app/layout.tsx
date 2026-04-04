@@ -18,7 +18,7 @@ const fuzzyBubbles = Fuzzy_Bubbles({
 
 const title = "Free Keyword Research Tool | KeywordsDB";
 const description =
-  "Get full access to 290M+ keywords for data-driven research. Search, filter and sort them by volume, CPC, and competition.";
+  "Get full access to 300M+ keywords for data-driven research. Search, filter and sort them by volume, CPC, and competition.";
 
 export const metadata: Metadata = {
   title: title,

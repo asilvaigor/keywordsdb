@@ -57,7 +57,7 @@ function Benefits() {
             <span className="text-primary"> in seconds</span>
           </h2>
           <p className="mt-4 text-muted-foreground text-lg">
-            Skip slow SEO tools and messy dashboards. Instantly search 290M
+            Skip slow SEO tools and messy dashboards. Instantly search 300M
             keywords and uncover opportunities your competitors are missing.
           </p>
         </div>

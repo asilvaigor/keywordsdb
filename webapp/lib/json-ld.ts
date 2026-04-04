@@ -21,7 +21,7 @@ export function websiteJsonLd(options?: {
     url: options?.url ?? BASE_URL,
     description:
       options?.description ??
-      "Get full access to 290M+ keywords for data-driven research. Search, filter and sort them by volume, CPC, and competition.",
+      "Get full access to 300M+ keywords for data-driven research. Search, filter and sort them by volume, CPC, and competition.",
     publisher: organization,
   };
 }
