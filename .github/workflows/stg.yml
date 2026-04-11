@@ -37,6 +37,7 @@ jobs:
         with:
           env: stg
           name: webapp
+          image_name: webapp
           project_id: ${{ vars.PROJECT_ID }}
           workload_identity_provider: ${{ vars.WORKLOAD_IDENTITY_PROVIDER }}
   deploy-webapp:

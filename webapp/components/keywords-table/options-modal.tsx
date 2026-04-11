@@ -65,15 +65,18 @@ function OptionsModal({
         <Settings />
       </Button>
       <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-        <DialogContent className="sm:max-w-md" aria-describedby={undefined}>
-          <DialogHeader className="pb-1">
+        <DialogContent
+          className="sm:max-w-lg max-h-[90vh] overflow-hidden flex flex-col"
+          aria-describedby={undefined}
+        >
+          <DialogHeader className="pb-1 shrink-0">
             <DialogTitle className="flex items-center gap-2">
               <Settings className="size-5 text-primary" />
               Options
             </DialogTitle>
           </DialogHeader>
 
-          <div className="space-y-5">
+          <div className="space-y-5 overflow-y-auto flex-1 pr-1">
             {/* Adult content filter */}
             <div className="space-y-2">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -118,7 +121,7 @@ function OptionsModal({
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                 Columns
               </p>
-              <div className="-mx-2">
+              <div className="sm:grid sm:grid-cols-2">
                 {table
                   .getAllColumns()
                   .filter(
@@ -130,8 +133,16 @@ function OptionsModal({
                     <label
                       key={col.id}
                       htmlFor={`col-${col.id}`}
-                      className="flex items-center justify-between rounded-md px-2 py-1.5 hover:bg-muted/60 cursor-pointer transition-colors"
+                      className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted/60 cursor-pointer transition-colors"
                     >
+                      <Checkbox
+                        id={`col-${col.id}`}
+                        checked={col.getIsVisible()}
+                        onCheckedChange={(checked) =>
+                          col.toggleVisibility(!!checked)
+                        }
+                        className="rounded-sm shrink-0"
+                      />
                       <div className="flex items-center gap-1.5">
                         <span className="text-sm">
                           {visibilityColumns[col.id]}
@@ -153,14 +164,6 @@ function OptionsModal({
                           </HybridTooltip>
                         </span>
                       </div>
-                      <Checkbox
-                        id={`col-${col.id}`}
-                        checked={col.getIsVisible()}
-                        onCheckedChange={(checked) =>
-                          col.toggleVisibility(!!checked)
-                        }
-                        className="rounded-sm"
-                      />
                     </label>
                   ))}
               </div>
@@ -201,7 +204,7 @@ function OptionsModal({
                     </Button>
                   </div>
                 </div>
-                <div className="-mx-2">
+                <div className="-mx-2 sm:grid sm:grid-cols-2">
                   {table
                     .getAllColumns()
                     .filter((col) => col.id === "volume_bing")
@@ -209,8 +212,14 @@ function OptionsModal({
                       <label
                         key={col.id}
                         htmlFor={`col-advanced-${col.id}`}
-                        className="flex items-center justify-between rounded-md px-2 py-1.5 text-muted-foreground"
+                        className="flex items-center gap-2 rounded-md px-2 py-1.5 text-muted-foreground"
                       >
+                        <Checkbox
+                          id={`col-advanced-${col.id}`}
+                          checked={false}
+                          className="rounded-sm shrink-0"
+                          disabled
+                        />
                         <div className="flex items-center gap-1.5">
                           <span className="text-sm">
                             {visibilityColumns[col.id]}
@@ -230,12 +239,6 @@ function OptionsModal({
                             </TooltipContent>
                           </Tooltip>
                         </div>
-                        <Checkbox
-                          id={`col-advanced-${col.id}`}
-                          checked={false}
-                          className="rounded-sm"
-                          disabled
-                        />
                       </label>
                     ))}
                 </div>

@@ -8,6 +8,7 @@ import storage, {
 } from "@/lib/db/storage";
 import {
   buildOrderByClause,
+  buildSelectClause,
   buildWhereClause,
   createDuckDBCacheIfNeeded,
 } from "@/lib/keywords/utils";
@@ -133,13 +134,7 @@ async function exportClickHouseToGCS({
     '${format === "parquet" ? "Parquet" : "CSVWithNames"}'
   )
   PARTITION BY rand() % ${numPartitions}
-  SELECT
-    kws.keyword,
-    kws.volume_estimated_google,
-    kws.competition_index,
-    kws.cpc_high,
-    kws.volume_history_google,
-    kws.updated_at
+  SELECT ${buildSelectClause("clickhouse")}
   FROM keywords kws
   ${whereClause}
   ${orderByClause}
@@ -172,13 +167,7 @@ async function exportDuckDBToGCS({
   const query = `
     COPY (
       SELECT
-        kws.keyword,
-        kws.volume_estimated_google,
-        kws.volume_google,
-        kws.competition_index,
-        kws.cpc_high,
-        kws.volume_history_google,
-        kws.updated_at,
+        ${buildSelectClause("duckdb")},
         CAST(FLOOR(random() * ${numPartitions}) AS INTEGER) AS partition_id
       FROM keywords_sample kws
       ${whereClause}

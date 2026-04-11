@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Keyword, KeywordRow } from "@/lib/types";
+import { cn } from "@/lib/utils";
 import { formatLargeNumber } from "./utils";
 import { VolumeHistoryCell } from "./volume-history";
 
@@ -134,8 +135,37 @@ export const columnLabels: Record<
       "Cost Per Click - the maximum amount advertisers on Google pay for a click on their ad for this keyword",
   },
   is_adult: {
-    title: "Adult",
+    title: "Is Adult",
     description: "Whether this keyword is NSFW/adult content",
+  },
+  is_question: {
+    title: "Is Question",
+    description: "Whether this keyword is a question (e.g. 'how to tie a tie')",
+  },
+  is_comparison: {
+    title: "Is Comparison",
+    description:
+      "Whether this keyword is a comparison (e.g. 'nike vs adidas') indicating high commercial intent",
+  },
+  is_branded: {
+    title: "Is Branded",
+    description:
+      "Whether this keyword contains a brand name (e.g. 'nike shoes')",
+  },
+  intent: {
+    title: "Intent",
+    description:
+      "The search intent behind this keyword, classified as one of: Informational (seeking information), Navigational (seeking a specific website), Transactional (seeking to make a purchase), Commercial Investigation (researching products/services before a purchase)",
+  },
+  entity_type: {
+    title: "Entity Type",
+    description:
+      "The type of entity this keyword represents, such as a product, service, brand, or general topic",
+  },
+  saas_potential: {
+    title: "SaaS Potential",
+    description:
+      "An estimate of the potential for this keyword to be associated with a successful SaaS business, based on factors like search intent, competition, and commercial viability",
   },
   volume_history_google: {
     title: "Volume history",
@@ -257,7 +287,130 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       ) : (
         <Badge variant="outline">No</Badge>
       ),
-    size: 60,
+    size: 80,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "is_question",
+    header: () => (
+      <Header
+        title={columnLabels.is_question.title}
+        tooltip={columnLabels.is_question.description}
+      />
+    ),
+    cell: ({ row }) =>
+      (row.getValue("is_question") as boolean) ? (
+        <Badge className="bg-success/10 text-success">Yes</Badge>
+      ) : (
+        <Badge variant="destructive">No</Badge>
+      ),
+    size: 100,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "is_comparison",
+    header: () => (
+      <Header
+        title={columnLabels.is_comparison.title}
+        tooltip={columnLabels.is_comparison.description}
+      />
+    ),
+    cell: ({ row }) =>
+      (row.getValue("is_comparison") as boolean) ? (
+        <Badge className="bg-success/10 text-success">Yes</Badge>
+      ) : (
+        <Badge variant="destructive">No</Badge>
+      ),
+    size: 110,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "is_branded",
+    header: () => (
+      <Header
+        title={columnLabels.is_branded.title}
+        tooltip={columnLabels.is_branded.description}
+      />
+    ),
+    cell: ({ row }) =>
+      (row.getValue("is_branded") as boolean) ? (
+        <Badge className="bg-success/10 text-success">Yes</Badge>
+      ) : (
+        <Badge variant="destructive">No</Badge>
+      ),
+    size: 100,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "intent",
+    header: () => (
+      <Header
+        title={columnLabels.intent.title}
+        tooltip={columnLabels.intent.description}
+      />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue("intent") as string;
+      return (
+        <Badge
+          className={cn({
+            "bg-orange/10 text-orange": value === "Informational",
+            "bg-pink/10 text-pink": value === "Commercial",
+            "bg-primary/10 text-primary": value === "Transactional",
+            "bg-blue/10 text-blue": value === "Navigational",
+          })}
+        >
+          {value}
+        </Badge>
+      );
+    },
+    size: 110,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "entity_type",
+    header: () => (
+      <Header
+        title={columnLabels.entity_type.title}
+        tooltip={columnLabels.entity_type.description}
+      />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue("entity_type") as string;
+      return <Badge variant="outline">{value}</Badge>;
+    },
+    size: 100,
+    enableResizing: false,
+  },
+  {
+    accessorKey: "saas_potential",
+    header: () => (
+      <Header
+        title={columnLabels.saas_potential.title}
+        tooltip={columnLabels.saas_potential.description}
+      />
+    ),
+    cell: ({ row }) => {
+      const value = row.getValue("saas_potential") as string;
+      return (
+        <Badge
+          className={cn({
+            "bg-destructive/10 text-destructive": value === "low",
+            "bg-primary/10 text-primary": value === "medium",
+            "bg-success/10 text-success": value === "high",
+          })}
+        >
+          {value === "low"
+            ? "Low"
+            : value === "medium"
+              ? "Medium"
+              : value === "high"
+                ? "High"
+                : value}
+        </Badge>
+      );
+    },
+    size: 110,
     enableResizing: false,
   },
   {

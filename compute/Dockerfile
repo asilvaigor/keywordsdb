@@ -23,5 +23,8 @@ RUN uv sync --frozen --no-dev --no-cache --no-install-project
 
 COPY src src
 
+# Access to HuggingFace cache dir
+RUN mkdir -p /app/.cache && chown -R nobody /app/.cache
+
 EXPOSE 8080
 USER nobody

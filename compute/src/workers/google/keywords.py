@@ -460,9 +460,13 @@ def _get_top_k_rows(client: ClickhouseClient, k: int) -> pl.DataFrame:
                 is_question,
                 is_branded,
                 is_comparison,
-                intent,
-                entity_type,
-                saas_potential,
+                INITCAP(intent) AS intent,
+                INITCAP(entity_type) AS entity_type,
+                CASE
+                    WHEN saas_potential < 0.33 THEN 'low'
+                    WHEN saas_potential < 0.66 THEN 'medium'
+                    ELSE 'high'
+                END AS saas_potential,
                 updated_at
             FROM keywords
             WHERE is_adult = FALSE OR is_adult IS NULL

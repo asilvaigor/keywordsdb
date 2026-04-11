@@ -20,9 +20,17 @@ export function useDebouncedFilters({
   const debouncedFiltersT: KeywordFilters = debouncedFilters.reduce(
     (acc, filter) => {
       const v = filter.value;
-      if (filter.id === "keyword") {
+      if (
+        ["keyword", "intent", "entity_type", "saas_potential"].includes(
+          filter.id,
+        )
+      ) {
         acc[filter.id] = v as string;
-      } else if (filter.id === "is_adult") {
+      } else if (
+        ["is_adult", "is_question", "is_comparison", "is_branded"].includes(
+          filter.id,
+        )
+      ) {
         acc[filter.id] =
           v === "true" ? true : v === "false" ? false : undefined;
       } else {

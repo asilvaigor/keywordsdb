@@ -28,7 +28,7 @@ locals {
     c4d_standard_2 = {
       cpu         = 2000
       mem         = 7160
-      disk_type   = "hd-balanced"
+      disk_type   = "hyperdisk-balanced"
       machine_type = "c4d-standard-2"
     }
   }

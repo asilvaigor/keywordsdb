@@ -204,7 +204,7 @@ export async function getDownloadUrls({
   const isMaxPlan = userData?.subscriptionType === "max";
   if (
     !isSample &&
-    (!userData || !userData.subscriptionActive || !isMaxPlan) // only max plan users can download
+    (!userData?.subscriptionActive || !isMaxPlan) // only max plan users can download
   ) {
     throw new Error("Unauthorized");
   }

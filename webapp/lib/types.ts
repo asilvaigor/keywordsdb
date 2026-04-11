@@ -7,6 +7,18 @@ export type Keyword = {
   cpc_high?: number;
   volume_history_google?: string;
   is_adult?: boolean;
+  is_question?: boolean;
+  is_comparison?: boolean;
+  is_branded?: boolean;
+  intent?: "informational" | "navigational" | "transactional" | "commercial";
+  entity_type?:
+    | "person"
+    | "event"
+    | "location"
+    | "company"
+    | "product"
+    | "other";
+  saas_potential?: "low" | "medium" | "high";
   updated_at?: string;
 };
 
@@ -40,6 +52,18 @@ export type KeywordFilters = {
   competition_index?: { min?: number; max?: number };
   cpc_high?: { min?: number; max?: number };
   is_adult?: boolean;
+  is_question?: boolean;
+  is_comparison?: boolean;
+  is_branded?: boolean;
+  intent?: "informational" | "navigational" | "transactional" | "commercial";
+  entity_type?:
+    | "person"
+    | "event"
+    | "location"
+    | "company"
+    | "product"
+    | "other";
+  saas_potential?: "low" | "medium" | "high";
 };
 
 export type UserData = {

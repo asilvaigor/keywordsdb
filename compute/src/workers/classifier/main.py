@@ -15,7 +15,7 @@ if __name__ == "__main__":
     ctx = Context()
 
     keywords = get_keywords_to_classify(ctx.clickhouse_client)
-    ctx.logger.info("Keywords to classify", count=len(keywords))
+    ctx.logger.info(f"Keywords to classify: {len(keywords)}")
 
     classifier = Classifier(ctx.storage)
     ctx.logger.info("Loaded classifier")

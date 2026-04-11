@@ -16,12 +16,41 @@ QUESTION_WORDS = re.compile(
     r"^(how|what|why|where|when|which|who|whom|whose|is|are|can|could|does|do|will|should)\b", re.IGNORECASE
 )
 VS_PATTERN = re.compile(r"\b(vs\.?|versus|compared to|comparison)\b", re.IGNORECASE)
-ADULT_KEYWORDS = {"eporner", "baddiehub", "nhentai", "bonnie blue", "sxyprn"}
+
+MANUAL_FIXES = {
+    "intent": {"hotels": "informational", "restaurants near me": "informational"},
+    "entity_type": {
+        "desmos": "company",
+        "charles schwab": "company",
+        "realtor": "company",
+        "coach": "company",
+        "apple music": "product",
+        "paw patrol": "product",
+        "missav": "product",
+        "detroit tigers": "company",
+        "harris teeter": "company",
+        "dirft boss": "product",
+        "ross": "company",
+    },
+    "is_adult": {"eporner": True, "baddiehub": True, "nhentai": True, "bonnie blue": True, "sxyprn": True},
+    "is_branded": {
+        "twitter": True,
+        "nba": True,
+        "linkedin": True,
+        "indeed": True,
+        "dow jones": True,
+        "dow jones today": True,
+        "nba scores": True,
+        "yt": True,
+        "discord": True,
+        "menards": True,
+    },
+}
 
 
 class Classifier:
     def __init__(self, storage: StorageClient, verbose: bool = False) -> None:
-        self._embedding_model = TextEmbedding("BAAI/bge-small-en-v1.5")
+        self._embedding_model = TextEmbedding("BAAI/bge-small-en-v1.5", show_download_progress=False)
         self._verbose = verbose
 
         path = f"gs://{StorageClient.BUCKET}/models/classifier.onnx"
@@ -80,7 +109,16 @@ class Classifier:
         df = pl.DataFrame(result).with_columns(
             updated_at=pl.lit(date.today()),
             saas_potential=pl.col("saas_potential").clip(0.0, 1.0),
-            is_adult=pl.when(pl.col("keyword").is_in(ADULT_KEYWORDS)).then(True).otherwise(pl.col("is_adult")),
+            # Apply manual fixes
+            intent=pl.when(pl.col("keyword").is_in(MANUAL_FIXES["intent"].keys()))
+            .then(pl.col("keyword").replace(MANUAL_FIXES["intent"]))
+            .otherwise(pl.col("intent")),
+            entity_type=pl.when(pl.col("keyword").is_in(MANUAL_FIXES["entity_type"].keys()))
+            .then(pl.col("keyword").replace(MANUAL_FIXES["entity_type"]))
+            .otherwise(pl.col("entity_type")),
+            is_adult=pl.when(pl.col("keyword").is_in(MANUAL_FIXES["is_adult"].keys()))
+            .then(pl.col("keyword").replace(MANUAL_FIXES["is_adult"]))
+            .otherwise(pl.col("is_adult")),
         )
         return df
 

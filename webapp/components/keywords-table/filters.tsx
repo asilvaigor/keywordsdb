@@ -1,16 +1,18 @@
 "use no memo"; // https://github.com/shadcn-ui/ui/issues/3905
 
 import type { Table } from "@tanstack/react-table";
-import { Plus, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ListFilterPlus, X } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -25,12 +27,19 @@ import { DownloadModal } from "./download-modal";
 import OptionsModal from "./options-modal";
 
 type FilterOperator = "eq" | "gte" | "lte" | "between";
+type FilterColumnType = "numeric" | "boolean" | "categorical";
 type FilterColumn =
   | "volume_estimated_google"
   | "volume_google"
   | "volume_bing"
   | "competition_index"
-  | "cpc_high";
+  | "cpc_high"
+  | "is_question"
+  | "is_comparison"
+  | "is_branded"
+  | "intent"
+  | "entity_type"
+  | "saas_potential";
 
 interface DynamicFilter {
   id: string;
@@ -40,16 +49,94 @@ interface DynamicFilter {
   value2: string;
 }
 
-const filterColumns = [
+const intentOptions = [
+  { value: "informational", label: "Informational" },
+  { value: "navigational", label: "Navigational" },
+  { value: "transactional", label: "Transactional" },
+  { value: "commercial", label: "Commercial" },
+];
+const entityTypeOptions = [
+  { value: "person", label: "Person" },
+  { value: "event", label: "Event" },
+  { value: "location", label: "Location" },
+  { value: "company", label: "Company" },
+  { value: "product", label: "Product" },
+  { value: "other", label: "Other" },
+];
+const saasPotentialOptions = [
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+];
+const booleanOptions = [
+  { value: "true", label: "Yes" },
+  { value: "false", label: "No" },
+];
+
+const filterColumns: {
+  value: FilterColumn;
+  label: string;
+  type: FilterColumnType;
+  options?: { value: string; label: string }[];
+}[] = [
   {
     value: "volume_estimated_google",
     label: columnLabels.volume_estimated_google.title,
+    type: "numeric",
   },
-  { value: "volume_google", label: columnLabels.volume_google.title },
-  { value: "volume_bing", label: columnLabels.volume_bing.title },
-  { value: "competition_index", label: columnLabels.competition_index.title },
-  { value: "cpc_high", label: columnLabels.cpc_high.title },
-] as const;
+  {
+    value: "volume_google",
+    label: columnLabels.volume_google.title,
+    type: "numeric",
+  },
+  {
+    value: "volume_bing",
+    label: columnLabels.volume_bing.title,
+    type: "numeric",
+  },
+  {
+    value: "competition_index",
+    label: columnLabels.competition_index.title,
+    type: "numeric",
+  },
+  { value: "cpc_high", label: columnLabels.cpc_high.title, type: "numeric" },
+  {
+    value: "is_question",
+    label: columnLabels.is_question.title,
+    type: "boolean",
+    options: booleanOptions,
+  },
+  {
+    value: "is_comparison",
+    label: columnLabels.is_comparison.title,
+    type: "boolean",
+    options: booleanOptions,
+  },
+  {
+    value: "is_branded",
+    label: columnLabels.is_branded.title,
+    type: "boolean",
+    options: booleanOptions,
+  },
+  {
+    value: "intent",
+    label: columnLabels.intent.title,
+    type: "categorical",
+    options: intentOptions,
+  },
+  {
+    value: "entity_type",
+    label: columnLabels.entity_type.title,
+    type: "categorical",
+    options: entityTypeOptions,
+  },
+  {
+    value: "saas_potential",
+    label: columnLabels.saas_potential.title,
+    type: "categorical",
+    options: saasPotentialOptions,
+  },
+];
 
 const operatorLabels: Record<FilterOperator, string> = {
   eq: "=",
@@ -65,9 +152,21 @@ const operatorOptions = [
   { value: "between", label: "Between" },
 ] as const;
 
+function getColumnMeta(column: FilterColumn) {
+  return filterColumns.find((c) => c.value === column);
+}
+
 function formatFilterLabel(filter: DynamicFilter): string {
-  const col = filterColumns.find((c) => c.value === filter.column);
+  const col = getColumnMeta(filter.column);
   const label = col?.label ?? filter.column;
+  if (col?.type === "boolean") {
+    const opt = col.options?.find((o) => o.value === filter.value1);
+    return `${label}: ${opt?.label ?? filter.value1}`;
+  }
+  if (col?.type === "categorical") {
+    const opt = col.options?.find((o) => o.value === filter.value1);
+    return `${label}: ${opt?.label ?? filter.value1}`;
+  }
   if (filter.operator === "between") {
     return `${label}: ${filter.value1}–${filter.value2}`;
   }
@@ -78,6 +177,9 @@ function validateFilter(filter: DynamicFilter): {
   value1?: string;
   value2?: string;
 } {
+  const col = getColumnMeta(filter.column);
+  if (col?.type === "boolean" || col?.type === "categorical") return {};
+
   const errors: { value1?: string; value2?: string } = {};
   const val1 = Number.parseFloat(filter.value1);
   const val2 = Number.parseFloat(filter.value2);
@@ -111,6 +213,9 @@ function FilterPopoverContent({
   visibleColumns: FilterColumn[];
   onApply: (filter: DynamicFilter) => void;
 }) {
+  const [view, setView] = useState<"columns" | "form">(
+    initial ? "form" : "columns",
+  );
   const defaultColumn =
     initial?.column ?? visibleColumns[0] ?? "volume_estimated_google";
   const [column, setColumn] = useState<FilterColumn>(defaultColumn);
@@ -119,6 +224,9 @@ function FilterPopoverContent({
   );
   const [value1, setValue1] = useState(initial?.value1 ?? "");
   const [value2, setValue2] = useState(initial?.value2 ?? "");
+
+  const colMeta = getColumnMeta(column);
+  const colType = colMeta?.type ?? "numeric";
 
   const draft: DynamicFilter = {
     id: initial?.id ?? "",
@@ -129,108 +237,163 @@ function FilterPopoverContent({
   };
   const errors = validateFilter(draft);
   const hasErrors = Object.keys(errors).length > 0;
-  const isEmpty = !value1 && (operator !== "between" || !value2);
+  const isEmpty =
+    colType === "numeric"
+      ? !value1 && (operator !== "between" || !value2)
+      : !value1;
+
+  if (view === "columns") {
+    return (
+      <div className="space-y-1">
+        <span className="text-xs font-medium text-muted-foreground px-2">
+          Filter by
+        </span>
+        <div className="flex flex-col mt-1">
+          {filterColumns
+            .filter(
+              (opt) =>
+                opt.value !== "volume_bing" ||
+                visibleColumns.includes(opt.value),
+            )
+            .map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                className="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground text-left"
+                onClick={() => {
+                  setColumn(opt.value);
+                  setValue1("");
+                  setValue2("");
+                  setOperator("gte");
+                  setView("form");
+                }}
+              >
+                {opt.label}
+                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              </button>
+            ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-3 pb-1">
-      <div className="space-y-1.5">
-        <span className="text-xs font-medium text-muted-foreground">
-          Column
-        </span>
-        <Select
-          value={column}
-          onValueChange={(v: FilterColumn) => setColumn(v)}
+      <div className="flex items-center gap-1 -ml-1">
+        <button
+          type="button"
+          onClick={() => setView("columns")}
+          className="rounded-sm p-1 hover:bg-accent"
+          aria-label="Back to column selection"
         >
-          <SelectTrigger className="w-full" aria-label="Select column">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {filterColumns
-              .filter((opt) => visibleColumns.includes(opt.value))
-              .map((opt) => (
-                <SelectItem key={opt.value} value={opt.value}>
-                  {opt.label}
-                </SelectItem>
-              ))}
-          </SelectContent>
-        </Select>
+          <ChevronLeft className="h-4 w-4" />
+        </button>
+        <span className="text-sm font-medium">{colMeta?.label}</span>
       </div>
 
-      <div className="space-y-1.5">
-        <span className="text-xs font-medium text-muted-foreground">
-          Operator
-        </span>
-        <Select
-          value={operator}
-          onValueChange={(v: FilterOperator) => {
-            if (operator === "lte" && v === "between") {
-              setValue2(value1);
-              setValue1("");
-            } else if (operator === "between" && v === "lte") {
-              setValue1(value2);
-              setValue2("");
-            }
-            setOperator(v);
-          }}
-        >
-          <SelectTrigger className="w-full" aria-label="Select operator">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {operatorOptions.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      {colType === "numeric" && (
+        <>
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">
+              Operator
+            </span>
+            <Select
+              value={operator}
+              onValueChange={(v: FilterOperator) => {
+                if (operator === "lte" && v === "between") {
+                  setValue2(value1);
+                  setValue1("");
+                } else if (operator === "between" && v === "lte") {
+                  setValue1(value2);
+                  setValue2("");
+                }
+                setOperator(v);
+              }}
+            >
+              <SelectTrigger className="w-full" aria-label="Select operator">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {operatorOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="space-y-1.5">
-        <span className="text-xs font-medium text-muted-foreground">
-          {operator === "between" ? "Min value" : "Value"}
-        </span>
-        <Input
-          type="number"
-          placeholder="Value"
-          value={value1}
-          onChange={(e) => setValue1(e.target.value)}
-          className={cn(
-            "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]",
-            {
-              "border-destructive focus-visible:ring-destructive":
-                errors.value1,
-            },
-          )}
-        />
-        {errors.value1 && (
-          <p className="text-xs text-destructive">{errors.value1}</p>
-        )}
-      </div>
-
-      {operator === "between" && (
-        <div className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground">
-            Max value
-          </span>
-          <Input
-            type="number"
-            placeholder="Value"
-            value={value2}
-            onChange={(e) => setValue2(e.target.value)}
-            className={cn(
-              "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]",
-              {
-                "border-destructive focus-visible:ring-destructive":
-                  errors.value2,
-              },
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">
+              {operator === "between" ? "Min value" : "Value"}
+            </span>
+            <Input
+              type="number"
+              placeholder="Value"
+              value={value1}
+              onChange={(e) => setValue1(e.target.value)}
+              className={cn(
+                "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]",
+                {
+                  "border-destructive focus-visible:ring-destructive":
+                    errors.value1,
+                },
+              )}
+            />
+            {errors.value1 && (
+              <p className="text-xs text-destructive">{errors.value1}</p>
             )}
-          />
-          {errors.value2 && (
-            <p className="text-xs text-destructive">{errors.value2}</p>
+          </div>
+
+          {operator === "between" && (
+            <div className="space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground">
+                Max value
+              </span>
+              <Input
+                type="number"
+                placeholder="Value"
+                value={value2}
+                onChange={(e) => setValue2(e.target.value)}
+                className={cn(
+                  "[&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]",
+                  {
+                    "border-destructive focus-visible:ring-destructive":
+                      errors.value2,
+                  },
+                )}
+              />
+              {errors.value2 && (
+                <p className="text-xs text-destructive">{errors.value2}</p>
+              )}
+            </div>
           )}
-        </div>
+        </>
       )}
+
+      {(colType === "boolean" || colType === "categorical") &&
+        colMeta?.options && (
+          <div className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">
+              Value
+            </span>
+            <RadioGroup
+              value={value1}
+              onValueChange={(v) => setValue1(v)}
+              className="mt-1"
+            >
+              {colMeta.options.map((opt) => (
+                <div key={opt.value} className="flex items-center gap-2">
+                  <RadioGroupItem
+                    id={`filter-${opt.value}`}
+                    value={opt.value}
+                  />
+                  <Label htmlFor={`filter-${opt.value}`}>{opt.label}</Label>
+                </div>
+              ))}
+            </RadioGroup>
+          </div>
+        )}
 
       <Button
         className="w-full"
@@ -250,6 +413,13 @@ function applyFilterToTable(table: Table<KeywordRow>, filter: DynamicFilter) {
 
   if (!filter.value1 && !filter.value2) {
     column.setFilterValue(undefined);
+    return;
+  }
+
+  const colMeta = getColumnMeta(filter.column);
+
+  if (colMeta?.type === "boolean" || colMeta?.type === "categorical") {
+    column.setFilterValue(filter.value1);
     return;
   }
 
@@ -361,7 +531,7 @@ export function Filters({
               className="flex items-center gap-2"
               aria-label="Add filter"
             >
-              <Plus />
+              <ListFilterPlus />
               <span className="hidden sm:block">Add filter</span>
             </Button>
           </PopoverTrigger>

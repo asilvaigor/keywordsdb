@@ -32,7 +32,7 @@ export async function getKeywordsStreamSample({
   await createDuckDBCacheIfNeeded(connection);
 
   const { whereClause, params } = buildWhereClause("duckdb", filters);
-  const selectClause = buildSelectClause(columns);
+  const selectClause = buildSelectClause("duckdb", columns);
   const orderByClause = buildOrderByClause(sorting);
   const offset = (page - 1) * pageSize;
 
@@ -77,6 +77,27 @@ export async function getKeywordsStreamSample({
         is_adult: colIndices.is_adult
           ? Boolean(row[colIndices.is_adult])
           : undefined,
+        is_question: colIndices.is_question
+          ? Boolean(row[colIndices.is_question])
+          : undefined,
+        is_comparison: colIndices.is_comparison
+          ? Boolean(row[colIndices.is_comparison])
+          : undefined,
+        is_branded: colIndices.is_branded
+          ? Boolean(row[colIndices.is_branded])
+          : undefined,
+        intent: colIndices.intent
+          ? row[colIndices.intent]?.toString()
+          : undefined,
+        entity_type: colIndices.entity_type
+          ? row[colIndices.entity_type]?.toString()
+          : undefined,
+        saas_potential: colIndices.saas_potential
+          ? row[colIndices.saas_potential]?.toString()
+          : undefined,
+        created_at: colIndices.created_at
+          ? row[colIndices.created_at]?.toString()
+          : undefined,
         updated_at: colIndices.updated_at
           ? row[colIndices.updated_at]?.toString()
           : undefined,
@@ -99,7 +120,7 @@ export async function* getKeywordsStreamClickhouse({
   pageSize: number;
 }): AsyncGenerator<KeywordsStreamResponse, Keyword[], unknown> {
   const { whereClause, params } = buildWhereClause("clickhouse", filters);
-  const selectClause = buildSelectClause(columns);
+  const selectClause = buildSelectClause("clickhouse", columns);
   const orderByClause = buildOrderByClause(sorting);
 
   const query = `

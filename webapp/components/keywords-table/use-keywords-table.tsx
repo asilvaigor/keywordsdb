@@ -41,6 +41,12 @@ export function useKeywordsTable({
     competition_index: true,
     cpc_high: true,
     is_adult: false,
+    is_question: false,
+    is_comparison: false,
+    is_branded: false,
+    intent: true,
+    entity_type: false,
+    saas_potential: false,
     volume_history_google: true,
     updated_at: false,
   });

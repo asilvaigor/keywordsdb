@@ -30,7 +30,28 @@ export function parseSearchParams(searchParams: URLSearchParams) {
         : searchParams.get("is_adult") === "false"
           ? false
           : undefined,
-  };
+    is_question:
+      searchParams.get("is_question") === "true"
+        ? true
+        : searchParams.get("is_question") === "false"
+          ? false
+          : undefined,
+    is_comparison:
+      searchParams.get("is_comparison") === "true"
+        ? true
+        : searchParams.get("is_comparison") === "false"
+          ? false
+          : undefined,
+    is_branded:
+      searchParams.get("is_branded") === "true"
+        ? true
+        : searchParams.get("is_branded") === "false"
+          ? false
+          : undefined,
+    intent: searchParams.get("intent") || undefined,
+    entity_type: searchParams.get("entity_type") || undefined,
+    saas_potential: searchParams.get("saas_potential") || undefined,
+  } as KeywordFilters;
   const sortParams = searchParams.getAll("sortBy");
   const sorting: SortingState = sortParams.map((param) => {
     const isDescending = param.startsWith("-");
@@ -99,6 +120,24 @@ export function buildSearchParams({
   }
   if (filters?.is_adult != null) {
     urlParams.append("is_adult", filters.is_adult.toString());
+  }
+  if (filters?.is_question != null) {
+    urlParams.append("is_question", filters.is_question.toString());
+  }
+  if (filters?.is_comparison != null) {
+    urlParams.append("is_comparison", filters.is_comparison.toString());
+  }
+  if (filters?.is_branded != null) {
+    urlParams.append("is_branded", filters.is_branded.toString());
+  }
+  if (filters?.intent) {
+    urlParams.append("intent", filters.intent);
+  }
+  if (filters?.entity_type) {
+    urlParams.append("entity_type", filters.entity_type);
+  }
+  if (filters?.saas_potential) {
+    urlParams.append("saas_potential", filters.saas_potential);
   }
   if (sorting && sorting.length > 0) {
     for (const sort of sorting) {
