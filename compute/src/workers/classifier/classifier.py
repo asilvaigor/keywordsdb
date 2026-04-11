@@ -4,7 +4,7 @@ from datetime import date
 import numpy as np
 import onnxruntime as ort
 import polars as pl
-from sentence_transformers import SentenceTransformer
+from fastembed import TextEmbedding
 
 from src.services.storage import StorageClient
 
@@ -21,7 +21,7 @@ ADULT_KEYWORDS = {"eporner", "baddiehub", "nhentai", "bonnie blue", "sxyprn"}
 
 class Classifier:
     def __init__(self, storage: StorageClient, verbose: bool = False) -> None:
-        self._embedding_model = SentenceTransformer("BAAI/bge-small-en-v1.5", backend="onnx")
+        self._embedding_model = TextEmbedding("BAAI/bge-small-en-v1.5")
         self._verbose = verbose
 
         path = f"gs://{StorageClient.BUCKET}/models/classifier.onnx"
@@ -43,9 +43,7 @@ class Classifier:
         return df
 
     def _compute_embeddings(self, keywords: list[str]) -> np.ndarray:
-        embeddings = self._embedding_model.encode(
-            keywords, batch_size=256, show_progress_bar=self._verbose, normalize_embeddings=False
-        )
+        embeddings = list(self._embedding_model.embed(keywords))
         return np.asarray(embeddings, dtype=np.float32)
 
     def _run_inference(self, keywords: list[str], embeddings: np.ndarray) -> pl.DataFrame:
