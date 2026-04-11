@@ -18,12 +18,14 @@ RUN uv venv
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH=/app/.venv/bin:$PATH
 
+ENV HF_HUB_DISABLE_PROGRESS_BARS=1
+ENV HF_HUB_VERBOSITY=error
+
 COPY pyproject.toml uv.lock ./
 RUN uv sync --frozen --no-dev --no-cache --no-install-project
 
 COPY src src
 
-# Access to HuggingFace cache dir
 RUN mkdir -p /app/.cache && chown -R nobody /app/.cache
 
 EXPOSE 8080
