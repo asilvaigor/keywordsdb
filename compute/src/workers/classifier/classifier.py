@@ -93,7 +93,6 @@ class Classifier:
             "keyword": keywords,
             "intent": [INTENT_LABELS[i] for i in intent_logits.argmax(axis=1)],  # ty:ignore[unresolved-attribute]
             "entity_type": [ENTITY_LABELS[i] for i in entity_logits.argmax(axis=1)],  # ty:ignore[unresolved-attribute]
-            "is_adult": is_adult_raw.squeeze(-1).tolist(),  # ty:ignore[unresolved-attribute]
             "saas_potential": saas_raw.squeeze(-1).tolist(),  # ty:ignore[unresolved-attribute]
         }
 
@@ -101,10 +100,11 @@ class Classifier:
             ("is_question", is_question_logits),
             ("is_comparison", is_comparison_logits),
             ("is_branded", is_branded_logits),
-            ("is_adult", is_adult_raw),
         ]:
             probs = 1.0 / (1.0 + np.exp(-logits.squeeze(-1)))  # ty:ignore[unresolved-attribute]
-            result[flag] = (probs > BINARY_THRESHOLDS[flag]).astype(np.int8).tolist()
+            result[flag] = (probs > BINARY_THRESHOLDS[flag]).tolist()
+
+        result["is_adult"] = (is_adult_raw.squeeze(-1) > BINARY_THRESHOLDS["is_adult"]).tolist()  # ty:ignore[unresolved-attribute]
 
         df = pl.DataFrame(result).with_columns(
             updated_at=pl.lit(date.today()),
@@ -117,7 +117,7 @@ class Classifier:
             .then(pl.col("keyword").replace(MANUAL_FIXES["entity_type"]))
             .otherwise(pl.col("entity_type")),
             is_adult=pl.when(pl.col("keyword").is_in(MANUAL_FIXES["is_adult"].keys()))
-            .then(pl.col("keyword").replace(MANUAL_FIXES["is_adult"]))
+            .then(pl.col("keyword").replace_strict(MANUAL_FIXES["is_adult"], default=None))
             .otherwise(pl.col("is_adult")),
         )
         return df
