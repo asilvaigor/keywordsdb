@@ -10,6 +10,13 @@ This repository contains a keyword research platform that provides Google search
 - Dashboard: Authenticated area with a keyword research tool. Users can search for keywords and view metrics in a table with pagination and sorting. They can do custom filters on volume, cpc, competition etc.
 - After 10 free queries, user is hit with a paywall and must subscribe to continue.
 
+## Design Principles
+
+- Dark theme, yellow primary color
+- No gradients or shadows - flat design
+- Friendly and approachable tone in copy
+- Shadcn/ui components
+
 ## Architecture
 
 ### Webapp (`/webapp`)

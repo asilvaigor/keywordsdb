@@ -4,6 +4,7 @@ import { Check, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import type { PricingContent } from "@/components/landing/types";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -243,18 +244,16 @@ export function PricingCards({
   );
 }
 
-function Pricing() {
+function Pricing({ content }: { content: PricingContent }) {
   return (
     <section id="pricing" className="py-20 md:py-28">
       <div className="container mx-auto px-4">
         <div className="mx-auto max-w-2xl text-center my-8">
           <h2 className="text-3xl font-bold tracking-tight md:text-4xl">
-            Simple, transparent pricing
+            {content.title}
           </h2>
           <p className="mt-4 text-lg text-muted-foreground">
-            Start with 10 free searches. No credit card needed.
-            <br />
-            Upgrade when you&apos;re ready.
+            {content.description}
           </p>
         </div>
 

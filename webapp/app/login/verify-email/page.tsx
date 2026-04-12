@@ -1,12 +1,14 @@
-import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import VerifyEmail from "@/components/auth/verify-email";
 import { getUserData } from "@/lib/db/users";
+import { getMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = getMetadata({
   title: "Verify Email - keywordsdb.com",
-  alternates: { canonical: "/login/verify-email" },
-};
+  description:
+    "Verify your email to access KeywordsDB and explore 300M+ keywords for data-driven research.",
+  canonicalUrl: "/login/verify-email",
+});
 
 async function VerifyEmailPage() {
   const userData = await getUserData();

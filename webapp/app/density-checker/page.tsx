@@ -1,40 +1,22 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import DensityChecker from "@/components/density-checker";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import { BreadcrumbJsonLD, FAQJsonLD } from "@/components/json-ld";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { breadcrumbJsonLd, faqPageJsonLd, websiteJsonLd } from "@/lib/json-ld";
+import { getMetadata } from "@/lib/metadata";
 
-const title = "Keyword Density Checker | KeywordsDB";
-const description =
-  "Free keyword density checker tool. Analyze any webpage to see word frequency, keyword density percentages and the most used phrases.";
-
-export const metadata: Metadata = {
-  title,
-  description,
-  metadataBase: "https://keywordsdb.com",
-  alternates: { canonical: "/density-checker" },
-  openGraph: {
-    title,
-    description,
-    type: "website",
-    url: "/density-checker",
-    locale: "en_US",
-    siteName: "KeywordsDB",
-    images: {
-      url: "/og-image.png",
-      width: 2115,
-      height: 1189,
-      alt: title,
-    },
-  },
-};
+export const metadata = getMetadata({
+  title: "Keyword Density Checker | KeywordsDB",
+  description:
+    "Free keyword density checker tool. Analyze any webpage to see word frequency, keyword density percentages and the most used phrases.",
+  canonicalUrl: "/density-checker",
+});
 
 const faqs = [
   {
@@ -72,29 +54,16 @@ const faqs = [
 export default function DensityCheckerPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <script type="application/ld+json">
-        {JSON.stringify(
-          websiteJsonLd({
-            name: title,
+      <FAQJsonLD items={faqs} />
+      <BreadcrumbJsonLD
+        items={[
+          { name: "Home", url: "https://keywordsdb.com" },
+          {
+            name: "Keyword Density Checker",
             url: "https://keywordsdb.com/density-checker",
-            description,
-          }),
-        )}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(faqPageJsonLd(faqs))}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(
-          breadcrumbJsonLd([
-            { name: "Home", url: "https://keywordsdb.com" },
-            {
-              name: "Keyword Density Checker",
-              url: "https://keywordsdb.com/density-checker",
-            },
-          ]),
-        )}
-      </script>
+          },
+        ]}
+      />
       <Header />
       <main className="flex-1">
         <DensityChecker />

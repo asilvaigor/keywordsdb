@@ -1,31 +1,14 @@
-import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 
-const title = "KeywordsDB Privacy Policy - How We Protect Your Data";
-const description =
-  "Learn about our commitment to protecting your privacy and how we collect, store, and handle your personal information at KeywordsDB.";
+import { getMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
-  title: title,
-  description: description,
-  metadataBase: "https://keywordsdb.com",
-  alternates: { canonical: "/privacy" },
-  openGraph: {
-    title: title,
-    description: description,
-    type: "website",
-    url: "/privacy",
-    locale: "en_US",
-    siteName: "KeywordsDB",
-    images: {
-      url: "/og-image.png",
-      width: 2115,
-      height: 1189,
-      alt: title,
-    },
-  },
-};
+export const metadata = getMetadata({
+  title: "KeywordsDB Privacy Policy - How We Protect Your Data",
+  description:
+    "Learn about our commitment to protecting your privacy and how we collect, store, and handle your personal information at KeywordsDB.",
+  canonicalUrl: "/privacy",
+});
 
 export default function Privacy() {
   return (

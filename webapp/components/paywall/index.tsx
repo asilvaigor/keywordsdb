@@ -24,6 +24,29 @@ export const trustFeatures = [
   },
 ];
 
+const faqs = [
+  {
+    question: "Can I cancel anytime?",
+    answer:
+      "Absolutely. Both monthly and yearly plans can be cancelled at any time with no questions asked. You'll continue to have access until the end of your billing period.",
+  },
+  {
+    question: "What payment methods do you accept?",
+    answer:
+      "We accept all major credit and debit cards (Visa, Mastercard, Amex) through Stripe. All payments are processed securely.",
+  },
+  {
+    question: "What happens after I subscribe?",
+    answer:
+      "You'll get instant access to unlimited keyword searches. Your subscription starts immediately and renews automatically.",
+  },
+  {
+    question: "Is there a money-back guarantee?",
+    answer:
+      "Yes! If you're not satisfied within the first 7 days of your subscription, contact us for a full refund — no questions asked.",
+  },
+];
+
 function Paywall({ email }: { email: string }) {
   return (
     <div className="w-full max-w-3xl mx-auto px-6">
@@ -69,7 +92,7 @@ function Paywall({ email }: { email: string }) {
         <h2 className="text-xl font-semibold text-center mb-6">
           Questions about billing?
         </h2>
-        <FAQAccordion isPaywall />
+        <FAQAccordion items={faqs} />
       </div>
 
       {/* Bottom CTA */}

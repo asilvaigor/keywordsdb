@@ -3,14 +3,41 @@ import { useState } from "react";
 import type { KeywordFilters } from "@/lib/types";
 import useDebounce from "./use-debounce";
 
+function buildInitialColumnFilters(
+  filters: KeywordFilters,
+): ColumnFiltersState {
+  return Object.entries(filters).reduce<ColumnFiltersState>(
+    (acc, [id, value]) => {
+      if (value == null || value === "") {
+        return acc;
+      }
+
+      acc.push({
+        id,
+        value:
+          typeof value === "string" || typeof value === "boolean"
+            ? value.toString()
+            : JSON.stringify(value),
+      });
+      return acc;
+    },
+    [],
+  );
+}
+
 export function useDebouncedFilters({
   resetPagination,
+  defaultFilters,
 }: {
   resetPagination: () => void;
+  defaultFilters?: KeywordFilters;
 }) {
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
-    { id: "is_adult", value: "false" },
-  ]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(() =>
+    buildInitialColumnFilters({
+      is_adult: false,
+      ...defaultFilters,
+    }),
+  );
 
   const {
     debouncedValue: debouncedFilters,

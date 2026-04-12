@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Fuzzy_Bubbles, JetBrains_Mono, Outfit } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "@/components/ui/sonner";
@@ -15,31 +14,6 @@ const fuzzyBubbles = Fuzzy_Bubbles({
   weight: "400",
   variable: "--font-fuzzy-bubbles",
 });
-
-const title = "Free Keyword Research Tool | KeywordsDB";
-const description =
-  "Get full access to 300M+ keywords for data-driven research. Search, filter and sort them by volume, CPC, and competition.";
-
-export const metadata: Metadata = {
-  title: title,
-  description: description,
-  metadataBase: "https://keywordsdb.com",
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: title,
-    description: description,
-    type: "website",
-    url: "/",
-    locale: "en_US",
-    siteName: "KeywordsDB",
-    images: {
-      url: "/og-image.png",
-      width: 2115,
-      height: 1189,
-      alt: title,
-    },
-  },
-};
 
 export default function RootLayout({
   children,

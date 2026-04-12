@@ -1,32 +1,14 @@
-import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
 import { ContactUsIcon } from "@/components/icons/contact-us";
+import { getMetadata } from "@/lib/metadata";
 
-const title = "Contact KeywordsDB - Get in Touch With Our Team";
-const description =
-  "Whether you have a question about your keyword data, a feature request, or just want to say hello, we're here to help. We reply to every message personally.";
-
-export const metadata: Metadata = {
-  title: title,
-  description: description,
-  metadataBase: "https://keywordsdb.com",
-  alternates: { canonical: "/contact" },
-  openGraph: {
-    title: title,
-    description: description,
-    type: "website",
-    url: "/contact",
-    locale: "en_US",
-    siteName: "KeywordsDB",
-    images: {
-      url: "/og-image.png",
-      width: 2115,
-      height: 1189,
-      alt: title,
-    },
-  },
-};
+export const metadata = getMetadata({
+  title: "Contact KeywordsDB - Get in Touch With Our Team",
+  description:
+    "Whether you have a question about your keyword data, a feature request, or just want to say hello, we're here to help. We reply to every message personally.",
+  canonicalUrl: "/contact",
+});
 
 export default function Contact() {
   return (

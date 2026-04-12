@@ -1,34 +1,16 @@
-import type { Metadata } from "next";
 import PostCard from "@/components/blog/post-card";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import { BreadcrumbJsonLD } from "@/components/json-ld";
 import { getAllPosts } from "@/lib/blog/posts";
-import { breadcrumbJsonLd } from "@/lib/json-ld";
+import { getMetadata } from "@/lib/metadata";
 
-const title = "KeywordsDB Blog - SEO & Keyword Research Tips";
-const description =
-  "Keyword research tips, SEO strategies, case studies, and product updates from the KeywordsDB team to help you find better keywords faster.";
-
-export const metadata: Metadata = {
-  title,
-  description,
-  alternates: { canonical: "/blog" },
-  metadataBase: "https://keywordsdb.com",
-  openGraph: {
-    title,
-    description,
-    type: "website",
-    url: "https://keywordsdb.com/blog",
-    locale: "en_US",
-    siteName: "KeywordsDB",
-    images: {
-      url: "https://keywordsdb.com/og-image.png",
-      width: 2115,
-      height: 1189,
-      alt: title,
-    },
-  },
-};
+export const metadata = getMetadata({
+  title: "KeywordsDB Blog - SEO & Keyword Research Tips",
+  description:
+    "Keyword research tips, SEO strategies, case studies, and product updates from the KeywordsDB team to help you find better keywords faster.",
+  canonicalUrl: "/blog",
+});
 
 export default function BlogPage() {
   const posts = getAllPosts();
@@ -36,16 +18,14 @@ export default function BlogPage() {
   const grid = rest.slice(0, 2);
   const list = rest.slice(2);
 
-  const jsonLdBreadcrumb = breadcrumbJsonLd([
-    { name: "Home", url: "https://keywordsdb.com" },
-    { name: "Blog", url: "https://keywordsdb.com/blog" },
-  ]);
-
   return (
     <div className="flex flex-col">
-      <script type="application/ld+json">
-        {JSON.stringify(jsonLdBreadcrumb)}
-      </script>
+      <BreadcrumbJsonLD
+        items={[
+          { name: "Home", url: "https://keywordsdb.com" },
+          { name: "Blog", url: "https://keywordsdb.com/blog" },
+        ]}
+      />
       <Header />
       <main className="flex-1">
         {/* Page header */}

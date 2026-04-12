@@ -27,18 +27,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuContent,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  NavigationMenuTrigger,
+  navigationMenuTriggerStyle,
+} from "@/components/ui/navigation-menu";
 import { signOut } from "@/lib/auth/client";
 import { billingPortal } from "@/lib/stripe/billing-portal";
 import type { UserData } from "@/lib/types";
-
-// const ALL_COLUMNS = [
-//   { key: "keyword", label: "Keyword" },
-//   { key: "volume_estimated_google", label: "Volume" },
-//   { key: "competition_index", label: "Competition" },
-//   { key: "cpc_high", label: "CPC" },
-//   { key: "volume_history_google", label: "Volume History" },
-//   { key: "updated_at", label: "Last Updated" },
-// ] as const;
 
 function DashboardHeader({ userData }: { userData: UserData }) {
   const { setTheme, theme } = useTheme();
@@ -114,33 +114,6 @@ function DashboardHeader({ userData }: { userData: UserData }) {
 
           <DropdownMenuSeparator />
 
-          {/* Table Columns sub-menu */}
-          {/* <DropdownMenuGroup>
-            <DropdownMenuSub>
-              <DropdownMenuSubTrigger className="cursor-pointer">
-                <Columns3 className="h-4 w-4" />
-                Table Columns
-              </DropdownMenuSubTrigger>
-              <DropdownMenuSubContent className="w-44">
-                {ALL_COLUMNS.map((col) => (
-                  <DropdownMenuCheckboxItem
-                    key={col.key}
-                    checked={true}
-                    disabled={col.key === "keyword"}
-                    onCheckedChange={() => {
-                      // Column visibility will be wired to table state
-                    }}
-                    onSelect={(e) => e.preventDefault()}
-                  >
-                    {col.label}
-                  </DropdownMenuCheckboxItem>
-                ))}
-              </DropdownMenuSubContent>
-            </DropdownMenuSub>
-          </DropdownMenuGroup>
-
-          <DropdownMenuSeparator /> */}
-
           {/* Theme toggle */}
           <DropdownMenuItem
             onSelect={(e) => {
@@ -206,9 +179,93 @@ function DashboardHeader({ userData }: { userData: UserData }) {
   );
 }
 
+const solutionGroups = [
+  {
+    title: "Use cases",
+    items: [
+      {
+        href: "/solutions/saas-ideas",
+        label: "SaaS Ideas",
+        description: "Find software opportunities with real search demand.",
+      },
+    ],
+  },
+  {
+    title: "Free tools",
+    items: [
+      {
+        href: "/seo-audit",
+        label: "SEO Audit",
+        description: "Run a technical and on-page audit on any website.",
+      },
+      {
+        href: "/density-checker",
+        label: "Density Checker",
+        description: "Analyze keyword density and phrase frequency on a page.",
+      },
+    ],
+  },
+] as const;
+
+function LandingNavigation() {
+  return (
+    <NavigationMenu viewport={false} className="hidden md:flex">
+      <NavigationMenuList className="gap-1.5">
+        <NavigationMenuItem>
+          <NavigationMenuTrigger>Solutions</NavigationMenuTrigger>
+          <NavigationMenuContent>
+            <div className="grid gap-3 p-2 w-sm">
+              {solutionGroups.map((group) => (
+                <div key={group.title} className="space-y-1">
+                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    {group.title}
+                  </div>
+                  {group.items.map((item) => (
+                    <NavigationMenuLink asChild key={item.href}>
+                      <Link
+                        href={item.href}
+                        className="flex flex-col items-start rounded-md px-3 pt-3 pb-2 text-sm leading-none no-underline outline-hidden transition-colors hover:bg-muted focus:bg-muted"
+                      >
+                        <span className="font-medium text-foreground">
+                          {item.label}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {item.description}
+                        </span>
+                      </Link>
+                    </NavigationMenuLink>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </NavigationMenuContent>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <Link href="/blog">Blog</Link>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <a href="#pricing">Pricing</a>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+
+        <NavigationMenuItem>
+          <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+            <a href="#faq">FAQ</a>
+          </NavigationMenuLink>
+        </NavigationMenuItem>
+      </NavigationMenuList>
+    </NavigationMenu>
+  );
+}
+
 const Header = ({ userData }: { userData?: UserData }) => {
   const pathname = usePathname();
-  const isLanding = pathname === "/";
+  const isLanding = pathname === "/" || pathname.startsWith("/solutions/");
   const isDashboard = pathname === "/dashboard";
 
   return (
@@ -216,19 +273,7 @@ const Header = ({ userData }: { userData?: UserData }) => {
       <div className="container flex h-14 items-center justify-between px-4 mx-auto">
         <Logo />
 
-        {isLanding && (
-          <nav className="hidden items-center gap-1 md:flex">
-            <Button variant="ghost" asChild>
-              <a href="/blog">Blog</a>
-            </Button>
-            <Button variant="ghost" asChild>
-              <a href="#pricing">Pricing</a>
-            </Button>
-            <Button variant="ghost" asChild>
-              <a href="#faq">FAQ</a>
-            </Button>
-          </nav>
-        )}
+        {isLanding && <LandingNavigation />}
 
         {isLanding && (
           <nav className="flex items-center gap-1 justify-end">

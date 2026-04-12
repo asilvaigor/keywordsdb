@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import { BreadcrumbJsonLD, FAQJsonLD } from "@/components/json-ld";
 import SeoAudit from "@/components/seo-audit";
 import {
   Accordion,
@@ -8,32 +8,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { breadcrumbJsonLd, faqPageJsonLd, websiteJsonLd } from "@/lib/json-ld";
+import { getMetadata } from "@/lib/metadata";
 
-const title = "Free SEO Audit Tool | KeywordsDB";
-const description =
-  "Run a free SEO audit on any website. Checks meta tags, content quality, internal links, performance, and more. Get a score with actionable recommendations.";
-
-export const metadata: Metadata = {
-  title,
-  description,
-  metadataBase: "https://keywordsdb.com",
-  alternates: { canonical: "/seo-audit" },
-  openGraph: {
-    title,
-    description,
-    type: "website",
-    url: "/seo-audit",
-    locale: "en_US",
-    siteName: "KeywordsDB",
-    images: {
-      url: "/og-image.png",
-      width: 2115,
-      height: 1189,
-      alt: title,
-    },
-  },
-};
+export const metadata = getMetadata({
+  title: "Free SEO Audit Tool | KeywordsDB",
+  description:
+    "Run a free SEO audit on any website. Checks meta tags, content quality, internal links, performance, and more. Get a score with actionable recommendations.",
+  canonicalUrl: "/seo-audit",
+});
 
 const faqs = [
   {
@@ -66,26 +48,13 @@ const faqs = [
 export default function SeoAuditPage() {
   return (
     <div className="flex min-h-screen flex-col">
-      <script type="application/ld+json">
-        {JSON.stringify(
-          websiteJsonLd({
-            name: title,
-            url: "https://keywordsdb.com/seo-audit",
-            description,
-          }),
-        )}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(faqPageJsonLd(faqs))}
-      </script>
-      <script type="application/ld+json">
-        {JSON.stringify(
-          breadcrumbJsonLd([
-            { name: "Home", url: "https://keywordsdb.com" },
-            { name: "SEO Audit", url: "https://keywordsdb.com/seo-audit" },
-          ]),
-        )}
-      </script>
+      <FAQJsonLD items={faqs} />
+      <BreadcrumbJsonLD
+        items={[
+          { name: "Home", url: "https://keywordsdb.com" },
+          { name: "SEO Audit", url: "https://keywordsdb.com/seo-audit" },
+        ]}
+      />
       <Header />
       <main className="flex-1">
         <SeoAudit />

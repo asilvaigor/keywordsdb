@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
 import { Suspense } from "react";
 import AuthError from "@/components/auth/auth-error";
+import { getMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata = getMetadata({
   title: "Login error - keywordsdb.com",
-  alternates: { canonical: "/login/error" },
-};
+  description:
+    "An error occurred during login. Please try again or contact support if the issue persists.",
+  canonicalUrl: "/login/error",
+});
 
 function LoginError() {
   return (
