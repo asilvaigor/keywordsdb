@@ -214,7 +214,7 @@ class GoogleAdsClient:
                 "cpc_high": cpc_high,
                 # "cpc_low": cpc_low,
                 # "cpc_avg": cpc_avg,
-                "volume_history_google": volume_history_google,
+                "volume_history_google": pl.Series(volume_history_google, dtype=pl.Binary),
             }
         )
         if min_search_volume is not None:
