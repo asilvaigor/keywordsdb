@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { KeywordFilters } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { columns } from "./columns";
 import { Filters } from "./filters";
@@ -24,10 +25,12 @@ export function KeywordsTable({
   isSample = false,
   isMaxPlan = false,
   email,
+  defaultFilters,
 }: {
   isSample?: boolean;
   isMaxPlan?: boolean;
   email?: string;
+  defaultFilters?: KeywordFilters;
 }) {
   const {
     table,
@@ -42,7 +45,11 @@ export function KeywordsTable({
     handleDownload,
     isDownloadLoading,
     debouncedFilters,
-  } = useKeywordsTable({ defaultPageSize: PAGE_SIZE, isSample });
+  } = useKeywordsTable({
+    defaultPageSize: PAGE_SIZE,
+    isSample,
+    defaultFilters,
+  });
 
   return (
     <div className="flex flex-col justify-center h-full">
@@ -55,6 +62,7 @@ export function KeywordsTable({
         handleDownload={handleDownload}
         isDownloadLoading={isDownloadLoading}
         debouncedFilters={debouncedFilters}
+        defaultFilters={defaultFilters}
       />
       <div className="rounded-md border relative">
         {progress != null && (

@@ -39,16 +39,17 @@ function Footer() {
           <div className="space-y-3 text-sm">
             <h4 className="font-medium text-foreground">Product</h4>
             <div className="flex flex-col gap-2">
+              <FooterLink href="/blog">Blog</FooterLink>
               <FooterLink href="/login">Dashboard</FooterLink>
               <FooterLink href="/#pricing">Pricing</FooterLink>
             </div>
           </div>
 
-          {/* Content */}
+          {/* Solutions */}
           <div className="space-y-3 text-sm">
-            <h4 className="font-medium text-foreground">Content</h4>
+            <h4 className="font-medium text-foreground">Solutions</h4>
             <div className="flex flex-col gap-2">
-              <FooterLink href="/blog">Blog</FooterLink>
+              <FooterLink href="/solutions/saas-ideas">SaaS Ideas</FooterLink>
               <FooterLink href="/density-checker">Density Checker</FooterLink>
               <FooterLink href="/seo-audit">SEO Audit</FooterLink>
             </div>

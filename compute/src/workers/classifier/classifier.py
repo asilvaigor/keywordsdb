@@ -46,6 +46,7 @@ MANUAL_FIXES = {
         "discord": True,
         "menards": True,
     },
+    "saas_potential": {"ai": 0.5, "microsoft 365": 0.5, "office 365": 0.5, "cash app": 0.5},
 }
 
 

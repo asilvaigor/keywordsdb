@@ -8,6 +8,7 @@ import {
   type VisibilityState,
 } from "@tanstack/react-table";
 import { useState } from "react";
+import type { KeywordFilters } from "@/lib/types";
 import { columns } from "./columns";
 import useClickhouseReady from "./use-clickhouse-ready";
 import { useCountsQuery } from "./use-counts-query";
@@ -19,9 +20,11 @@ import { calcPageCount, usePagination } from "./use-pagination";
 export function useKeywordsTable({
   defaultPageSize,
   isSample,
+  defaultFilters,
 }: {
   defaultPageSize: number;
   isSample: boolean;
+  defaultFilters?: KeywordFilters;
 }) {
   const { pageIndex, pageSize, setPagination, resetPagination, apiPageIndex } =
     usePagination(defaultPageSize);
@@ -30,7 +33,7 @@ export function useKeywordsTable({
     setColumnFilters,
     debouncedFilters,
     isFiltersDebouncing,
-  } = useDebouncedFilters({ resetPagination });
+  } = useDebouncedFilters({ resetPagination, defaultFilters });
   const [sorting, setSorting] = useState<SortingState>([
     { id: "volume_estimated_google", desc: true },
   ]);

@@ -204,6 +204,63 @@ function validateFilter(filter: DynamicFilter): {
   return errors;
 }
 
+function buildDynamicFilters(defaultFilters?: KeywordFilters): DynamicFilter[] {
+  if (!defaultFilters) {
+    return [];
+  }
+
+  return Object.entries(defaultFilters).reduce<DynamicFilter[]>(
+    (acc, [key, value]) => {
+      if (value == null || key === "keyword" || key === "is_adult") {
+        return acc;
+      }
+
+      const column = key as FilterColumn;
+      const meta = getColumnMeta(column);
+      if (!meta) {
+        return acc;
+      }
+
+      if (meta.type === "numeric" && typeof value === "object") {
+        const { min, max } = value as { min?: number; max?: number };
+        if (min == null && max == null) {
+          return acc;
+        }
+
+        if (min != null && max != null) {
+          acc.push({
+            id: `default-${column}`,
+            column,
+            operator: min === max ? "eq" : "between",
+            value1: `${min}`,
+            value2: min === max ? "" : `${max}`,
+          });
+          return acc;
+        }
+
+        acc.push({
+          id: `default-${column}`,
+          column,
+          operator: min != null ? "gte" : "lte",
+          value1: `${min ?? max}`,
+          value2: "",
+        });
+        return acc;
+      }
+
+      acc.push({
+        id: `default-${column}`,
+        column,
+        operator: "eq",
+        value1: value.toString(),
+        value2: "",
+      });
+      return acc;
+    },
+    [],
+  );
+}
+
 function FilterPopoverContent({
   initial,
   visibleColumns,
@@ -464,6 +521,7 @@ export function Filters({
   handleDownload,
   isDownloadLoading,
   debouncedFilters,
+  defaultFilters,
 }: {
   table: Table<KeywordRow>;
   totalRows?: number;
@@ -473,8 +531,11 @@ export function Filters({
   handleDownload: (format: "parquet" | "csv") => void;
   isDownloadLoading: boolean;
   debouncedFilters: KeywordFilters;
+  defaultFilters?: KeywordFilters;
 }) {
-  const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>([]);
+  const [dynamicFilters, setDynamicFilters] = useState<DynamicFilter[]>(() =>
+    buildDynamicFilters(defaultFilters),
+  );
   const [addPopoverOpen, setAddPopoverOpen] = useState(false);
   const [editPopoverId, setEditPopoverId] = useState<string | null>(null);
 
