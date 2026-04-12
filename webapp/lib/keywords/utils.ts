@@ -53,15 +53,15 @@ export function buildSelectClause(
   ];
   const customFormatters: Record<string, (col: string) => string> = {
     saas_potential: (col: string) =>
-      `CASE WHEN kws.${col} < 0.33 THEN 'low' WHEN kws.${col} < 0.66 THEN 'medium' ELSE 'high' END`,
+      `CASE WHEN kws.${col} < 0.33 THEN 'low' WHEN kws.${col} < 0.66 THEN 'medium' ELSE 'high' END as ${col}`,
     intent: (col: string) =>
       dialect === "clickhouse"
-        ? `INITCAP(kws.${col})`
-        : `upper(substring(kws.${col}, 1, 1)) || substring(kws.${col}, 2)`,
+        ? `INITCAP(kws.${col}) as ${col}`
+        : `upper(substring(kws.${col}, 1, 1)) || substring(kws.${col}, 2) as ${col}`,
     entity_type: (col: string) =>
       dialect === "clickhouse"
-        ? `INITCAP(kws.${col})`
-        : `upper(substring(kws.${col}, 1, 1)) || substring(kws.${col}, 2)`,
+        ? `INITCAP(kws.${col}) as ${col}`
+        : `upper(substring(kws.${col}, 1, 1)) || substring(kws.${col}, 2) as ${col}`,
   };
   if (columns == null) {
     columns = validColumns;

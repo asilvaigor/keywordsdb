@@ -354,10 +354,10 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       return (
         <Badge
           className={cn({
-            "bg-orange/10 text-orange": value === "Informational",
-            "bg-pink/10 text-pink": value === "Commercial",
+            "bg-pink/10 text-pink": value === "Informational",
+            "bg-blue/10 text-blue": value === "Commercial",
             "bg-primary/10 text-primary": value === "Transactional",
-            "bg-blue/10 text-blue": value === "Navigational",
+            "bg-orange/10 text-orange": value === "Navigational",
           })}
         >
           {value}
