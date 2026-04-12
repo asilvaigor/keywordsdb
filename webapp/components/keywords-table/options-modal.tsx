@@ -204,7 +204,7 @@ function OptionsModal({
                     </Button>
                   </div>
                 </div>
-                <div className="-mx-2 sm:grid sm:grid-cols-2">
+                <div className="sm:grid sm:grid-cols-2">
                   {table
                     .getAllColumns()
                     .filter((col) => col.id === "volume_bing")

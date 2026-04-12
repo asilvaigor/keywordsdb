@@ -388,7 +388,12 @@ function FilterPopoverContent({
                     id={`filter-${opt.value}`}
                     value={opt.value}
                   />
-                  <Label htmlFor={`filter-${opt.value}`}>{opt.label}</Label>
+                  <Label
+                    className="cursor-pointer"
+                    htmlFor={`filter-${opt.value}`}
+                  >
+                    {opt.label}
+                  </Label>
                 </div>
               ))}
             </RadioGroup>

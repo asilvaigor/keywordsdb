@@ -3,6 +3,7 @@
 
 import { flexRender } from "@tanstack/react-table";
 import { AlertOctagon, LoaderCircle, Search } from "lucide-react";
+import Link from "next/link";
 import {
   Table2,
   TableBody,
@@ -120,10 +121,29 @@ export function KeywordsTable({
                   colSpan={columns.length}
                   className="h-[369.5px] bg-muted/5"
                 >
-                  <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
-                    <Search className="h-6 w-6" />
-                    <p className="font-medium">No results found</p>
-                  </div>
+                  {isSample ? (
+                    <div className="flex flex-col items-center justify-center gap-3 text-muted-foreground">
+                      <Search className="h-6 w-6" />
+                      <p className="font-medium">No results found</p>
+                      <p className="text-sm text-center">
+                        Want to do serious research beyond this sample?
+                        <br />
+                        Get access to the full database with millions of
+                        keywords.
+                      </p>
+                      <Link
+                        href="/login"
+                        className="mt-1 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        Explore full database
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center gap-2 text-muted-foreground">
+                      <Search className="h-6 w-6" />
+                      <p className="font-medium">No results found</p>
+                    </div>
+                  )}
                 </TableCell>
               </TableRow>
             ) : (
