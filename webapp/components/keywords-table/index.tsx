@@ -108,7 +108,7 @@ export function KeywordsTable({
             ))}
           </TableHeader>
           <TableBody className="min-h-100">
-            {error ? (
+            {error && isDbReady ? (
               <TableRow>
                 <TableCell
                   colSpan={columns.length}

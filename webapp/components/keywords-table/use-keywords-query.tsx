@@ -81,6 +81,7 @@ export function useKeywordsQuery({
   pageSize,
   isFiltersDebouncing,
   isSample,
+  isClickhouseReady,
 }: {
   sorting: SortingState;
   filters: KeywordFilters;
@@ -90,6 +91,7 @@ export function useKeywordsQuery({
   pageSize: number;
   isFiltersDebouncing: boolean;
   isSample: boolean;
+  isClickhouseReady: boolean;
 }) {
   const [hasFinishedStreaming, setHasFinishedStreaming] = useState(false);
   const [isCacheMiss, setIsCacheMiss] = useState(false);
@@ -109,9 +111,17 @@ export function useKeywordsQuery({
         .map(([columnId]) => columnId),
       sorting,
       isSample,
+      isClickhouseReady,
     });
     return key;
-  }, [apiPageIndex, filters, columnVisibility, sorting, isSample]);
+  }, [
+    apiPageIndex,
+    filters,
+    columnVisibility,
+    sorting,
+    isSample,
+    isClickhouseReady,
+  ]);
 
   const { data: keywords = [], error } = useSWRSubscription(
     streamKey,

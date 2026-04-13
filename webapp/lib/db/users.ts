@@ -40,9 +40,9 @@ export async function decreaseFreeCredits(user: UserData) {
   const now = new Date();
   if (
     user.lastFreeCreditUsedAt &&
-    now.getTime() - user.lastFreeCreditUsedAt.getTime() < 30 * 1000
+    now.getTime() - user.lastFreeCreditUsedAt.getTime() < 5 * 1000
   ) {
-    // Prevent decreasing credits if the last free credit was used less than 30 seconds ago
+    // Prevent decreasing credits if the last free credit was used less than 5 seconds ago
     return;
   }
   const docRef = firestore.collection("users").doc(user.email);

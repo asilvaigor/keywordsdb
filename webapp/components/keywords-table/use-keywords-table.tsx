@@ -71,6 +71,7 @@ export function useKeywordsTable({
       pageSize,
       isFiltersDebouncing,
       isSample,
+      isClickhouseReady,
     });
   const { handleDownload, isLoading: isDownloadLoading } = useDownloadModal({
     filters: debouncedFilters,

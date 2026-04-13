@@ -88,11 +88,6 @@ export async function* getKeywordsStream(
       `[${userData?.email ?? "unknown"}] Streaming keywords from clickhouse`,
     );
 
-    if (userData) {
-      // always true
-      decreaseFreeCredits(userData);
-    }
-
     const cacheMiss: CacheMiss = { isCacheMiss: true };
     yield cacheMiss;
 
@@ -111,6 +106,11 @@ export async function* getKeywordsStream(
         allResults.push(...results);
       }
     }
+  }
+
+  if (userData) {
+    // always true
+    decreaseFreeCredits(userData);
   }
 
   // Cache the results in Firestore asynchronously
