@@ -404,12 +404,12 @@ def commit(
         count = _count(clickhouse_client)
         firestore_client.put_keywords_cache(df, count, False)
         df = _get_sample(clickhouse_client)
-        firestore_client.put_keywords_cache(df, len(df), True)
+        firestore_client.put_keywords_cache(df.limit(100), len(df), True)
         storage_client.write_df(df, f"gs://{StorageClient.BUCKET}/keywords-sample/sample.parquet")
 
-    migrate_tmp_table()
-    calculate_estimated_volume()
-    export_to_clickhouse()
+    # migrate_tmp_table()
+    # calculate_estimated_volume()
+    # export_to_clickhouse()
     export_to_firestore()
 
 
@@ -456,18 +456,7 @@ def _get_top_k_rows(client: ClickhouseClient, k: int) -> pl.DataFrame:
                 competition_index,
                 cpc_high,
                 volume_history_google,
-                is_adult,
-                is_question,
-                is_branded,
-                is_comparison,
-                INITCAP(intent) AS intent,
-                INITCAP(entity_type) AS entity_type,
-                CASE
-                    WHEN saas_potential < 0.33 THEN 'low'
-                    WHEN saas_potential < 0.66 THEN 'medium'
-                    ELSE 'high'
-                END AS saas_potential,
-                updated_at
+                intent
             FROM keywords
             WHERE is_adult = FALSE OR is_adult IS NULL
             ORDER BY volume_estimated_google DESC

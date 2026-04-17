@@ -25,7 +25,7 @@ class KeywordsTable(Table):
         "volume_google_estimated": pl.Int64,
         "volume_history": pl.Binary,
         "cpc_high": pl.Float64,
-        "competition_index": pl.Float64,
+        "competition_index": pl.Int64,
         "is_adult": pl.Boolean,
         "is_comparison": pl.Boolean,
         "is_branded": pl.Boolean,
@@ -47,7 +47,7 @@ class KeywordsTmpTable(Table):
         "volume_google_estimated": pl.Int64,
         "volume_history": pl.Binary,
         "cpc_high": pl.Float64,
-        "competition_index": pl.Float64,
+        "competition_index": pl.Int64,
         "is_adult": pl.Boolean,
         "is_comparison": pl.Boolean,
         "is_branded": pl.Boolean,
@@ -83,8 +83,8 @@ class BigQueryClient:
         if df.is_empty():
             return
 
-        schema = self._create_schema(df)
         df = table.fill_missing_columns(df)
+        schema = self._create_schema(df)
         table_ref = self.client.dataset(self._dataset).table(table.name)
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmp:
