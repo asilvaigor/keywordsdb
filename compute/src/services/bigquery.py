@@ -83,8 +83,8 @@ class BigQueryClient:
         if df.is_empty():
             return
 
-        schema = self._create_schema(df)
         df = table.fill_missing_columns(df)
+        schema = self._create_schema(df)
         table_ref = self.client.dataset(self._dataset).table(table.name)
 
         with tempfile.NamedTemporaryFile(suffix=".parquet") as tmp:
