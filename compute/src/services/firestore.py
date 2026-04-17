@@ -25,12 +25,19 @@ class FirestoreClient:
             count: number of results in query.
         """
         # Save in keywords-cache
+        cols = [
+            "keyword",
+            "volume_estimated_google",
+            "volume_google",
+            "competition_index",
+            "cpc_high",
+            "intent",
+            "volume_history_google",
+        ]
+        df = df.select(pl.col(cols)).with_columns(pl.col("intent").str.to_titlecase())
         hash_value = self.get_cache_doc_id(counts=False, sample=sample)
         doc_ref = self.client.collection(FirestoreClient.keywords_cache).document(hash_value)
-        doc_value = {
-            "results": df.with_columns(pl.col("updated_at").dt.strftime("%Y-%m-%d")).to_dicts(),
-            "expires_at": None,
-        }
+        doc_value = {"results": df.to_dicts(), "expires_at": None}
         doc_ref.set(doc_value)
 
         # Save in keywords-counts-cache
