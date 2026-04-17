@@ -15,8 +15,7 @@ const useClickhouseReady = (shouldFetch: boolean) => {
     error,
     isLoading,
   } = useSWR(shouldFetch ? "clickhouse-ping" : null, fetchClickhousePing, {
-    revalidateOnFocus: true,
-    revalidateOnReconnect: true,
+    refreshInterval: 180000, // Refresh every 3 minutes
     errorRetryCount: 3,
     errorRetryInterval: 2000,
   });

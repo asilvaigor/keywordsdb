@@ -282,7 +282,7 @@ export function VolumeHistoryCell({
   const points = useMemo(() => parseVolumeHistory(raw, ratio), [raw, ratio]);
 
   if (points.length === 0) {
-    return <span className="text-muted-foreground text-xs">—</span>;
+    return <span className="text-muted-foreground text-xs">&#x2014;</span>;
   }
 
   return (
