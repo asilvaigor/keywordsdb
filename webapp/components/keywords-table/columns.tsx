@@ -350,7 +350,10 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       />
     ),
     cell: ({ row }) => {
-      const value = row.getValue("intent") as string;
+      const value = row.getValue("intent") as string | undefined;
+      if (!value) {
+        return <span className="text-muted-foreground text-xs">&#x2014;</span>;
+      }
       return (
         <Badge
           className={cn({
@@ -376,7 +379,10 @@ const columnsWithoutSkeleton: ColumnDef<Keyword>[] = [
       />
     ),
     cell: ({ row }) => {
-      const value = row.getValue("entity_type") as string;
+      const value = row.getValue("entity_type") as string | undefined;
+      if (!value) {
+        return <span className="text-muted-foreground text-xs">&#x2014;</span>;
+      }
       return <Badge variant="outline">{value}</Badge>;
     },
     size: 100,
