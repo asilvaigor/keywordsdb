@@ -62,7 +62,7 @@ function Footer() {
 
           {/* Product */}
           <div className="space-y-3 text-sm">
-            <h4 className="font-medium text-foreground">Product</h4>
+            <p className="font-medium text-foreground">Product</p>
             <div className="flex flex-col gap-2">
               <FooterLink href="/blog">Blog</FooterLink>
               <FooterLink href="/login">Dashboard</FooterLink>
@@ -72,7 +72,7 @@ function Footer() {
 
           {/* Solutions */}
           <div className="space-y-3 text-sm">
-            <h4 className="font-medium text-foreground">Solutions</h4>
+            <p className="font-medium text-foreground">Solutions</p>
             <div className="flex flex-col gap-2">
               <FooterLink href="/solutions/saas-ideas">SaaS Ideas</FooterLink>
               <FooterLink href="/density-checker">Density Checker</FooterLink>
@@ -82,7 +82,7 @@ function Footer() {
 
           {/* Company */}
           <div className="space-y-3 text-sm">
-            <h4 className="font-medium text-foreground">Company</h4>
+            <p className="font-medium text-foreground">Company</p>
             <div className="flex flex-col gap-2">
               <FooterLink href="/contact">Contact</FooterLink>
               <FooterLink href="/privacy">Privacy</FooterLink>

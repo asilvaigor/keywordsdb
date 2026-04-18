@@ -143,7 +143,7 @@ function Video() {
             >
               {/* Progress bar with invisible range input overlay for seeking */}
               <div className="relative">
-                <Progress value={progressPercent} />
+                <Progress value={progressPercent} aria-label="Video progress" />
                 <input
                   type="range"
                   min={0}
@@ -152,6 +152,7 @@ function Video() {
                   value={progress}
                   onChange={handleSeek}
                   className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+                  aria-label="Seek video"
                 />
               </div>
 
@@ -161,6 +162,7 @@ function Video() {
                   size="icon"
                   onClick={togglePlay}
                   className="h-8 w-8 text-white hover:bg-white/10 hover:text-primary"
+                  aria-label={playing ? "Pause" : "Play"}
                 >
                   {playing ? (
                     <Pause className="h-4 w-4" />
@@ -173,6 +175,7 @@ function Video() {
                   size="icon"
                   onClick={handleRestart}
                   className="h-8 w-8 text-white hover:bg-white/10 hover:text-primary"
+                  aria-label="Restart"
                 >
                   <RotateCcw className="h-4 w-4" />
                 </Button>
