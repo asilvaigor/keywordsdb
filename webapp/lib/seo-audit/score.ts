@@ -7,6 +7,7 @@ import type {
 
 const STATUS_SCORE: Record<AuditStatus, number> = {
   pass: 1,
+  warn: 0.5,
   fail: 0,
 };
 

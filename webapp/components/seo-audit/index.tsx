@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, CircleAlert, Globe, Search, Square } from "lucide-react";
+import { ArrowLeft, Globe, Search, Square } from "lucide-react";
 import {
   CategorySection,
   IssuesView,
@@ -191,7 +191,6 @@ export default function SeoAudit() {
           {/* Issues */}
           <div className="space-y-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              <CircleAlert className="h-4.5 w-4.5 text-muted-foreground" />
               Issues
             </h2>
             <IssuesView result={result} />

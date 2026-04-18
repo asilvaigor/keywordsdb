@@ -1,4 +1,4 @@
-export type AuditStatus = "pass" | "fail";
+export type AuditStatus = "pass" | "warn" | "fail";
 
 export type AuditCategory =
   | "meta"

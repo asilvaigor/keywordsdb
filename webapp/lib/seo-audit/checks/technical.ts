@@ -108,7 +108,7 @@ export function checkTechnical(
       id: "tech-structured-data",
       category: "technical",
       title: "Structured data",
-      status: failing.length === 0 ? "pass" : "fail",
+      status: failing.length === 0 ? "pass" : "warn",
       description:
         failing.length === 0
           ? `All pages have structured data (JSON-LD or Microdata) for rich search snippets.`

@@ -1,4 +1,4 @@
-import { CheckCircle2, CircleAlert } from "lucide-react";
+import { CheckCircle2, CircleAlert, TriangleAlert } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import type { AuditResult } from "@/lib/seo-audit/types";
@@ -127,7 +127,14 @@ export function AuditSummary({ result }: { result: AuditResult }) {
     (n, c) => n + c.checks.filter((ch) => ch.status === "pass").length,
     0,
   );
-  const issues = totalChecks - passed;
+  const errors = result.categories.reduce(
+    (n, c) => n + c.checks.filter((ch) => ch.status === "fail").length,
+    0,
+  );
+  const warnings = result.categories.reduce(
+    (n, c) => n + c.checks.filter((ch) => ch.status === "warn").length,
+    0,
+  );
 
   let displayUrl = result.url;
   try {
@@ -156,43 +163,99 @@ export function AuditSummary({ result }: { result: AuditResult }) {
           </p>
         </div>
 
-        {/* Stats cards */}
-        <div className="flex gap-3">
+        {/* Stats — compact row on mobile, cards on desktop */}
+        <div className="sm:hidden flex items-center rounded-lg border bg-card py-3 divide-x">
+          <div className="flex-1 flex flex-col items-center gap-0.5">
+            <span className="text-xl font-bold tabular-nums text-red-500">
+              {errors}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {errors === 1 ? "Error" : "Errors"}
+            </span>
+          </div>
+          <div className="flex-1 flex flex-col items-center gap-0.5">
+            <span className="text-xl font-bold tabular-nums text-yellow-500">
+              {warnings}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {warnings === 1 ? "Warning" : "Warnings"}
+            </span>
+          </div>
+          <div className="flex-1 flex flex-col items-center gap-0.5">
+            <span className="text-xl font-bold tabular-nums text-emerald-500">
+              {passed}
+            </span>
+            <span className="text-xs text-muted-foreground">Passed</span>
+          </div>
+        </div>
+
+        {/* Stats cards — desktop only */}
+        <div className="hidden sm:flex gap-3">
           <Card
             size="sm"
-            className="h-20 sm:h-24 justify-center flex-1 overflow-hidden"
+            className="h-24 justify-center flex-1 overflow-hidden"
           >
             <CardContent>
               <div className="flex items-center gap-3">
-                <div className="rounded-full sm:bg-red-500/10 sm:p-2">
+                <div className="rounded-full bg-red-500/10 p-2">
                   <CircleAlert className="h-5 w-5 text-red-500" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold tabular-nums leading-tight">
-                    {issues}
+                    {errors}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {issues === 1 ? "Issue" : "Issues"}
+                    {errors === 1 ? "Error" : "Errors"}
                   </p>
                 </div>
               </div>
-              <div className="hidden sm:flex mt-2.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div className="flex mt-2.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className="h-full rounded-full bg-red-500 transition-all duration-700"
                   style={{
-                    width: `${totalChecks > 0 ? (issues / totalChecks) * 100 : 0}%`,
+                    width: `${totalChecks > 0 ? (errors / totalChecks) * 100 : 0}%`,
                   }}
                 />
               </div>
             </CardContent>
           </Card>
+          {warnings > 0 && (
+            <Card
+              size="sm"
+              className="h-24 justify-center flex-1 overflow-hidden"
+            >
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className="rounded-full bg-yellow-500/10 p-2">
+                    <TriangleAlert className="h-5 w-5 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold tabular-nums leading-tight">
+                      {warnings}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {warnings === 1 ? "Warning" : "Warnings"}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex mt-2.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-yellow-500 transition-all duration-700"
+                    style={{
+                      width: `${totalChecks > 0 ? (warnings / totalChecks) * 100 : 0}%`,
+                    }}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+          )}
           <Card
             size="sm"
-            className="h-20 sm:h-24 justify-center flex-1 overflow-hidden"
+            className="h-24 justify-center flex-1 overflow-hidden"
           >
             <CardContent>
               <div className="flex items-center gap-3">
-                <div className="rounded-full sm:bg-emerald-500/10 sm:p-2">
+                <div className="rounded-full bg-emerald-500/10 p-2">
                   <CheckCircle2 className="h-5 w-5 text-emerald-500" />
                 </div>
                 <div>
@@ -202,7 +265,7 @@ export function AuditSummary({ result }: { result: AuditResult }) {
                   <p className="text-xs text-muted-foreground">Passed</p>
                 </div>
               </div>
-              <div className="hidden sm:flex mt-2.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
+              <div className="flex mt-2.5 h-1.5 w-full rounded-full bg-muted overflow-hidden">
                 <div
                   className="h-full rounded-full bg-emerald-500 transition-all duration-700"
                   style={{
