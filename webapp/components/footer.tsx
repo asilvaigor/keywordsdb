@@ -42,7 +42,7 @@ function Footer() {
                 className="border rounded-md"
               />
             </Link>
-            <Link href="https://fazier.com" target="_blank">
+            <Link href="https://fazier.com/launches/keywordsdb" target="_blank">
               <Image
                 src="/badges/fazier.svg"
                 alt="Fazier badge"
