@@ -75,6 +75,7 @@ locals {
     STRIPE_SECRET_KEY_PRD     = var.stripe_secret_key_prd
     STRIPE_WEBHOOK_SECRET_STG = var.stripe_webhook_secret_stg
     STRIPE_WEBHOOK_SECRET_PRD = var.stripe_webhook_secret_prd
+    PSI_API_KEY               = google_apikeys_key.psi.key_string
   }
 }
 

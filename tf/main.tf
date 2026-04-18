@@ -19,8 +19,10 @@ terraform {
 }
 
 provider "google" {
-  project = var.project_id
-  region  = var.location
+  project               = var.project_id
+  region                = var.location
+  user_project_override = true
+  billing_project       = var.project_id
 }
 
 provider "github" {}

@@ -6,6 +6,10 @@ import {
   IssuesView,
 } from "@/components/seo-audit/audit-results";
 import { AuditSummary } from "@/components/seo-audit/audit-summary";
+import {
+  LighthouseView,
+  LighthouseViewSkeleton,
+} from "@/components/seo-audit/lighthouse-view";
 import { useSeoAudit } from "@/components/seo-audit/use-seo-audit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +60,8 @@ export default function SeoAudit() {
     maxPages,
     setMaxPages,
     result,
+    lighthouse,
+    lighthouseLoading,
     progress,
     error,
     isRunning,
@@ -182,18 +188,30 @@ export default function SeoAudit() {
       {result && (
         <div className="mb-12 sm:mb-20 animate-fade-in-up space-y-8">
           {/* Summary */}
-          <AuditSummary result={result} />
+          <AuditSummary
+            result={result}
+            lighthouse={lighthouse}
+            lighthouseLoading={lighthouseLoading}
+          />
 
           {/* Issues */}
           <div className="space-y-3">
             <h2 className="text-lg font-semibold flex items-center gap-2">
-              Issues
+              <Globe className="h-4 w-4 text-muted-foreground" />
+              SEO Issues
             </h2>
             <IssuesView result={result} />
           </div>
 
+          {/* Lighthouse / Performance */}
+          {lighthouseLoading ? (
+            <LighthouseViewSkeleton />
+          ) : lighthouse ? (
+            <LighthouseView result={lighthouse} />
+          ) : null}
+
           {/* LLM Prompt */}
-          <LlmPromptSection result={result} />
+          <LlmPromptSection result={result} lighthouse={lighthouse} />
 
           {/* Detailed results by category */}
           <div className="space-y-3">

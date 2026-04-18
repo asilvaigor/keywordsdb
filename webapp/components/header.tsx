@@ -511,7 +511,7 @@ const Header = ({ userData }: { userData?: UserData }) => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background">
-      <div className="container flex h-14 items-center justify-between px-4 mx-auto">
+      <div className="container flex h-14 items-center justify-between px-4 mx-auto max-w-6xl">
         <Logo />
 
         {isLanding && <LandingNavigation />}

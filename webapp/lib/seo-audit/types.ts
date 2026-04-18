@@ -1,11 +1,6 @@
 export type AuditStatus = "pass" | "warn" | "fail";
 
-export type AuditCategory =
-  | "meta"
-  | "content"
-  | "technical"
-  | "links"
-  | "performance";
+export type AuditCategory = "meta" | "content" | "technical" | "links";
 
 export type AuditCheckPage = {
   url: string;
@@ -47,6 +42,48 @@ export type AuditProgress = {
 
 export type AuditError = {
   type: "error";
+  error: string;
+};
+
+/** PageSpeed Insights / Lighthouse result */
+export type LighthouseCoreVital = {
+  label: string;
+  value: string;
+  score: number; // 0-1
+};
+
+/** Pre-formatted table extracted from a Lighthouse audit's details object */
+export type LighthouseAuditDetails = {
+  headings: string[];
+  rows: string[][];
+} | null;
+
+export type LighthouseAuditItem = {
+  id: string;
+  title: string;
+  description: string;
+  score: number | null; // null = informational
+  displayValue?: string;
+  details?: LighthouseAuditDetails;
+};
+
+export type LighthouseResult = {
+  type: "lighthouse";
+  performanceScore: number; // 0-100
+  metrics: {
+    fcp: LighthouseCoreVital;
+    lcp: LighthouseCoreVital;
+    tbt: LighthouseCoreVital;
+    cls: LighthouseCoreVital;
+    si: LighthouseCoreVital;
+    tti: LighthouseCoreVital;
+  };
+  opportunities: LighthouseAuditItem[];
+  diagnostics: LighthouseAuditItem[];
+};
+
+export type LighthouseError = {
+  type: "lighthouse-error";
   error: string;
 };
 

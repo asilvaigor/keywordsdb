@@ -3,7 +3,7 @@
 import { CheckCircle2, Copy, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import type { AuditResult } from "@/lib/seo-audit/types";
+import type { AuditResult, LighthouseResult } from "@/lib/seo-audit/types";
 
 type CheckEntry = {
   title: string;
@@ -52,32 +52,89 @@ function formatChecks(checks: CheckEntry[]): string {
     .join("\n");
 }
 
-function generateLlmPrompt(result: AuditResult): string {
+function generateLlmPrompt(
+  result: AuditResult,
+  lighthouse: LighthouseResult | null,
+): string {
   const failedChecks = collectChecks(result, "fail");
   const warningChecks = collectChecks(result, "warn");
 
-  if (failedChecks.length === 0 && warningChecks.length === 0) {
+  if (failedChecks.length === 0 && warningChecks.length === 0 && !lighthouse) {
     return `# SEO Audit Results for ${result.url}\n\nAll checks passed with a score of ${result.score}/100. No issues to fix.`;
   }
 
   let prompt = `# SEO Audit Fix Request\n\n`;
   prompt += `I ran an SEO audit on **${result.url}** and it scored **${result.score}/100**.\n\n`;
-  prompt += `Please help me fix the following **${failedChecks.length} issue${failedChecks.length > 1 ? "s" : ""}** and **${warningChecks.length} warning${warningChecks.length > 1 ? "s" : ""}** found during the audit:\n\n`;
 
-  if (failedChecks.length > 0) {
-    prompt += `## Issues\n\n${formatChecks(failedChecks)}`;
+  if (failedChecks.length > 0 || warningChecks.length > 0) {
+    prompt += `Please help me fix the following **${failedChecks.length} issue${failedChecks.length > 1 ? "s" : ""}** and **${warningChecks.length} warning${warningChecks.length > 1 ? "s" : ""}** found during the audit:\n\n`;
+
+    if (failedChecks.length > 0) {
+      prompt += `## SEO Issues\n\n${formatChecks(failedChecks)}`;
+    }
+
+    if (warningChecks.length > 0) {
+      prompt += `\n## SEO Warnings\n\n${formatChecks(warningChecks)}`;
+    }
   }
 
-  if (warningChecks.length > 0) {
-    prompt += `\n## Warnings\n\n${formatChecks(warningChecks)}`;
+  if (lighthouse) {
+    prompt += `\n## Performance (Lighthouse — mobile)\n\n`;
+    prompt += `Overall performance score: **${lighthouse.performanceScore}/100**\n\n`;
+    prompt += `### Core Metrics\n`;
+    const m = lighthouse.metrics;
+    prompt += `| Metric | Value |\n|---|---|\n`;
+    for (const metric of [m.fcp, m.lcp, m.tbt, m.cls, m.si, m.tti]) {
+      prompt += `| ${metric.label} | ${metric.value} |\n`;
+    }
+
+    if (lighthouse.opportunities.length > 0) {
+      prompt += `\n### Opportunities\n\n`;
+      for (const item of lighthouse.opportunities) {
+        prompt += `**${item.title}**`;
+        if (item.displayValue) prompt += ` — ${item.displayValue}`;
+        prompt += `\n${item.description.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")}\n`;
+        if (item.details && item.details.rows.length > 0) {
+          prompt += `| ${item.details.headings.join(" | ")} |\n`;
+          prompt += `| ${item.details.headings.map(() => "---").join(" | ")} |\n`;
+          for (const row of item.details.rows) {
+            prompt += `| ${row.join(" | ")} |\n`;
+          }
+        }
+        prompt += "\n";
+      }
+    }
+
+    if (lighthouse.diagnostics.length > 0) {
+      prompt += `\n### Diagnostics\n\n`;
+      for (const item of lighthouse.diagnostics) {
+        prompt += `**${item.title}**`;
+        if (item.displayValue) prompt += ` — ${item.displayValue}`;
+        prompt += `\n${item.description.replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")}\n`;
+        if (item.details && item.details.rows.length > 0) {
+          prompt += `| ${item.details.headings.join(" | ")} |\n`;
+          prompt += `| ${item.details.headings.map(() => "---").join(" | ")} |\n`;
+          for (const row of item.details.rows) {
+            prompt += `| ${row.join(" | ")} |\n`;
+          }
+        }
+        prompt += "\n";
+      }
+    }
   }
 
   return prompt;
 }
 
-function LlmPromptSection({ result }: { result: AuditResult }) {
+function LlmPromptSection({
+  result,
+  lighthouse,
+}: {
+  result: AuditResult;
+  lighthouse: LighthouseResult | null;
+}) {
   const [copied, setCopied] = useState(false);
-  const prompt = generateLlmPrompt(result);
+  const prompt = generateLlmPrompt(result, lighthouse);
 
   const issues = result.categories.flatMap((cat) =>
     cat.checks.filter((c) => c.status === "fail"),
@@ -85,7 +142,7 @@ function LlmPromptSection({ result }: { result: AuditResult }) {
   const warnings = result.categories.flatMap((cat) =>
     cat.checks.filter((c) => c.status === "warn"),
   );
-  if (issues.length === 0 && warnings.length === 0) return null;
+  if (issues.length === 0 && warnings.length === 0 && !lighthouse) return null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt);

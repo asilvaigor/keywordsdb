@@ -13,7 +13,7 @@ import { getMetadata } from "@/lib/metadata";
 export const metadata = getMetadata({
   title: "Free SEO Audit Tool | KeywordsDB",
   description:
-    "Run a free SEO audit on any website. Checks meta tags, content quality, internal links, performance, and more. Get a score with actionable recommendations.",
+    "Run a free SEO audit on any website. Checks meta tags, content quality, internal links, and more — plus a Google Lighthouse performance test with Core Web Vitals. Get a score with actionable recommendations.",
   canonicalUrl: "/seo-audit",
 });
 
@@ -21,7 +21,7 @@ const faqs = [
   {
     question: "What does this SEO audit check?",
     answer:
-      "The audit runs 20+ checks across five categories: Meta Tags (title, description, Open Graph, canonical URL, etc.), Content (word count, heading structure, image alt text, text-to-HTML ratio), Technical (HTTPS, robots.txt, sitemap.xml, structured data, doctype), Links (broken links, internal linking, orphan pages), and Performance (server response time, page size). Each check gives a pass or fail result.",
+      "The audit runs 20+ checks across four categories: Meta Tags (title, description, Open Graph, canonical URL, etc.), Content (word count, heading structure, image alt text, text-to-HTML ratio), Technical (HTTPS, robots.txt, sitemap.xml, structured data, doctype), and Links (broken links, internal linking, orphan pages). Each check gives a pass or fail result. On top of that, we run a Google Lighthouse test to measure real-world performance — including Core Web Vitals like LCP, CLS, and TBT — and surface specific opportunities to speed up your pages.",
   },
   {
     question: "How many pages does it crawl?",
@@ -39,9 +39,14 @@ const faqs = [
       "Yes, the SEO audit tool is completely free to use with no limits. No account or sign-up required. Just enter a URL and get your results.",
   },
   {
+    question: "What is the Performance score?",
+    answer:
+      "The Performance score comes from Google Lighthouse, the same engine that powers PageSpeed Insights. It measures how fast your pages load on mobile using real metrics: Largest Contentful Paint (LCP), Total Blocking Time (TBT), Cumulative Layout Shift (CLS), First Contentful Paint (FCP), and Speed Index. A score of 90+ is considered good. Below that, you'll see a list of specific opportunities — like unused JavaScript or unoptimized images — with details on exactly which files or elements are causing the slowdown.",
+  },
+  {
     question: "How long does the audit take?",
     answer:
-      "Typically 15-45 seconds, depending on how many pages your site has and how fast your server responds. You'll see real-time progress as each page is crawled.",
+      "Typically 15-45 seconds, depending on how many pages your site has and how fast your server responds. The SEO crawl and the Lighthouse performance test run in parallel, so you'll see your SEO score appear first while performance results load shortly after.",
   },
 ];
 
@@ -76,14 +81,22 @@ export default function SeoAuditPage() {
               <p>
                 This free tool crawls your website the same way search engines
                 do — following links, reading meta tags, and checking for common
-                technical issues. It then scores each area and gives you
-                actionable recommendations to improve your SEO.
+                technical issues. On top of the crawl, it runs a{" "}
+                <strong className="text-foreground">
+                  Google Lighthouse performance test
+                </strong>{" "}
+                to measure Core Web Vitals and identify specific rendering
+                bottlenecks. You get both an SEO score and a performance score,
+                with actionable recommendations for each.
               </p>
               <p>
                 Regular SEO audits help you catch problems early — like broken
                 links, missing meta descriptions, or slow page loads — before
-                they hurt your rankings. We recommend running an audit after any
-                major site changes or at least once a month.
+                they hurt your rankings. Page speed is a confirmed Google
+                ranking factor, and Core Web Vitals like LCP and CLS directly
+                affect how your pages appear in search results. We recommend
+                running an audit after any major site changes or at least once a
+                month.
               </p>
               <p>
                 A good SEO audit doesn&apos;t just list problems — it helps you

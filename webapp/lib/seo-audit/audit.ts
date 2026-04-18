@@ -1,7 +1,6 @@
 import { checkContent } from "@/lib/seo-audit/checks/content";
 import { checkLinks } from "@/lib/seo-audit/checks/links";
 import { checkMeta } from "@/lib/seo-audit/checks/meta";
-import { checkPerformance } from "@/lib/seo-audit/checks/performance";
 import { checkTechnical } from "@/lib/seo-audit/checks/technical";
 import { crawlSite } from "@/lib/seo-audit/crawl";
 import { extractPage } from "@/lib/seo-audit/extract";
@@ -45,7 +44,6 @@ export async function runAudit(
   const contentChecks = checkContent(allPages);
   const technicalChecks = checkTechnical(allPages, crawlData);
   const linkChecks = await checkLinks(allPages, crawlData);
-  const perfChecks = checkPerformance(crawlData.pages);
 
   // Phase 4: Build category results and overall score
   const categories = [
@@ -53,15 +51,13 @@ export async function runAudit(
     buildCategoryResult("content", "Content", contentChecks),
     buildCategoryResult("technical", "Technical", technicalChecks),
     buildCategoryResult("links", "Links", linkChecks),
-    buildCategoryResult("performance", "Performance", perfChecks),
   ];
 
   const weights = {
-    meta: 0.3,
+    meta: 0.35,
     content: 0.1,
-    technical: 0.25,
+    technical: 0.3,
     links: 0.25,
-    performance: 0.1,
   } as const;
 
   const score = calculateOverallScore(categories, weights);

@@ -19,7 +19,7 @@ export function calculateCategoryScore(checks: AuditCheck[]): number {
 
 export function calculateOverallScore(
   categories: AuditCategoryResult[],
-  weights: Record<AuditCategory, number>,
+  weights: Partial<Record<AuditCategory, number>>,
 ): number {
   let weighted = 0;
   let totalWeight = 0;

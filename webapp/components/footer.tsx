@@ -22,7 +22,7 @@ function FooterLink({
 function Footer() {
   return (
     <footer className="border-t py-12">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 max-w-6xl">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {/* Brand */}
           <div className="flex flex-col gap-1 w-44">

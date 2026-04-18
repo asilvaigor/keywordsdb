@@ -196,7 +196,7 @@ function CheckRow({
         )}
       </button>
       {isOpen && (
-        <div className="px-4 pb-3 pl-11">
+        <div className="px-4 pb-3 pt-2 pl-11">
           <p className="text-sm text-muted-foreground">{check.description}</p>
           <CheckDetails check={check} />
         </div>
