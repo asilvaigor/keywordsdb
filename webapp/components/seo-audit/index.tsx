@@ -9,6 +9,7 @@ import { AuditSummary } from "@/components/seo-audit/audit-summary";
 import { useSeoAudit } from "@/components/seo-audit/use-seo-audit";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Select,
   SelectContent,
@@ -42,12 +43,7 @@ export function CrawlProgress({ progress }: { progress: AuditProgress }) {
         <p className="text-xs text-muted-foreground truncate px-4">
           {displayUrl}
         </p>
-        <div className="h-1.5 w-full rounded-full bg-muted overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
+        <Progress value={pct} className="w-full" />
       </div>
     </div>
   );
