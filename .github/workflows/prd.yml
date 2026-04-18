@@ -7,12 +7,12 @@ jobs:
   lint-py:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/lint-py
   lint-js:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/lint-js
   build-compute:
     runs-on: ubuntu-24.04
@@ -21,7 +21,7 @@ jobs:
       id-token: "write"
     needs: [lint-py]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/build
         with:
           env: prd
@@ -37,7 +37,7 @@ jobs:
       id-token: "write"
     needs: [lint-js]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
       - uses: ./.github/actions/build
@@ -54,7 +54,7 @@ jobs:
       id-token: "write"
     needs: [build-webapp]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/deploy-cloudrun
         with:
           env: prd

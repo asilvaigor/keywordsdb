@@ -10,8 +10,8 @@ jobs:
       webapp: ${{ steps.filter.outputs.webapp }}
       compute: ${{ steps.filter.outputs.compute }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -24,12 +24,12 @@ jobs:
     if: needs.check-changes.outputs.compute == 'true'
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/lint-py
   lint-js:
     needs: [check-changes]
     if: needs.check-changes.outputs.webapp == 'true'
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/lint-js

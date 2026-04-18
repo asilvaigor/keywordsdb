@@ -9,8 +9,8 @@ jobs:
     outputs:
       webapp: ${{ steps.filter.outputs.webapp }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: dorny/paths-filter@v2
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v4
         id: filter
         with:
           filters: |
@@ -21,7 +21,7 @@ jobs:
     if: needs.check-changes.outputs.webapp == 'true'
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/lint-js
   build-webapp:
     runs-on: ubuntu-24.04
@@ -30,7 +30,7 @@ jobs:
       id-token: "write"
     needs: [lint-js]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           lfs: true
       - uses: ./.github/actions/build
@@ -47,7 +47,7 @@ jobs:
       id-token: "write"
     needs: [build-webapp]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: ./.github/actions/deploy-cloudrun
         with:
           env: stg
