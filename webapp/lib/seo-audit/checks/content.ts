@@ -25,7 +25,7 @@ export function checkContent(
       id: "content-word-count",
       category: "content",
       title: "Word count",
-      status: failing.length === 0 ? "pass" : "fail",
+      status: failing.length === 0 ? "pass" : "warn",
       description:
         failing.length === 0
           ? `All ${allPages.length} page${allPages.length > 1 ? "s" : ""} have at least 300 words.`
@@ -58,7 +58,7 @@ export function checkContent(
       id: "content-headings",
       category: "content",
       title: "Heading structure",
-      status: failing.length === 0 ? "pass" : "fail",
+      status: failing.length === 0 ? "pass" : "warn",
       description:
         failing.length === 0
           ? `All pages have good heading structure (1 H1 + at least 1 H2).`

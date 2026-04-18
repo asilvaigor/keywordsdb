@@ -5,10 +5,21 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import type { AuditResult } from "@/lib/seo-audit/types";
 
-function generateLlmPrompt(result: AuditResult): string {
-  const failedChecks = result.categories.flatMap((cat) =>
+type CheckEntry = {
+  title: string;
+  category: string;
+  description: string;
+  details?: string | string[];
+  pages?: { url: string; description: string }[];
+};
+
+function collectChecks(
+  result: AuditResult,
+  status: "fail" | "warn",
+): CheckEntry[] {
+  return result.categories.flatMap((cat) =>
     cat.checks
-      .filter((c) => c.status === "fail")
+      .filter((c) => c.status === status)
       .map((c) => ({
         title: c.title,
         category: cat.label,
@@ -17,34 +28,48 @@ function generateLlmPrompt(result: AuditResult): string {
         pages: c.pages,
       })),
   );
+}
 
-  if (failedChecks.length === 0) {
+function formatChecks(checks: CheckEntry[]): string {
+  return checks
+    .map((c, i) => {
+      let entry = `### ${i + 1}. ${c.title} (${c.category})\n`;
+      entry += `${c.description}\n`;
+      if (c.details) {
+        const detailStr = Array.isArray(c.details)
+          ? c.details.join("\n")
+          : c.details;
+        entry += `\`\`\`\n${detailStr}\n\`\`\`\n`;
+      }
+      if (c.pages && c.pages.length > 0) {
+        entry += "\nAffected pages:\n";
+        for (const page of c.pages) {
+          entry += `- ${page.url} — ${page.description}\n`;
+        }
+      }
+      return entry;
+    })
+    .join("\n");
+}
+
+function generateLlmPrompt(result: AuditResult): string {
+  const failedChecks = collectChecks(result, "fail");
+  const warningChecks = collectChecks(result, "warn");
+
+  if (failedChecks.length === 0 && warningChecks.length === 0) {
     return `# SEO Audit Results for ${result.url}\n\nAll checks passed with a score of ${result.score}/100. No issues to fix.`;
   }
 
   let prompt = `# SEO Audit Fix Request\n\n`;
   prompt += `I ran an SEO audit on **${result.url}** and it scored **${result.score}/100**.\n\n`;
-  prompt += `Please help me fix the following **${failedChecks.length} issue${failedChecks.length > 1 ? "s" : ""}** found during the audit:\n\n`;
+  prompt += `Please help me fix the following **${failedChecks.length} issue${failedChecks.length > 1 ? "s" : ""}** and **${warningChecks.length} warning${warningChecks.length > 1 ? "s" : ""}** found during the audit:\n\n`;
 
-  for (let i = 0; i < failedChecks.length; i++) {
-    const c = failedChecks[i];
-    prompt += `## ${i + 1}. ${c.title} (${c.category})\n`;
-    prompt += `${c.description}\n`;
-    if (c.details) {
-      const detailStr = Array.isArray(c.details)
-        ? c.details.join("\n")
-        : c.details;
-      prompt += `\`\`\`\n${detailStr}\n\`\`\`\n`;
-    }
-    if (c.pages && c.pages.length > 0) {
-      prompt += "\nAffected pages:\n";
-      for (const page of c.pages) {
-        prompt += `- ${page.url} — ${page.description}\n`;
-      }
-    }
-    if (i < failedChecks.length - 1) {
-      prompt += "\n";
-    }
+  if (failedChecks.length > 0) {
+    prompt += `## Issues\n\n${formatChecks(failedChecks)}`;
+  }
+
+  if (warningChecks.length > 0) {
+    prompt += `\n## Warnings\n\n${formatChecks(warningChecks)}`;
   }
 
   return prompt;
@@ -57,7 +82,10 @@ function LlmPromptSection({ result }: { result: AuditResult }) {
   const issues = result.categories.flatMap((cat) =>
     cat.checks.filter((c) => c.status === "fail"),
   );
-  if (issues.length === 0) return null;
+  const warnings = result.categories.flatMap((cat) =>
+    cat.checks.filter((c) => c.status === "warn"),
+  );
+  if (issues.length === 0 && warnings.length === 0) return null;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(prompt);

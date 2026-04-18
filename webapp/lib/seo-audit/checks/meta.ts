@@ -52,7 +52,7 @@ export async function checkMeta(
       id: "meta-title-length",
       category: "meta",
       title: "Title length",
-      status: failing.length === 0 ? "pass" : "fail",
+      status: failing.length === 0 ? "pass" : "warn",
       description:
         failing.length === 0
           ? `All page titles are within the ideal length (30–60 characters).`
@@ -100,7 +100,7 @@ export async function checkMeta(
       id: "meta-desc-length",
       category: "meta",
       title: "Description length",
-      status: failing.length === 0 ? "pass" : "fail",
+      status: failing.length === 0 ? "pass" : "warn",
       description:
         failing.length === 0
           ? `All meta descriptions are within the ideal length (120–160 characters).`

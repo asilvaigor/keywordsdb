@@ -9,6 +9,7 @@ import {
   Link2,
   Shield,
   Tag,
+  TriangleAlert,
 } from "lucide-react";
 import { useState } from "react";
 import type {
@@ -33,6 +34,10 @@ function StatusIcon({
     return (
       <CheckCircle2 className={cn("h-4 w-4 text-emerald-500", className)} />
     );
+  if (status === "warn")
+    return (
+      <TriangleAlert className={cn("h-4 w-4 text-yellow-500", className)} />
+    );
   return <CircleAlert className={cn("h-4 w-4 text-red-500", className)} />;
 }
 
@@ -41,6 +46,7 @@ function statusCountBadge(checks: AuditCheck[], status: AuditStatus) {
   if (count === 0) return null;
   const colors = {
     pass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    warn: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
     fail: "bg-red-500/10 text-red-600 dark:text-red-400",
   };
   return (
@@ -228,6 +234,7 @@ export function CategorySection({
         <span className="font-medium flex-1">{category.label}</span>
         <div className="flex items-center gap-2">
           {statusCountBadge(category.checks, "pass")}
+          {statusCountBadge(category.checks, "warn")}
           {statusCountBadge(category.checks, "fail")}
         </div>
       </button>
@@ -246,13 +253,18 @@ export function CategorySection({
 /* ── Issues view ────────────────────────────────────────────────── */
 
 export function IssuesView({ result }: { result: AuditResult }) {
-  const issues = result.categories.flatMap((cat) =>
+  const errors = result.categories.flatMap((cat) =>
     cat.checks
-      .filter((c) => c.status !== "pass")
+      .filter((c) => c.status === "fail")
+      .map((c) => ({ check: c, categoryLabel: cat.label })),
+  );
+  const warnings = result.categories.flatMap((cat) =>
+    cat.checks
+      .filter((c) => c.status === "warn")
       .map((c) => ({ check: c, categoryLabel: cat.label })),
   );
 
-  if (issues.length === 0) {
+  if (errors.length === 0 && warnings.length === 0) {
     return (
       <div className="rounded-lg border bg-card px-4 py-6 text-center">
         <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
@@ -265,10 +277,29 @@ export function IssuesView({ result }: { result: AuditResult }) {
   }
 
   return (
-    <div className="rounded-lg border bg-card">
-      {issues.map(({ check, categoryLabel }) => (
-        <CheckRow key={check.id} check={check} categoryLabel={categoryLabel} />
-      ))}
+    <div className="space-y-3">
+      {errors.length > 0 && (
+        <div className="rounded-lg border bg-card">
+          {errors.map(({ check, categoryLabel }) => (
+            <CheckRow
+              key={check.id}
+              check={check}
+              categoryLabel={categoryLabel}
+            />
+          ))}
+        </div>
+      )}
+      {warnings.length > 0 && (
+        <div className="rounded-lg border bg-card">
+          {warnings.map(({ check, categoryLabel }) => (
+            <CheckRow
+              key={check.id}
+              check={check}
+              categoryLabel={categoryLabel}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
