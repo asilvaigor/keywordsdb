@@ -1,4 +1,5 @@
 import { Box } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 
 function FooterLink({
@@ -24,15 +25,39 @@ function Footer() {
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
           {/* Brand */}
-          <div className="col-span-2 md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-3">
+          <div className="flex flex-col gap-1 w-44">
+            <Link href="/" className="flex items-center gap-2 mb-2">
               <Box className="h-4 w-4" />
               <span className="font-semibold text-foreground">KeywordsDB</span>
             </Link>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Keyword research powered by Google Ads data.
-            </p>
-            {/* Featured-in badges go here */}
+            <Link
+              href="https://startupfa.me/s/keywordsdb?utm_source=keywordsdb.com"
+              target="_blank"
+            >
+              <Image
+                src="/badges/startupfame.webp"
+                alt="KeywordsDB - Featured on Startup Fame"
+                width={655}
+                height={105}
+                className="border rounded-md"
+              />
+            </Link>
+            <Link href="https://fazier.com" target="_blank">
+              <Image
+                src="/badges/fazier.svg"
+                alt="Fazier badge"
+                width={182}
+                height={43}
+              />
+            </Link>
+            <Link href="https://twelve.tools" target="_blank">
+              <Image
+                src="/badges/twelve-tools.svg"
+                alt="Featured on Twelve Tools"
+                width={200}
+                height={54}
+              />
+            </Link>
           </div>
 
           {/* Product */}
