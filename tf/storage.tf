@@ -33,9 +33,18 @@ resource "google_storage_bucket" "keywordsdb" {
   }
 }
 
-resource "cloudflare_r2_bucket" "keywordsdb" {
+resource "cloudflare_r2_bucket" "keywordsdb_public" {
   account_id = var.cloudflare_account_id
-  name = "keywordsdb"
+  name = "keywordsdb-public"
   location = "enam"
   storage_class = "Standard"
+}
+
+resource "cloudflare_r2_custom_domain" "keywordsdb_public" {
+  account_id  = var.cloudflare_account_id
+  bucket_name = cloudflare_r2_bucket.keywordsdb_public.name
+  domain      = "cdn.keywordsdb.com"
+  enabled     = true
+  zone_id     = var.cloudflare_zone_id
+  min_tls     = "1.2"
 }
