@@ -20,7 +20,7 @@ If you want to audit a site without paying for expensive crawler software, use t
 
 <CTAButton href="/seo-audit">Open the Free SEO Audit Tool</CTAButton>
 
-It runs 20+ checks across meta tags, content, technical SEO, links, and performance. It crawls up to 1,000 pages completely free, and it also generates an LLM prompt you can give to your agent to help fix what it finds. No account or sign-up required.
+It runs 20+ checks across meta tags, content, technical SEO, links, and performance. It also includes PageSpeed Insights data, so you can see page speed and Core Web Vitals signals alongside crawl findings in the same report. It crawls up to 1,000 pages completely free, and it also generates an LLM prompt you can give to your agent to help fix what it finds. No account or sign-up required.
 
 ![SEO Audit tool screenshot](/blog/seo-audit-summary.webp)
 
@@ -32,9 +32,11 @@ A good audit is not just a list of errors. It is a way to see whether the site i
 2. Content: Do pages have enough substance, clear heading structure, and basic image alt text?
 3. Technical SEO: Are HTTPS, robots.txt, sitemap.xml, structured data, and other foundations in place?
 4. Links: Can crawlers move through the site easily, or are there broken links and orphan pages?
-5. Performance: Are pages reasonably fast and lightweight, or are they slower and heavier than they should be?
+5. Performance: Are pages reasonably fast and lightweight, and do PageSpeed Insights metrics show problems with Core Web Vitals or page experience?
 
 That is what makes audits useful. They take a fuzzy question like "why is this site underperforming?" and turn it into concrete things you can actually inspect and fix.
+
+Performance deserves more attention than it usually gets. It is easy to treat speed metrics like developer trivia, but they matter for SEO in a few practical ways. Slow pages waste crawl budget on larger sites, make users bounce faster, and can weaken the overall page experience signals Google uses as part of ranking. A page with weak content will not rank just because it is fast, but a strong page can absolutely underperform when the experience is slow, unstable, or frustrating.
 
 ## How to do an SEO audit, step by step
 
@@ -59,6 +61,8 @@ Look first for the high-impact technical problems:
 5. Very slow or oversized pages
 
 The useful mindset here is simple: fix the things that prevent discovery and understanding before you fine-tune the cosmetic stuff.
+
+This is where the PageSpeed Insights data helps. Instead of guessing whether a page merely feels slow, you can see concrete metrics like Largest Contentful Paint, Interaction to Next Paint, and Cumulative Layout Shift. Those numbers help you separate pages that are just a little heavy from pages that are actively creating a worse search and user experience.
 
 ![SEO Audit tool screenshot 2](/blog/seo-audit-issues.webp)
 
@@ -115,6 +119,8 @@ For example, you can use it to:
 The biggest mistake is treating the audit score like the goal.
 
 The score is useful, but it is only a shortcut. The real goal is better crawlability, clearer pages, stronger internal linking, and fewer technical mistakes. If your score improves but the site is still hard to navigate, thin on content, or structurally messy, the number does not mean much.
+
+Another common mistake is treating performance metrics like a nice extra instead of part of the audit. If PageSpeed Insights is telling you the page loads slowly, shifts around while rendering, or responds poorly to interaction, that is not just a UX problem sitting off to the side. It can affect how efficiently pages are crawled, how usable they feel, and how competitive they are against faster pages covering the same topic.
 
 The second mistake is fixing low-impact details before high-impact blockers. A polished title tag does not help much if the page is effectively invisible in the site structure.
 

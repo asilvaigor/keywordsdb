@@ -186,7 +186,7 @@ export function AuditSummary({
           <ScoreGauge
             score={lighthouse?.performanceScore ?? 0}
             label="Performance"
-            subtitle="via Lighthouse"
+            subtitle="via PageSpeed Insights"
             loading={lighthouseLoading}
             unavailable={!lighthouse && !lighthouseLoading}
             gradientId="perf-gauge-gradient"
