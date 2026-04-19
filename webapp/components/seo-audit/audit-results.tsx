@@ -31,23 +31,19 @@ function StatusIcon({
   className?: string;
 }) {
   if (status === "pass")
-    return (
-      <CheckCircle2 className={cn("h-4 w-4 text-emerald-500", className)} />
-    );
+    return <CheckCircle2 className={cn("h-4 w-4 text-success", className)} />;
   if (status === "warn")
-    return (
-      <TriangleAlert className={cn("h-4 w-4 text-yellow-500", className)} />
-    );
-  return <CircleAlert className={cn("h-4 w-4 text-red-500", className)} />;
+    return <TriangleAlert className={cn("h-4 w-4 text-primary", className)} />;
+  return <CircleAlert className={cn("h-4 w-4 text-destructive", className)} />;
 }
 
 function statusCountBadge(checks: AuditCheck[], status: AuditStatus) {
   const count = checks.filter((c) => c.status === status).length;
   if (count === 0) return null;
   const colors = {
-    pass: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    warn: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-    fail: "bg-red-500/10 text-red-600 dark:text-red-400",
+    pass: "bg-success/10 text-success",
+    warn: "bg-primary/10 text-primary",
+    fail: "bg-destructive/10 text-destructive",
   };
   return (
     <span
@@ -267,7 +263,7 @@ export function IssuesView({ result }: { result: AuditResult }) {
   if (errors.length === 0 && warnings.length === 0) {
     return (
       <div className="rounded-lg border bg-card px-4 py-6 text-center">
-        <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto mb-2" />
+        <CheckCircle2 className="h-6 w-6 text-success mx-auto mb-2" />
         <p className="text-sm font-medium">No issues found!</p>
         <p className="text-sm text-muted-foreground mt-1">
           All checks passed. Your site is in great shape.

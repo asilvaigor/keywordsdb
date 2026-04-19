@@ -12,9 +12,9 @@ import { cn } from "@/lib/utils";
 const HALF_CIRC = Math.PI * 52;
 
 function scoreColor(score: number) {
-  if (score >= 80) return "text-emerald-500";
-  if (score >= 50) return "text-yellow-500";
-  return "text-red-500";
+  if (score >= 80) return "text-success";
+  if (score >= 50) return "text-primary";
+  return "text-destructive";
 }
 
 function ScoreGauge({
@@ -75,9 +75,9 @@ function ScoreGauge({
         >
           <defs>
             <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ef4444" />
-              <stop offset="50%" stopColor="#eab308" />
-              <stop offset="100%" stopColor="#22c55e" />
+              <stop offset="0%" stopColor="var(--color-destructive)" />
+              <stop offset="50%" stopColor="var(--color-primary)" />
+              <stop offset="100%" stopColor="var(--color-success)" />
             </linearGradient>
           </defs>
           {/* Track */}
@@ -169,9 +169,9 @@ export function AuditSummary({
       {/* URL info + score gauges side by side */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div className="min-w-0 pt-1">
-          <p className="text-xs text-muted-foreground">Audit results for</p>
+          <p className="text-sm text-muted-foreground">Audit results for</p>
           <p className="font-semibold truncate">{displayUrl}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground">
             {result.pagesCrawled} page{result.pagesCrawled > 1 ? "s" : ""}{" "}
             crawled in {(result.crawlTimeMs / 1000).toFixed(1)}s
           </p>
@@ -198,8 +198,8 @@ export function AuditSummary({
       <div className="flex items-center rounded-lg border bg-background py-3 divide-x">
         <div className="flex-1 flex flex-col items-center gap-0.5">
           <div className="flex items-center gap-1.5">
-            <CircleAlert className="h-3.5 w-3.5 text-red-500" />
-            <span className="text-lg font-bold tabular-nums text-red-500">
+            <CircleAlert className="h-3.5 w-3.5 text-destructive" />
+            <span className="text-lg font-bold tabular-nums text-destructive">
               {errors}
             </span>
           </div>
@@ -209,8 +209,8 @@ export function AuditSummary({
         </div>
         <div className="flex-1 flex flex-col items-center gap-0.5">
           <div className="flex items-center gap-1.5">
-            <TriangleAlert className="h-3.5 w-3.5 text-yellow-500" />
-            <span className="text-lg font-bold tabular-nums text-yellow-500">
+            <TriangleAlert className="h-3.5 w-3.5 text-primary" />
+            <span className="text-lg font-bold tabular-nums text-primary">
               {warnings}
             </span>
           </div>
@@ -220,8 +220,8 @@ export function AuditSummary({
         </div>
         <div className="flex-1 flex flex-col items-center gap-0.5">
           <div className="flex items-center gap-1.5">
-            <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-            <span className="text-lg font-bold tabular-nums text-emerald-500">
+            <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+            <span className="text-lg font-bold tabular-nums text-success">
               {passed}
             </span>
           </div>

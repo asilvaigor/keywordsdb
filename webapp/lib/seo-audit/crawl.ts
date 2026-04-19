@@ -107,6 +107,24 @@ async function fetchText(url: string): Promise<string | null> {
   }
 }
 
+function detectBotProtection(html: string): string | null {
+  const lower = html.toLowerCase();
+  if (
+    lower.includes("vercel security checkpoint") ||
+    lower.includes("verifying your browser")
+  ) {
+    return "Vercel Security Checkpoint";
+  }
+  if (
+    lower.includes("ddos protection by cloudflare") ||
+    lower.includes("cf-browser-verification") ||
+    lower.includes("checking your browser before accessing")
+  ) {
+    return "Cloudflare Bot Protection";
+  }
+  return null;
+}
+
 /** Extract all same-domain links from HTML */
 function extractInternalLinks(html: string, baseUrl: URL): string[] {
   const seen = new Set<string>();
@@ -177,6 +195,19 @@ export async function crawlSite(
     // Only process HTML pages
     const contentType = page.headers["content-type"] ?? "";
     if (!contentType.includes("text/html") && !contentType.includes("xhtml")) {
+      continue;
+    }
+
+    // Detect bot protection walls (e.g. Vercel, Cloudflare)
+    const botProtection = detectBotProtection(page.html);
+    if (botProtection) {
+      // If the very first page is blocked, fail fast with a clear message
+      if (pages.length === 0) {
+        throw new Error(
+          `This website is protected by ${botProtection} and is blocking the crawler. To allow auditing, please whitelist the crawler bot on your hosting/CDN settings. Crawler details: User-Agent "${USER_AGENT}".`,
+        );
+      }
+      // Otherwise skip this individual blocked page
       continue;
     }
 

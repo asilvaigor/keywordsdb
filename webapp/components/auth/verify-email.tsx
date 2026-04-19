@@ -27,14 +27,14 @@ function VerifyEmail() {
           By continuing you are agreeing to our{" "}
           <Link
             href="/privacy"
-            className="underline underline-offset-4 hover:text-yellow-500 transition-colors"
+            className="underline underline-offset-4 hover:text-primary transition-colors"
           >
             Privacy Policy
           </Link>{" "}
           and our{" "}
           <Link
             href="/tos"
-            className="underline underline-offset-4 hover:text-yellow-500 transition-colors"
+            className="underline underline-offset-4 hover:text-primary transition-colors"
           >
             Terms and Conditions
           </Link>

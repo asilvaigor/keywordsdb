@@ -29,22 +29,22 @@ const METRIC_INFO: Record<string, string> = {
 };
 
 function metricColor(score: number) {
-  if (score >= 0.9) return "text-emerald-500";
-  if (score >= 0.5) return "text-yellow-500";
-  return "text-red-500";
+  if (score >= 0.9) return "text-success";
+  if (score >= 0.5) return "text-primary";
+  return "text-destructive";
 }
 
 function metricBg(score: number) {
-  if (score >= 0.9) return "bg-emerald-500/10 border-emerald-500/20";
-  if (score >= 0.5) return "bg-yellow-500/10 border-yellow-500/20";
-  return "bg-red-500/10 border-red-500/20";
+  if (score >= 0.9) return "bg-success/10 border-success/20";
+  if (score >= 0.5) return "bg-primary/10 border-primary/20";
+  return "bg-destructive/10 border-destructive/20";
 }
 
 function auditScoreColor(score: number | null) {
   if (score === null) return "text-muted-foreground";
-  if (score >= 0.9) return "text-emerald-500";
-  if (score >= 0.5) return "text-yellow-500";
-  return "text-red-500";
+  if (score >= 0.9) return "text-success";
+  if (score >= 0.5) return "text-primary";
+  return "text-destructive";
 }
 
 /* ── Details table ───────────────────────────────────────────────── */

@@ -165,9 +165,9 @@ export default function SeoAudit() {
           variant="ghost"
           size="sm"
           onClick={() => window.location.reload()}
-          className="mb-8 inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="-ml-3 gap-1.5 text-muted-foreground"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft />
           Back
         </Button>
       )}
