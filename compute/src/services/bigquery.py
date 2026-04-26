@@ -55,6 +55,7 @@ class KeywordsTmpTable(Table):
         "entity_type": pl.String,
         "saas_potential": pl.Float64,
         "updated_at": pl.Date,
+        "ingested_at": pl.Date,
     }
 
 
