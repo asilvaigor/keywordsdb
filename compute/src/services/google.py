@@ -14,7 +14,7 @@ from google.ads.googleads.v23.services.types import (
     GenerateKeywordIdeaResult,
     GenerateKeywordIdeasRequest,
 )
-from google.api_core.exceptions import InternalServerError, ResourceExhausted, ServiceUnavailable
+from google.api_core.exceptions import InternalServerError, ResourceExhausted, ServiceUnavailable, Unauthenticated
 from structlog.stdlib import BoundLogger
 
 
@@ -119,6 +119,11 @@ class GoogleAdsClient:
         except ServiceUnavailable:
             self._logger.warning("Google Ads API: Service Unavailable (502/503), waiting for 30 seconds")
             await self._do_backoff(30)
+            return await self._get_keyword_batch_info(keywords, min_search_volume)
+
+        except Unauthenticated:
+            self._logger.warning("Google Ads API: Unauthenticated (401), refreshing credentials")
+            self._refresh_client()
             return await self._get_keyword_batch_info(keywords, min_search_volume)
 
         except InternalServerError:
