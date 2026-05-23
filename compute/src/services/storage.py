@@ -42,6 +42,7 @@ class StorageClient:
         bucket = self.client.bucket(bucket_name)
         blobs: list[Blob] = bucket.list_blobs(prefix=prefix)
         for blob in blobs:
+            assert blob.name
             if blob.name.startswith(prefix) and blob.name.endswith(suffix):
                 return f"gs://{bucket_name}/{blob.name}"
         raise FileNotFoundError(f"No file found with prefix {prefix} and suffix {suffix}")
