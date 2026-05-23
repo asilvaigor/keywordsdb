@@ -73,11 +73,7 @@ function DashboardMenuItems({
 }) {
   const isDrawer = variant === "drawer";
   return (
-    <div
-      className={
-        isDrawer ? "flex flex-col p-4 h-full" : "flex flex-col p-1.5 w-54"
-      }
-    >
+    <div className={isDrawer ? "flex flex-col p-4 h-full" : "flex flex-col"}>
       <div
         className={cn(
           "text-muted-foreground",
@@ -131,7 +127,7 @@ function DashboardMenuItems({
         onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
         className={cn(
           "flex items-center rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer",
-          isDrawer ? "gap-4 py-3 text-base" : "gap-2 py-1.5 text-sm",
+          isDrawer ? "gap-4 py-3 text-base" : "gap-2 p-1.5 text-sm",
         )}
       >
         {theme === "light" ? (
@@ -157,7 +153,7 @@ function DashboardMenuItems({
         href="/contact"
         className={cn(
           "flex items-center rounded-md hover:bg-accent",
-          isDrawer ? "gap-4 py-3 text-base" : "gap-2 py-1.5 text-sm",
+          isDrawer ? "gap-4 py-3 text-base" : "gap-2 p-1.5 text-sm",
         )}
       >
         <HelpCircle
@@ -184,7 +180,7 @@ function DashboardMenuItems({
           }
           className={cn(
             "flex items-center rounded-md hover:bg-accent hover:text-accent-foreground cursor-pointer disabled:opacity-50 disabled:pointer-events-none",
-            isDrawer ? "gap-4 py-3 text-base" : "gap-2 py-1.5 text-sm",
+            isDrawer ? "gap-4 py-3 text-base" : "gap-2 p-1.5 text-sm",
           )}
         >
           {isBillingPending ? (
@@ -216,7 +212,7 @@ function DashboardMenuItems({
         onClick={() => signOut()}
         className={cn(
           "flex items-center rounded-md hover:bg-destructive/10 text-destructive cursor-pointer",
-          isDrawer ? "gap-4 text-base" : "gap-2 pt-1.5 text-sm",
+          isDrawer ? "gap-4 text-base" : "gap-2 p-1.5 text-sm",
         )}
       >
         <LogOut className={isDrawer ? "h-5 w-5" : "h-4 w-4"} />
@@ -310,7 +306,7 @@ function DashboardHeader({ userData }: { userData: UserData }) {
               <span className="sr-only">Open menu</span>
             </Button>
           </PopoverTrigger>
-          <PopoverContent align="end" className="p-1 w-54">
+          <PopoverContent align="end" className="w-54">
             <DashboardMenuItems {...menuProps} />
           </PopoverContent>
         </Popover>
