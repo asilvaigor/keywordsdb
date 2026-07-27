@@ -20,15 +20,15 @@ resource "google_project_iam_member" "batch_scheduler" {
 locals {
   machine_types = {
     g1_small = {
-      cpu         = 1000
-      mem         = 1740
-      disk_type   = "pd-standard"
+      cpu          = 1000
+      mem          = 1740
+      disk_type    = "pd-standard"
       machine_type = "g1-small"
     }
     c4d_standard_2 = {
-      cpu         = 2000
-      mem         = 7160
-      disk_type   = "hyperdisk-balanced"
+      cpu          = 2000
+      mem          = 7160
+      disk_type    = "hyperdisk-balanced"
       machine_type = "c4d-standard-2"
     }
   }
@@ -68,6 +68,7 @@ resource "google_cloud_scheduler_job" "worker_prd" {
   schedule         = each.value.schedule
   time_zone        = "UTC"
   attempt_deadline = "320s"
+  paused           = true
 
   retry_config {
     retry_count = 1
